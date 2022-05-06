@@ -97,6 +97,7 @@ socket.on('incomingPeerOffer', (data) => {
 //    }
 //})
 peerConnection.onicecandidate = function(event) {
+	console.log('ON ICE CANDIDATE');
 	console.log(event);
 	if (event.candidate) {
 		socket.emit('new-ice-candidate', { candidate: event.candidate });
@@ -105,12 +106,29 @@ peerConnection.onicecandidate = function(event) {
 
 // Listen for remote ICE candidates and add them to the local RTCPeerConnection
 socket.on('incomingICEcandidate', (candidate) => {
+	console.log('incoming ice candidate');
 	handleICEcandidate(candidate);
 });
 
 peerConnection.addEventListener('connectionstatechange', (event) => {
+	console.log('connection state change ', event);
 	if (peerConnection.connectionState === 'connected') {
 		console.log('P2P connection established!');
+	}
+});
+
+peerConnection.addEventListener('icegatheringstatechange', (ev) => {
+	console.log(peerConnection.iceGatheringState, ' || ', ev);
+	switch (peerConnection.iceGatheringState) {
+		case 'new':
+			/* gathering is either just starting or has been reset */
+			break;
+		case 'gathering':
+			/* gathering has begun or is ongoing */
+			break;
+		case 'complete':
+			/* gathering has ended */
+			break;
 	}
 });
 
