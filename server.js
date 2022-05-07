@@ -17,7 +17,14 @@ io.on('connection', (socket) => {
   socket.on('makePeerOffer', data => {
     console.log('Peer offer made by', socket.id)
     socket.to(data.roomID).emit('incomingPeerOffer', {offer: data.offer, offerer: socket.id})
+  })  
+  
+  socket.on('makePeerOfferToID', data => {
+    // data = { offer: offer, initiatorsid: this.sid, connectionID: this.id }
+    console.log('Peer offer made by', socket.initiatorsid)
+    io.to(data.initiatorsid).emit('sendPeerAnswerToID' + socket.initiatorsid, data)
   })
+
 
   socket.on('makePeerAnswer', data => {
     console.log(data);
@@ -25,9 +32,9 @@ io.on('connection', (socket) => {
     io.to(data.offerer).emit('incomingPeerAnswer', data.answer)
   })
 
-  socket.on('new-ice-candidate', candidate => {
+  socket.on('new-ice-candidate', data => {
     console.log("ICE CANDIDATE");
-    socket.emit('incomingICEcandidate',candidate)
+    socket.to(data.roomID).emit('incomingICEcandidate',data.candidate) // wurde von standard-emit zu dem hier geändert, jetzt kein fehler mehr aber ? 
   })
 })
 
@@ -44,6 +51,11 @@ app.get('/', function (req, res) {
 
 app.get('/rooms/:id', function (req, res) {
     res.sendFile(path.join(__dirname + "/public/video.html"))
+})
+
+// reference test
+app.get('/test', function (req, res) {
+  res.sendFile(path.join(__dirname + "/public/reference.html"))
 })
 
 server.listen(PORT, () => {
