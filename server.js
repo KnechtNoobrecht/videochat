@@ -30,10 +30,15 @@ io.on('connection', (socket) => {
 		socket.to(data.roomID).emit('incomingICEcandidate', data.candidate); // wurde von standard-emit zu dem hier geändert, jetzt kein fehler mehr aber ?
 	});
 
+	socket.on('newIceCandidate', (data) => {
+		console.log('ICE CANDIDATE');
+		io.to(data.socketid).emit('newIceCandidate', data); // wurde von standard-emit zu dem hier geändert, jetzt kein fehler mehr aber ?
+	});
+
 	socket.on('peerOffer', (data) => {
 		// data = { offer: offer, initiatorsid: this.sid, connectionID: this.id }
-		console.log('Peer offer made by', socket.initiatorsid);
-		io.to(data.initiatorsid).emit('peerOffer' + socket.initiatorsid, data);
+		console.log('Peer offer made by');
+		io.to(data.initiatorsid).emit('peerOffer', data);
 	});
 
 	socket.on('peerAnswer', (data) => {

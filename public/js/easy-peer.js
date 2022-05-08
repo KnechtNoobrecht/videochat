@@ -2,7 +2,7 @@
 Steffen Reimann
 07.05.2022
 */
-const socket = io();
+const socket = io(); // individuelle socketid in jedem neuen Peer-objekt ?
 const roomID = window.location.pathname.split('/').pop();
 
 /**
@@ -16,15 +16,20 @@ var peers = {};
 class Peer {
 	/**
     * @constructor 
-    * @method init() - Init File
+    * @method init() 
     * @example 
     */
-	constructor() {
-		this.id = uuid();
+	constructor(initiator, socketid, id) {
+		if (initiator) {
+			this.id = uuid();
+		} else {
+			this.id = id;
+		}
 		this.stream;
-		this.sid;
 		this.peer = new RTCPeerConnection({ iceServers: [ { urls: 'stun:stun.l.google.com:19302' } ] });
 		this.remoteStream;
+		this.initiator = initiator;
+		this.socketid = socketid;
 		peers[this.id] = this;
 	}
 
@@ -36,47 +41,58 @@ class Peer {
     * @example 
     * @example 
     */
-
 	async init(data) {
 		return new Promise(async (resolve, reject) => {
-			var initiator = data.initiator || false;
-			var socketid = data.socketid || false;
-
-			if (initiator) {
+			if (this.initiator) {
 				this.dataChannel = this.peer.createDataChannel('data');
 
-				for (const track of stream.getTracks()) {
+				/* for (const track of stream.getTracks()) {
 					this.peer.addTrack(track, stream);
-				}
+				} */
 
 				const offer = await this.peer.createOffer();
 
 				await this.peer.setLocalDescription(offer);
 
-				socket.emit('makePeerOfferToID', { offer: offer, initiatorsid: this.sid, connectionID: this.id });
+				socket.emit('peerOffer', { offer: offer, initiatorsid: this.sid, connectionID: this.id });
 
-				socket.on('peerAnswer-' + this.id, (answer) => {
-					this.peer.setRemoteDescription(new RTCSessionDescription(answer));
-				});
+				resolve(null, this.id, null);
 			} else {
 				this.peer.setRemoteDescription(new RTCSessionDescription(data.offer));
 				const answer = await this.peer.createAnswer();
 				await this.peer.setLocalDescription(answer);
-				resolve(answer);
+				resolve(null, this.id, answer);
 			}
+			this.initevents();
 		});
 	}
 
 	initevents() {
+		this.peer.addEventListener('connectionstatechange', (event) => {
+			console.log('CONNECTION STATE CHANGE:');
+			console.log(event);
+			if (peerConnection.connectionState === 'connected') {
+				console.log('P2P connection established!');
+			}
+		});
+
+		this.peer.onicecandidate = function(event) {
+			//console.log('new ice candidate:')
+			//console.log(event)
+			if (event.candidate) {
+				socket.emit('newIceCandidate', { candidate: event.candidate, socketid: this.socketid, connectionID: this.id });
+			}
+		};
+
 		this.peer.ontrack = async (event) => {
 			const [ remoteStream ] = event.streams;
 			this.remoteStream = remoteStream;
 		};
 		this.peer.ondatachannel = (event) => {
 			this.dataChannel = event.channel;
-		};
-		this.dataChannel.onmessage = (event) => {
-			console.log('DATA CHANNEL MESSAGE:', event.data);
+			this.dataChannel.onmessage = (event) => {
+				console.log('DATA CHANNEL MESSAGE:', event.data);
+			};
 		};
 	}
 
@@ -98,11 +114,23 @@ function uuid() {
 }
 
 //listen for incoming peer offers
-socket.on('peerOffer', async (data) => {
+socket.on('peerOffer', async (indata) => {
 	console.log('incoming Peer offer');
 
 	// { offer: offer, initiatorsid: this.sid, connectionID: this.id }
-	const peer = new Peer();
-	var p = peer.init();
-	socket.emit('peerAnswer', { answer: p, initiatorsid: data.initiatorsid });
+	const peer = new Peer(false, indata.initiatorsid, indata.connectionID);
+	var { err, id, outdata } = peer.init(indata.offer);
+	socket.emit('peerAnswer', { answer: outdata, initiatorsid: indata.initiatorsid });
+});
+
+socket.on('newIceCandidate', async (data) => {
+	try {
+		await peers[data.connectionID].peer.addIceCandidate(new RTCIceCandidate(data.candidate));
+	} catch (e) {
+		console.error('Error adding received ice candidate', e);
+	}
+});
+
+socket.on('peerAnswer', (answer) => {
+	peers[data.connectionID].peer.setRemoteDescription(new RTCSessionDescription(answer));
 });
