@@ -10,8 +10,10 @@
 <body>
     <div class="container">
         <button id="selectStreamButton" onclick="initiateStream()">Call</button>
-        <video id="localVideo" autoplay playsinline controls="false"></video>
-        <video id="remoteVideo" autoplay playsinline controls="false"></video>
+        <div class="videowrapper">
+            <video id="localVideo" autoplay></video>
+            <video id="remoteVideo" autoplay></video>
+        </div>
     </div>
 </body>
 
