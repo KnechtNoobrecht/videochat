@@ -38,13 +38,13 @@ io.on('connection', (socket) => {
 	socket.on('peerOffer', (data) => {
 		// data = { offer: offer, initiatorsid: this.sid, connectionID: this.id }
 		console.log('Peer offer made by');
-		io.to(data.initiatorsid).emit('peerOffer', data);
+		io.to(data.toSocket).emit('peerOffer', data);
 	});
 
 	socket.on('peerAnswer', (data) => {
 		// data = { offer: offer, initiatorsid: this.sid, connectionID: this.id }
-		console.log('Peer offer made by', socket.initiatorsid);
-		io.to(data.initiatorsid).emit('peerAnswer-' + socket.initiatorsid, data);
+		console.log('Peer offer made by');
+		io.to(data.toSocket).emit('peerAnswer', data);
 	});
 });
 
