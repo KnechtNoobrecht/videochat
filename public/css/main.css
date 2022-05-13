@@ -1,4 +1,6 @@
-*, ::before, ::after {
+*,
+::before,
+::after {
   box-sizing: border-box;
 }
 
@@ -21,4 +23,12 @@ body {
 
 video {
   pointer-events: none;
+}
+
+.testButtons {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #175ec7;
 }
