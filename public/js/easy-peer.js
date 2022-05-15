@@ -48,17 +48,22 @@ class Peer { /**
     * @returns {Promise}  Returns a Promise
     * @example
     */
-    async init(offer) {
+    async init(offer, stream) {
         return new Promise(async (resolve, reject) => {
             peers[this.connectionID] = this
 
-            for (const track of localStream.getTracks()) {
-                this.peer.addTrack(track, localStream);
-                console.log('addTrack', this.peer);
-                //localStream
+
+            if (stream) {
+                for (const track of stream.getTracks()) {
+                    console.log('addTrack', track);
+                    this.peer.addTrack(track, stream);
+                    console.log('addTrack', this.peer);
+                    //localStream
+                }
+            } else {
+                this.dataChannel = this.peer.createDataChannel('data'); // dummy channel to trigger ICE
             }
 
-            this.dataChannel = this.peer.createDataChannel('data'); // dummy channel to trigger ICE
 
             if (this.initiator) {
 
@@ -114,13 +119,13 @@ class Peer { /**
                     })
                 }
             })
-            this.peer.addEventListener('track', (event) => {
-                console.log('ontrack');
-                const [remoteStream] = event.streams
-                this.remoteStream = remoteStream
-                remoteVideo.srcObject = remoteStream;
-                remoteVideo.onloadedmetadata = (e) => remoteVideo.play();
-            })
+            /*             this.peer.addEventListener('track', (event) => {
+                            console.log('ontrack');
+                            const [remoteStream] = event.streams
+                            this.remoteStream = remoteStream
+                            remoteVideo.srcObject = remoteStream;
+                            remoteVideo.onloadedmetadata = (e) => remoteVideo.play();
+                        }) */
             this.peer.ontrack = async (event) => {
                 console.log('INCOMING TRACK', event);
                 const [remoteStream] = event.streams;
@@ -385,13 +390,44 @@ function selectStream() {
             localStream = stream;
             localVideo.srcObject = stream;
             console.log('Streaming started', pm);
-            //pm.setAllPeersStream(stream);
+            pm.setAllPeersStream(stream);
             //makeCall(stream);
             //p.addStream(stream);
         })
         .catch((err) => {
             console.log('nay', err);
         });
+}
+
+function startStreaming() {
+    return new Promise((resolve, reject) => {
+
+        var resolution = { width: 1920, height: 1080, framerate: 30 };
+        navigator.mediaDevices
+            .getDisplayMedia({
+                audio: false,
+                video: {
+                    chromeMediaSource: 'desktop',
+                    width: resolution.width,
+                    height: resolution.height,
+                    frameRate: resolution.framerate
+                }
+            })
+            .then(async (stream) => {
+                localStream = stream;
+                localVideo.srcObject = stream;
+                resolve(stream);
+            })
+            .catch((err) => {
+                console.log('nay', err);
+                reject(err);
+            });
+    })
+}
+
+
+function getStream(remotesid) {
+    socket.emit('getStream', { fromSocket: socket.id, toSocket: remotesid });
 }
 
 // listen for incoming peer offers
@@ -433,7 +469,7 @@ socket.on('newIceCandidate', async (indata) => {
 socket.on('peerAnswer', (indata) => {
     // console.log('peerAnswer = ', indata);
     // indata = { fromSocket: this.localsid, toSocket: this.remotesid, connectionID: this.connectionID, data: { candidate: candidate } }
-    peers[indata.connectionID].peer.setRemoteDescription(new RTCSessionDescription(indata.data.answer),)
+    peers[indata.connectionID].peer.setRemoteDescription(new RTCSessionDescription(indata.data.answer))
 })
 
 socket.on('connect', () => { // console.log('connected to server');
@@ -444,6 +480,24 @@ socket.on('connect', () => { // console.log('connected to server');
 socket.on('newRoomMember', (socketids) => {
     console.log('New Members = ', socketids)
     renderButtons(socketids)
+})
+
+
+//{ fromSocket: this.localsid, toSocket: this.remotesid, connectionID: this.connectionID, data: { offer: offer } }
+socket.on('getStream', async (indata) => {
+
+    if (!localStream) {
+        await startStreaming()
+    }
+
+    console.log('getStream = ')
+    let options = {
+        initiator: true,
+        remotesid: indata.fromSocket
+    }
+    let peer = new Peer(options)
+    var outdata = await peer.init(null, localStream);
+    pm.addPeer(peer)
 })
 
 var pm = new PeersManager()
@@ -457,4 +511,4 @@ if (ido) {
     })
 }
 
-selectStream();
+//selectStream();

@@ -61,6 +61,12 @@ io.on("connection", (socket) => {
 		io.to(data.toSocket).emit("peerAnswer", data);
 	});
 
+	socket.on("getStream", (data) => {
+		// data = { offer: offer, initiatorsid: this.sid, connectionID: this.id }
+		console.log("getStream made by", data.fromSocket, " -> ", data.toSocket);
+		io.to(data.toSocket).emit("getStream", data);
+	});
+
 
 });
 

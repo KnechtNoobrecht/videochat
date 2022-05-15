@@ -9,7 +9,7 @@ function renderButtons(sioids) {
     var html = "";
     sioids.forEach((element) => {
         if (element != socket.id) {
-            html += `<button id="selectStreamButton" onclick="callSID('${element.socket}')">Call ${element.identity.username} - ${element.socket}</button><br>`;
+            html += `<button id="selectStreamButton" onclick="getStream('${element.socket}')">Call ${element.identity.username} - ${element.socket}</button><br>`;
         }
     });
     document.getElementById("buttosdiv").innerHTML = html;
