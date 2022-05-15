@@ -53,45 +53,6 @@ class Peer { /**
             peers[this.connectionID] = this
 
 
-            if (stream) {
-                for (const track of stream.getTracks()) {
-                    console.log('addTrack', track);
-                    this.peer.addTrack(track, stream);
-                    console.log('addTrack', this.peer);
-                    //localStream
-                }
-            } else {
-                this.dataChannel = this.peer.createDataChannel('data'); // dummy channel to trigger ICE
-            }
-
-
-            if (this.initiator) {
-
-                const offer = await this.peer.createOffer()
-
-                await this.peer.setLocalDescription(offer)
-
-                socket.emit('peerOffer', {
-                    fromSocket: this.localsid,
-                    toSocket: this.remotesid,
-                    connectionID: this.connectionID,
-                    data: {
-                        offer: offer
-                    }
-                })
-
-                resolve(this.id)
-            } else {
-                await this.peer.setRemoteDescription(new RTCSessionDescription(offer))
-                console.log(this.peer)
-                const answer = await this.peer.createAnswer()
-                await this.peer.setLocalDescription(answer)
-                resolve(answer)
-            }
-
-            /* ===============================================================================================
-        =============================================================================================== */
-
             this.peer.addEventListener('connectionstatechange', (event) => { // console.log(event);
                 if (this.peer.connectionState === 'connected') {
                     console.log('P2P connection established! ', this.connectionID)
@@ -108,6 +69,7 @@ class Peer { /**
                 console.log(event)
             })
             this.peer.addEventListener('icecandidate', (event) => {
+                console.log('icecandidate')
                 if (event.candidate) {
                     socket.emit('newIceCandidate', {
                         fromSocket: this.localsid,
@@ -119,26 +81,13 @@ class Peer { /**
                     })
                 }
             })
-            /*             this.peer.addEventListener('track', (event) => {
-                            console.log('ontrack');
-                            const [remoteStream] = event.streams
-                            this.remoteStream = remoteStream
-                            remoteVideo.srcObject = remoteStream;
-                            remoteVideo.onloadedmetadata = (e) => remoteVideo.play();
-                        }) */
-            this.peer.ontrack = async (event) => {
-                console.log('INCOMING TRACK', event);
-                const [remoteStream] = event.streams;
+            this.peer.addEventListener('track', (event) => {
+                console.log('ontrack');
+                const [remoteStream] = event.streams
+                this.remoteStream = remoteStream
                 remoteVideo.srcObject = remoteStream;
                 remoteVideo.onloadedmetadata = (e) => remoteVideo.play();
-            };
-            /* this.peer.onaddstream = async (event) => {
-                console.log('INCOMING TRACK', event);
-                const [remoteStream] = event.streams;
-                remoteVideo.srcObject = remoteStream;
-                remoteVideo.onloadedmetadata = (e) => remoteVideo.play();
-            }; */
-
+            })
             this.peer.addEventListener('datachannel', (event) => {
                 //this.dataChannel = event.channel
                 console.log('datachannel', event.channel);
@@ -149,6 +98,36 @@ class Peer { /**
                     console.log('this.dataChannel DATA CHANNEL MESSAGE:', event.data)
                 }
             })
+
+            if (stream) {
+                for (const track of stream.getTracks()) {
+                    console.log('addTrack', track);
+                    this.peer.addTrack(track, stream);
+                    console.log('addTrack', this.peer);
+                }
+            } else {
+                this.dataChannel = this.peer.createDataChannel('data'); // dummy channel to trigger ICE
+            }
+
+            if (this.initiator) {
+                const offer = await this.peer.createOffer()
+                await this.peer.setLocalDescription(offer)
+                socket.emit('peerOffer', {
+                    fromSocket: this.localsid,
+                    toSocket: this.remotesid,
+                    connectionID: this.connectionID,
+                    data: {
+                        offer: offer
+                    }
+                })
+                resolve(this.id)
+            } else {
+                await this.peer.setRemoteDescription(new RTCSessionDescription(offer))
+                console.log(this.peer)
+                const answer = await this.peer.createAnswer()
+                await this.peer.setLocalDescription(answer)
+                resolve(answer)
+            }
         })
     }
 
@@ -402,7 +381,7 @@ function selectStream() {
 function startStreaming() {
     return new Promise((resolve, reject) => {
 
-        var resolution = { width: 1920, height: 1080, framerate: 30 };
+        var resolution = { width: 3840, height: 2160, framerate: 30 };
         navigator.mediaDevices
             .getDisplayMedia({
                 audio: false,

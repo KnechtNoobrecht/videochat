@@ -95,8 +95,13 @@ app.get("/rooms/:id", function (req, res) {
 });
 
 // reference test
-app.get("/test", function (req, res) {
+app.get("/rooms/reference/:id", function (req, res) {
 	res.sendFile(path.join(__dirname + "/public/reference.html"));
+});
+
+// reference test
+app.get("/reference", function (req, res) {
+	res.redirect("/rooms/reference/" + uuidv4());
 });
 
 server.listen(PORT, () => {

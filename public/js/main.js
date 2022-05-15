@@ -2,7 +2,7 @@ const socket = io();
 const localVideo = document.getElementById('localVideo');
 const remoteVideo = document.getElementById('remoteVideo');
 const roomID = window.location.pathname.split('/').pop(); //last element of window.location.pathname.split('/')
-const configuration = { iceServers: [ { urls: 'stun:stun.l.google.com:19302' } ] };
+const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 const peerConnection = new RTCPeerConnection(configuration);
 let dataChannel;
 let myDataChannel;
@@ -94,7 +94,7 @@ socket.on('incomingPeerOffer', async (data) => {
 //        socket.emit('new-ice-candidate', {candidate: event.candidate})
 //    }
 //})
-peerConnection.onicecandidate = function(event) {
+peerConnection.onicecandidate = function (event) {
 	//console.log('new ice candidate:')
 	//console.log(event)
 	if (event.candidate) {
@@ -140,7 +140,7 @@ peerConnection.addEventListener('connectionstatechange', (event) => {
 
 peerConnection.ontrack = async (event) => {
 	console.log('INCOMING TRACK', event);
-	const [ remoteStream ] = event.streams;
+	const [remoteStream] = event.streams;
 	console.log('remoteStream:', remoteStream);
 	remoteVideo.srcObject = remoteStream;
 	remoteVideo.onloadedmetadata = (e) => remoteVideo.play();
