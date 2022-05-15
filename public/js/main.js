@@ -28,6 +28,9 @@ function initiateStream() {
 			}
 		})
 		.then((stream) => {
+			//var mediaRecorder = new MediaRecorder(stream);
+			//var myStream = mediaRecorder.stream;
+			//makeCall(stream)
 			localVideo.srcObject = stream;
 			makeCall(stream);
 		})

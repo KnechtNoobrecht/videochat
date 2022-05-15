@@ -120,6 +120,7 @@ class Peer { /**
             })
 
             if (stream) {
+                console.log(stream)
                 for (const track of stream.getTracks()) {
                     console.log('addTrack', track);
                     this.peer.addTrack(track, stream);
@@ -210,21 +211,6 @@ class Peer { /**
     sendData(data) {
         this.dataChannel.send(data)
     }
-    setStream(stream) {
-        this.stream = stream
-        if (stream) {
-            for (const track of stream.getTracks()) {
-                this.peer.addTrack(track, stream);
-                console.log('addTrack', this.peer);
-                //localStream
-            }
-        } else {
-
-        }
-    }
-    removeStream() {
-        this.peer.removeStream(this.stream)
-    }
     close() {
         this.peer.close()
     }
@@ -269,15 +255,6 @@ class PeersManager {
     getPeerByIndex(index) {
         return peers[Object.keys(peers)[index]]
     }
-
-    setAllPeersStream(stream) {
-        for (const peer in peers) {
-            console.log('setAllPeersStream', peer);
-            console.log('setAllPeersStream', this.peers[peer]);
-            this.peers[peer].setStream(stream)
-        }
-    }
-
     closeAllPeers() {
         for (const peer in peers) {
             peers[peer.connectionID].remove()
@@ -457,10 +434,10 @@ function selectStream() {
 function startStreaming() {
     return new Promise((resolve, reject) => {
 
-        var resolution = { width: 3840, height: 2160, framerate: 30 };
+        var resolution = { width: 2560, height: 1440, framerate: 60 };
         navigator.mediaDevices
             .getDisplayMedia({
-                audio: false,
+                audio: true,
                 video: {
                     chromeMediaSource: 'desktop',
                     width: resolution.width,
@@ -469,6 +446,14 @@ function startStreaming() {
                 }
             })
             .then(async (stream) => {
+                options = {
+                    audioBitsPerSecond: 128000,
+                    videoBitsPerSecond: 2000000,
+                    mimeType: 'video/mp4; codecs="av01.2.15M.10.0.100.09.16.09.0, opus"'
+
+                }
+                var mediaRecorder = new MediaRecorder(stream);
+			    stream = mediaRecorder.stream;
                 localStream = stream;
                 localVideo.srcObject = stream;
                 resolve(stream);
