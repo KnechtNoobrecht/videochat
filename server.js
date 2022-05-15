@@ -87,6 +87,7 @@ io.on("joinRoom", (socket, roomID) => {
 app.use(express.static(__dirname + "/public/"));
 
 app.get("/", function (req, res) {
+	console.log("get /");
 	res.redirect("/rooms/" + uuidv4());
 });
 

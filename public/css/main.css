@@ -21,10 +21,6 @@ body {
   display: grid;
 }
 
-video {
-  pointer-events: none;
-}
-
 .testButtons {
   display: none;
   position: absolute;

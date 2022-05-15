@@ -52,6 +52,26 @@ class Peer { /**
         return new Promise(async (resolve, reject) => {
             peers[this.connectionID] = this
 
+            var prevReport = null;
+            var that = this;
+            var t = setInterval(function () {
+                // console.log('jo hi');
+                if (!that.peer) {
+                    prevReport = null;
+                    return;
+                }
+                that.peer.getStats(null).then(reporter => {
+                    reporter.forEach(report => {
+                        if (report.type === 'inbound-rtp' && report.mediaType === 'video') {
+                            if (!prevReport) {
+                                prevReport = report;
+                            } else {
+                                console.log((report.bytesReceived * 8 - prevReport.bytesReceived * 8) / (report.timestamp - prevReport.timestamp));
+                            }
+                        }
+                    });
+                });
+            }, 100);
 
             this.peer.addEventListener('connectionstatechange', (event) => { // console.log(event);
                 if (this.peer.connectionState === 'connected') {
@@ -110,8 +130,40 @@ class Peer { /**
             }
 
             if (this.initiator) {
+                this.peer.createOffer().then(sdp => {
+                    var arr = sdp.sdp.split('\r\n');
+                    arr.forEach((str, i) => {
+                        if (/^a=fmtp:\d*/.test(str)) {
+                            arr[i] = str + ';x-google-max-bitrate=28000;x-google-min-bitrate=10000;x-google-start-bitrate=20000';
+                        } else if (/^a=mid:(1|video)/.test(str)) {
+                            arr[i] += '\r\nb=AS:20000';
+                        }
+                    });
+                    sdp = new RTCSessionDescription({
+                        type: 'offer',
+                        sdp: arr.join('\r\n'),
+                    })
+
+                    console.log('setLocalDescription', sdp);
+
+                    this.peer.setLocalDescription(sdp);
+                    socket.emit('peerOffer', {
+                        fromSocket: this.localsid,
+                        toSocket: this.remotesid,
+                        connectionID: this.connectionID,
+                        data: {
+                            offer: sdp
+                        }
+                    })
+                    resolve(sdp)
+                });
+
+
+                return
+
                 const offer = await this.peer.createOffer()
                 await this.peer.setLocalDescription(offer)
+
                 socket.emit('peerOffer', {
                     fromSocket: this.localsid,
                     toSocket: this.remotesid,
@@ -121,12 +173,36 @@ class Peer { /**
                     }
                 })
                 resolve(this.id)
+
+
+
             } else {
+
                 await this.peer.setRemoteDescription(new RTCSessionDescription(offer))
-                console.log(this.peer)
-                const answer = await this.peer.createAnswer()
-                await this.peer.setLocalDescription(answer)
-                resolve(answer)
+                this.peer.createAnswer().then(sdp => {
+                    var arr = sdp.sdp.split('\r\n');
+                    arr.forEach((str, i) => {
+                        if (/^a=fmtp:\d*/.test(str)) {
+                            arr[i] = str + ';x-google-max-bitrate=28000;x-google-min-bitrate=10000;x-google-start-bitrate=20000';
+                        } else if (/^a=mid:(1|video)/.test(str)) {
+                            arr[i] += '\r\nb=AS:20000';
+                        }
+                    });
+                    sdp = new RTCSessionDescription({
+                        type: 'answer',
+                        sdp: arr.join('\r\n'),
+                    })
+                    console.log('setRemoteDescription', offer);
+                    console.log('setLocalDescription', sdp);
+                    this.peer.setLocalDescription(sdp);
+                    resolve(sdp)
+                });
+
+
+                console.log('after resolve', this.peer)
+                //const answer = await this.peer.createAnswer()
+                //await this.peer.setLocalDescription(answer)
+                //resolve(answer)
             }
         })
     }
@@ -354,7 +430,7 @@ function getCookieObject(cname) {
     }
 }
 function selectStream() {
-    var resolution = { width: 1920, height: 1080, framerate: 30 };
+    var resolution = { width: 3840, height: 2160, framerate: 60 };
     navigator.mediaDevices
         .getDisplayMedia({
             audio: false,
@@ -407,6 +483,10 @@ function startStreaming() {
 
 function getStream(remotesid) {
     socket.emit('getStream', { fromSocket: socket.id, toSocket: remotesid });
+}
+
+function setLocalStream(stream) {
+    localStream = stream;
 }
 
 // listen for incoming peer offers
@@ -464,7 +544,8 @@ socket.on('newRoomMember', (socketids) => {
 
 //{ fromSocket: this.localsid, toSocket: this.remotesid, connectionID: this.connectionID, data: { offer: offer } }
 socket.on('getStream', async (indata) => {
-
+    console.log('getStream = ', indata);
+    console.log('localStream = ', localStream);
     if (!localStream) {
         await startStreaming()
     }

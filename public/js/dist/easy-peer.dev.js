@@ -21,6 +21,7 @@ Steffen Reimann
 var socket = io(); // individuelle socketid in jedem neuen Peer-objekt ? nein! :D
 
 var roomID = window.location.pathname.split('/').pop();
+var localStream = null;
 /**
  * @var peers
  * @type {Object}
@@ -34,13 +35,13 @@ var Peer =
 /*#__PURE__*/
 function () {
   /**
-   * @constructor
-   * @method init()
-   * @param {boolean}  initiator  - true if initiator
-   * @param {String}  remotesid - The SocketIO id of the other client
-   * @param {String}  connectionID - The from this p2p Connection
-   * @example
-   */
+  * @constructor
+  * @method init()
+  * @param {boolean}  initiator  - true if initiator
+  * @param {String}  remotesid - The SocketIO id of the other client
+  * @param {String}  connectionID - The from this p2p Connection
+  * @example
+  */
   function Peer(_ref) {
     var initiator = _ref.initiator,
         remotesid = _ref.remotesid,
@@ -69,16 +70,16 @@ function () {
     this.identity = identity || new Identity();
   }
   /**
-   * @method init
-   * @description Try To connect to socketid
-   * @returns {Promise}  Returns a Promise
-   * @example
-   */
+  * @method init
+  * @description Try To connect to socketid
+  * @returns {Promise}  Returns a Promise
+  * @example
+  */
 
 
   _createClass(Peer, [{
     key: "init",
-    value: function init(offer) {
+    value: function init(offer, stream) {
       var _this = this;
 
       return regeneratorRuntime.async(function init$(_context2) {
@@ -86,67 +87,37 @@ function () {
           switch (_context2.prev = _context2.next) {
             case 0:
               return _context2.abrupt("return", new Promise(function _callee(resolve, reject) {
-                var _offer, answer;
+                var prevReport, that, t, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, track, _offer;
 
                 return regeneratorRuntime.async(function _callee$(_context) {
                   while (1) {
                     switch (_context.prev = _context.next) {
                       case 0:
                         peers[_this.connectionID] = _this;
-
-                        if (!_this.initiator) {
-                          _context.next = 12;
-                          break;
-                        }
-
-                        _this.dataChannel = _this.peer.createDataChannel('data');
-                        /* for (const track of stream.getTracks()) {
-                          this.peer.addTrack(track, stream);
-                        } */
-
-                        _context.next = 5;
-                        return regeneratorRuntime.awrap(_this.peer.createOffer());
-
-                      case 5:
-                        _offer = _context.sent;
-                        _context.next = 8;
-                        return regeneratorRuntime.awrap(_this.peer.setLocalDescription(_offer));
-
-                      case 8:
-                        socket.emit('peerOffer', {
-                          fromSocket: _this.localsid,
-                          toSocket: _this.remotesid,
-                          connectionID: _this.connectionID,
-                          data: {
-                            offer: _offer
+                        prevReport = null;
+                        that = _this;
+                        t = setInterval(function () {
+                          // console.log('jo hi');
+                          if (!that.peer) {
+                            prevReport = null;
+                            return;
                           }
-                        });
-                        resolve(_this.id);
-                        _context.next = 21;
-                        break;
 
-                      case 12:
-                        _context.next = 14;
-                        return regeneratorRuntime.awrap(_this.peer.setRemoteDescription(new RTCSessionDescription(offer)));
+                          that.peer.getStats(null).then(function (reporter) {
+                            reporter.forEach(function (report) {
+                              if (report.type === 'inbound-rtp' && report.mediaType === 'video') {
+                                if (!prevReport) {
+                                  prevReport = report;
+                                } else {
+                                  console.log((report.bytesReceived * 8 - prevReport.bytesReceived * 8) / (report.timestamp - prevReport.timestamp));
+                                }
+                              }
+                            });
+                          });
+                        }, 100);
 
-                      case 14:
-                        console.log(_this.peer);
-                        _context.next = 17;
-                        return regeneratorRuntime.awrap(_this.peer.createAnswer());
-
-                      case 17:
-                        answer = _context.sent;
-                        _context.next = 20;
-                        return regeneratorRuntime.awrap(_this.peer.setLocalDescription(answer));
-
-                      case 20:
-                        resolve(answer);
-
-                      case 21:
-                        /* ===============================================================================================
-                           =============================================================================================== */
                         _this.peer.addEventListener('connectionstatechange', function (event) {
-                          //console.log(event);
+                          // console.log(event);
                           if (_this.peer.connectionState === 'connected') {
                             console.log('P2P connection established! ', _this.connectionID);
                             _this.connected = true;
@@ -156,7 +127,7 @@ function () {
                             console.log('P2P connection closed!');
                             _this.connected = false;
                           }
-                        }); //this.peer.addEventListener('icecandidate', (event) => {});
+                        }); // this.peer.addEventListener('icecandidate', (event) => {});
 
 
                         _this.peer.addEventListener('icecandidateerror', function (event) {
@@ -165,6 +136,8 @@ function () {
                         });
 
                         _this.peer.addEventListener('icecandidate', function (event) {
+                          console.log('icecandidate');
+
                           if (event.candidate) {
                             socket.emit('newIceCandidate', {
                               fromSocket: _this.localsid,
@@ -178,29 +151,180 @@ function () {
                         });
 
                         _this.peer.addEventListener('track', function (event) {
+                          console.log('ontrack');
+
                           var _event$streams = _slicedToArray(event.streams, 1),
                               remoteStream = _event$streams[0];
 
                           _this.remoteStream = remoteStream;
-                        });
+                          remoteVideo.srcObject = remoteStream;
 
-                        _this.peer.addEventListener('datachannel', function (event) {
-                          _this.dataChannel = event.channel;
-                          /* this.peer.addEventListener('message', (event) => {
-                            console.log('DATA CHANNEL MESSAGE:', event.data);
-                          }); */
-
-                          _this.dataChannel.onmessage = function (event) {
-                            console.log('DATA CHANNEL MESSAGE:', event.data);
+                          remoteVideo.onloadedmetadata = function (e) {
+                            return remoteVideo.play();
                           };
                         });
 
-                      case 26:
+                        _this.peer.addEventListener('datachannel', function (event) {
+                          //this.dataChannel = event.channel
+                          console.log('datachannel', event.channel);
+                          event.channel.addEventListener('message', function (event) {
+                            console.log('event.channel DATA CHANNEL MESSAGE:', event.data);
+                          });
+
+                          _this.dataChannel.onmessage = function (event) {
+                            console.log('this.dataChannel DATA CHANNEL MESSAGE:', event.data);
+                          };
+                        });
+
+                        if (!stream) {
+                          _context.next = 31;
+                          break;
+                        }
+
+                        _iteratorNormalCompletion = true;
+                        _didIteratorError = false;
+                        _iteratorError = undefined;
+                        _context.prev = 13;
+
+                        for (_iterator = stream.getTracks()[Symbol.iterator](); !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                          track = _step.value;
+                          console.log('addTrack', track);
+
+                          _this.peer.addTrack(track, stream);
+
+                          console.log('addTrack', _this.peer);
+                        }
+
+                        _context.next = 21;
+                        break;
+
+                      case 17:
+                        _context.prev = 17;
+                        _context.t0 = _context["catch"](13);
+                        _didIteratorError = true;
+                        _iteratorError = _context.t0;
+
+                      case 21:
+                        _context.prev = 21;
+                        _context.prev = 22;
+
+                        if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+                          _iterator["return"]();
+                        }
+
+                      case 24:
+                        _context.prev = 24;
+
+                        if (!_didIteratorError) {
+                          _context.next = 27;
+                          break;
+                        }
+
+                        throw _iteratorError;
+
+                      case 27:
+                        return _context.finish(24);
+
+                      case 28:
+                        return _context.finish(21);
+
+                      case 29:
+                        _context.next = 32;
+                        break;
+
+                      case 31:
+                        _this.dataChannel = _this.peer.createDataChannel('data'); // dummy channel to trigger ICE
+
+                      case 32:
+                        if (!_this.initiator) {
+                          _context.next = 44;
+                          break;
+                        }
+
+                        _this.peer.createOffer().then(function (sdp) {
+                          var arr = sdp.sdp.split('\r\n');
+                          arr.forEach(function (str, i) {
+                            if (/^a=fmtp:\d*/.test(str)) {
+                              arr[i] = str + ';x-google-max-bitrate=28000;x-google-min-bitrate=10000;x-google-start-bitrate=20000';
+                            } else if (/^a=mid:(1|video)/.test(str)) {
+                              arr[i] += '\r\nb=AS:20000';
+                            }
+                          });
+                          sdp = new RTCSessionDescription({
+                            type: 'offer',
+                            sdp: arr.join('\r\n')
+                          });
+                          console.log('setLocalDescription', sdp);
+
+                          _this.peer.setLocalDescription(sdp);
+
+                          socket.emit('peerOffer', {
+                            fromSocket: _this.localsid,
+                            toSocket: _this.remotesid,
+                            connectionID: _this.connectionID,
+                            data: {
+                              offer: sdp
+                            }
+                          });
+                          resolve(sdp);
+                        });
+
+                        return _context.abrupt("return");
+
+                      case 37:
+                        _offer = _context.sent;
+                        _context.next = 40;
+                        return regeneratorRuntime.awrap(_this.peer.setLocalDescription(_offer));
+
+                      case 40:
+                        socket.emit('peerOffer', {
+                          fromSocket: _this.localsid,
+                          toSocket: _this.remotesid,
+                          connectionID: _this.connectionID,
+                          data: {
+                            offer: _offer
+                          }
+                        });
+                        resolve(_this.id);
+                        _context.next = 48;
+                        break;
+
+                      case 44:
+                        _context.next = 46;
+                        return regeneratorRuntime.awrap(_this.peer.setRemoteDescription(new RTCSessionDescription(offer)));
+
+                      case 46:
+                        _this.peer.createAnswer().then(function (sdp) {
+                          var arr = sdp.sdp.split('\r\n');
+                          arr.forEach(function (str, i) {
+                            if (/^a=fmtp:\d*/.test(str)) {
+                              arr[i] = str + ';x-google-max-bitrate=28000;x-google-min-bitrate=10000;x-google-start-bitrate=20000';
+                            } else if (/^a=mid:(1|video)/.test(str)) {
+                              arr[i] += '\r\nb=AS:20000';
+                            }
+                          });
+                          sdp = new RTCSessionDescription({
+                            type: 'answer',
+                            sdp: arr.join('\r\n')
+                          });
+                          console.log('setRemoteDescription', offer);
+                          console.log('setLocalDescription', sdp);
+
+                          _this.peer.setLocalDescription(sdp);
+
+                          resolve(sdp);
+                        });
+
+                        console.log('after resolve', _this.peer); //const answer = await this.peer.createAnswer()
+                        //await this.peer.setLocalDescription(answer)
+                        //resolve(answer)
+
+                      case 48:
                       case "end":
                         return _context.stop();
                     }
                   }
-                });
+                }, null, null, [[13, 17, 21, 29], [22,, 24, 28]]);
               }));
 
             case 1:
@@ -214,6 +338,43 @@ function () {
     key: "sendData",
     value: function sendData(data) {
       this.dataChannel.send(data);
+    }
+  }, {
+    key: "setStream",
+    value: function setStream(stream) {
+      this.stream = stream;
+
+      if (stream) {
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
+
+        try {
+          for (var _iterator2 = stream.getTracks()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var track = _step2.value;
+            this.peer.addTrack(track, stream);
+            console.log('addTrack', this.peer); //localStream
+          }
+        } catch (err) {
+          _didIteratorError2 = true;
+          _iteratorError2 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
+              _iterator2["return"]();
+            }
+          } finally {
+            if (_didIteratorError2) {
+              throw _iteratorError2;
+            }
+          }
+        }
+      } else {}
+    }
+  }, {
+    key: "removeStream",
+    value: function removeStream() {
+      this.peer.removeStream(this.stream);
     }
   }, {
     key: "close",
@@ -280,6 +441,15 @@ function () {
     key: "getPeerByIndex",
     value: function getPeerByIndex(index) {
       return peers[Object.keys(peers)[index]];
+    }
+  }, {
+    key: "setAllPeersStream",
+    value: function setAllPeersStream(stream) {
+      for (var peer in peers) {
+        console.log('setAllPeersStream', peer);
+        console.log('setAllPeersStream', this.peers[peer]);
+        this.peers[peer].setStream(stream);
+      }
     }
   }, {
     key: "closeAllPeers",
@@ -386,7 +556,7 @@ function uuid() {
   }
 
   return ff() + ff(true) + ff(true) + ff();
-} //{ id: this.id, username: this.username, avatar: this.avatar }
+} // { id: this.id, username: this.username, avatar: this.avatar }
 
 
 function addCookieObjectElement(params) {
@@ -547,17 +717,101 @@ function getCookieObject(cname) {
   } catch (error) {
     return null;
   }
-} //listen for incoming peer offers
-//{ fromSocket: this.localsid, toSocket: this.remotesid, connectionID: this.connectionID, data: { offer: offer } }
+}
+
+function selectStream() {
+  var resolution = {
+    width: 3840,
+    height: 2160,
+    framerate: 60
+  };
+  navigator.mediaDevices.getDisplayMedia({
+    audio: false,
+    video: {
+      chromeMediaSource: 'desktop',
+      width: resolution.width,
+      height: resolution.height,
+      frameRate: resolution.framerate
+    }
+  }).then(function _callee2(stream) {
+    return regeneratorRuntime.async(function _callee2$(_context5) {
+      while (1) {
+        switch (_context5.prev = _context5.next) {
+          case 0:
+            localStream = stream;
+            localVideo.srcObject = stream;
+            console.log('Streaming started', pm);
+            pm.setAllPeersStream(stream); //makeCall(stream);
+            //p.addStream(stream);
+
+          case 4:
+          case "end":
+            return _context5.stop();
+        }
+      }
+    });
+  })["catch"](function (err) {
+    console.log('nay', err);
+  });
+}
+
+function startStreaming() {
+  return new Promise(function (resolve, reject) {
+    var resolution = {
+      width: 3840,
+      height: 2160,
+      framerate: 30
+    };
+    navigator.mediaDevices.getDisplayMedia({
+      audio: false,
+      video: {
+        chromeMediaSource: 'desktop',
+        width: resolution.width,
+        height: resolution.height,
+        frameRate: resolution.framerate
+      }
+    }).then(function _callee3(stream) {
+      return regeneratorRuntime.async(function _callee3$(_context6) {
+        while (1) {
+          switch (_context6.prev = _context6.next) {
+            case 0:
+              localStream = stream;
+              localVideo.srcObject = stream;
+              resolve(stream);
+
+            case 3:
+            case "end":
+              return _context6.stop();
+          }
+        }
+      });
+    })["catch"](function (err) {
+      console.log('nay', err);
+      reject(err);
+    });
+  });
+}
+
+function getStream(remotesid) {
+  socket.emit('getStream', {
+    fromSocket: socket.id,
+    toSocket: remotesid
+  });
+}
+
+function setLocalStream(stream) {
+  localStream = stream;
+} // listen for incoming peer offers
+// { fromSocket: this.localsid, toSocket: this.remotesid, connectionID: this.connectionID, data: { offer: offer } }
 
 
-socket.on('peerOffer', function _callee2(indata) {
+socket.on('peerOffer', function _callee4(indata) {
   var options, peer, outdata;
-  return regeneratorRuntime.async(function _callee2$(_context5) {
+  return regeneratorRuntime.async(function _callee4$(_context7) {
     while (1) {
-      switch (_context5.prev = _context5.next) {
+      switch (_context7.prev = _context7.next) {
         case 0:
-          //console.log('incoming Peer offer = ', indata);
+          // console.log('incoming Peer offer = ', indata);
           // { offer: offer, initiatorsid: this.sid, connectionID: this.id }
           options = {
             initiator: false,
@@ -565,11 +819,11 @@ socket.on('peerOffer', function _callee2(indata) {
             connectionID: indata.connectionID
           };
           peer = new Peer(options);
-          _context5.next = 4;
+          _context7.next = 4;
           return regeneratorRuntime.awrap(peer.init(indata.data.offer));
 
         case 4:
-          outdata = _context5.sent;
+          outdata = _context7.sent;
           pm.addPeer(peer);
           socket.emit('peerAnswer', {
             fromSocket: indata.toSocket,
@@ -582,48 +836,87 @@ socket.on('peerOffer', function _callee2(indata) {
 
         case 7:
         case "end":
-          return _context5.stop();
+          return _context7.stop();
       }
     }
   });
 });
-socket.on('newIceCandidate', function _callee3(indata) {
-  return regeneratorRuntime.async(function _callee3$(_context6) {
+socket.on('newIceCandidate', function _callee5(indata) {
+  return regeneratorRuntime.async(function _callee5$(_context8) {
     while (1) {
-      switch (_context6.prev = _context6.next) {
+      switch (_context8.prev = _context8.next) {
         case 0:
-          _context6.prev = 0;
-          _context6.next = 3;
+          _context8.prev = 0;
+          _context8.next = 3;
           return regeneratorRuntime.awrap(peers[indata.connectionID].peer.addIceCandidate(new RTCIceCandidate(indata.data.candidate)));
 
         case 3:
-          _context6.next = 8;
+          _context8.next = 8;
           break;
 
         case 5:
-          _context6.prev = 5;
-          _context6.t0 = _context6["catch"](0);
-          console.error('Error adding received ice candidate', _context6.t0);
+          _context8.prev = 5;
+          _context8.t0 = _context8["catch"](0);
+          console.error('Error adding received ice candidate', _context8.t0);
 
         case 8:
         case "end":
-          return _context6.stop();
+          return _context8.stop();
       }
     }
   }, null, null, [[0, 5]]);
 });
 socket.on('peerAnswer', function (indata) {
-  //console.log('peerAnswer = ', indata);
-  //indata = { fromSocket: this.localsid, toSocket: this.remotesid, connectionID: this.connectionID, data: { candidate: candidate } }
+  // console.log('peerAnswer = ', indata);
+  // indata = { fromSocket: this.localsid, toSocket: this.remotesid, connectionID: this.connectionID, data: { candidate: candidate } }
   peers[indata.connectionID].peer.setRemoteDescription(new RTCSessionDescription(indata.data.answer));
 });
 socket.on('connect', function () {
-  //console.log('connected to server');
-  socket.emit('joinRoom', roomID);
+  // console.log('connected to server');
+  socket.emit('joinRoom', roomID, identitys[0]);
 });
 socket.on('newRoomMember', function (socketids) {
   console.log('New Members = ', socketids);
   renderButtons(socketids);
+}); //{ fromSocket: this.localsid, toSocket: this.remotesid, connectionID: this.connectionID, data: { offer: offer } }
+
+socket.on('getStream', function _callee6(indata) {
+  var options, peer, outdata;
+  return regeneratorRuntime.async(function _callee6$(_context9) {
+    while (1) {
+      switch (_context9.prev = _context9.next) {
+        case 0:
+          console.log('getStream = ', indata);
+          console.log('localStream = ', localStream);
+
+          if (localStream) {
+            _context9.next = 5;
+            break;
+          }
+
+          _context9.next = 5;
+          return regeneratorRuntime.awrap(startStreaming());
+
+        case 5:
+          console.log('getStream = ');
+          options = {
+            initiator: true,
+            remotesid: indata.fromSocket
+          };
+          peer = new Peer(options);
+          _context9.next = 10;
+          return regeneratorRuntime.awrap(peer.init(null, localStream));
+
+        case 10:
+          outdata = _context9.sent;
+          pm.addPeer(peer);
+
+        case 12:
+        case "end":
+          return _context9.stop();
+      }
+    }
+  });
 });
 var pm = new PeersManager();
 var ido = getCookieObject('ep_Identitys');
@@ -632,6 +925,6 @@ var identitys = [];
 if (ido) {
   Object.keys(ido).forEach(function (id) {
     console.log('Identity = ', id, ido[id]);
-    identitys.push(new Identity(ido[id]));
+    identitys.push(new Identity(ido[id].id, ido[id].username, ido[id].avatar));
   });
-}
+} //selectStream();

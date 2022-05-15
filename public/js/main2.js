@@ -8,7 +8,7 @@ socket.on("connect", async () => {
 function renderButtons(sioids) {
     var html = "";
     sioids.forEach((element) => {
-        if (element != socket.id) {
+        if (element && element != socket.id) {
             html += `<button id="selectStreamButton" onclick="getStream('${element.socket}')">Call ${element.identity.username} - ${element.socket}</button><br>`;
         }
     });

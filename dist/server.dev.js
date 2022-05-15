@@ -14,35 +14,38 @@ var _require = require("uuid"),
     uuidv4 = _require.v4;
 
 var PORT = 80;
+var identitys = {};
 io.on("connection", function (socket) {
   socket.emit("ID", socket.id);
-  socket.on("joinRoom", function _callee(roomID) {
+  socket.on("joinRoom", function _callee(roomID, identity) {
     return regeneratorRuntime.async(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
+            //identity.sid = socket.id;
+            identitys[socket.id] = identity;
             socket.join(roomID);
             console.log("Subscribed", socket.id, "to room", roomID);
             _context.t0 = console;
             _context.t1 = roomID;
-            _context.next = 6;
+            _context.next = 7;
             return regeneratorRuntime.awrap(getSocketsOfRoom(roomID));
 
-          case 6:
+          case 7:
             _context.t2 = _context.sent;
 
             _context.t0.log.call(_context.t0, "Userser in Room = ", _context.t1, " || ", _context.t2);
 
             _context.t3 = io.to(roomID);
-            _context.next = 11;
+            _context.next = 12;
             return regeneratorRuntime.awrap(getSocketsOfRoom(roomID));
 
-          case 11:
+          case 12:
             _context.t4 = _context.sent;
 
             _context.t3.emit.call(_context.t3, "newRoomMember", _context.t4);
 
-          case 13:
+          case 14:
           case "end":
             return _context.stop();
         }
@@ -99,34 +102,49 @@ io.on("connection", function (socket) {
     console.log("Peer Answer made by", data.fromSocket, " -> ", data.toSocket);
     io.to(data.toSocket).emit("peerAnswer", data);
   });
-  io.of("/").adapter.on("create-room", function (room) {//console.log(`room ${room} was created`);
+  socket.on("getStream", function (data) {
+    // data = { offer: offer, initiatorsid: this.sid, connectionID: this.id }
+    console.log("getStream made by", data.fromSocket, " -> ", data.toSocket);
+    io.to(data.toSocket).emit("getStream", data);
   });
-  io.of("/").adapter.on("join-room", function _callee3(room, id) {
-    return regeneratorRuntime.async(function _callee3$(_context3) {
-      while (1) {
-        switch (_context3.prev = _context3.next) {
-          case 0:
-          case "end":
-            return _context3.stop();
-        }
+});
+io.of("/").adapter.on("create-room", function (room) {
+  console.log("room ".concat(room, " was created"));
+});
+io.of("/").adapter.on("join-room", function _callee3(room, id) {
+  return regeneratorRuntime.async(function _callee3$(_context3) {
+    while (1) {
+      switch (_context3.prev = _context3.next) {
+        case 0:
+          //io.to(room).emit('newRoomMember', await getSocketsOfRoom(room));
+          console.log("socket ".concat(id, " has joined room ").concat(room));
+
+        case 1:
+        case "end":
+          return _context3.stop();
       }
-    });
+    }
   });
 });
 io.on("joinRoom", function (socket, roomID) {
-  console.log(socket, roomID);
+  console.log(socket, roomID, identity);
 }); //use public folder
 
 app.use(express["static"](__dirname + "/public/"));
 app.get("/", function (req, res) {
+  console.log("get /");
   res.redirect("/rooms/" + uuidv4());
 });
 app.get("/rooms/:id", function (req, res) {
   res.sendFile(path.join(__dirname + "/public/video.html"));
 }); // reference test
 
-app.get("/test", function (req, res) {
+app.get("/rooms/reference/:id", function (req, res) {
   res.sendFile(path.join(__dirname + "/public/reference.html"));
+}); // reference test
+
+app.get("/reference", function (req, res) {
+  res.redirect("/rooms/reference/" + uuidv4());
 });
 server.listen(PORT, function () {
   console.log("Server started on port " + PORT);
@@ -147,7 +165,10 @@ function getSocketsOfRoom(roomID) {
             socketids = [];
 
             for (index = 0; index < sockets.length; index++) {
-              socketids.push(sockets[index].id);
+              socketids.push({
+                socket: sockets[index].id,
+                identity: identitys[sockets[index].id]
+              });
             }
 
             resolve(socketids);
