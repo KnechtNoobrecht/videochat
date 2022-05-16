@@ -113,8 +113,7 @@ ipcMain.handle('TestEvent', async (event, data) => {
 	return data;
 });
 
-ipcMain.handle('getSources', async (event, data) => {
-	console.log(data);
+ipcMain.handle('getSources', async (event) => {
 	desktopCapturer.getSources({ types: ['window', 'screen'] }).then(async sources => {
 
 		mainWindow.webContents.send('SET_SOURCE', sources);

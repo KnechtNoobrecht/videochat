@@ -18,11 +18,20 @@ ipcRenderer.on('SET_SOURCE', async (event, sources) => {
 
     try {
         const stream = await navigator.mediaDevices.getUserMedia({
-            audio: false,
+            audio: {
+                autoGainControl: false,
+                channelCount: 2,
+                echoCancellation: false,
+                latency: 0,
+                noiseSuppression: false,
+                sampleRate: 96000,
+                sampleSize: 24,
+                volume: 1.0
+            },
             video: {
                 mandatory: {
                     chromeMediaSource: 'desktop',
-                    chromeMediaSourceId: 'screen:0:0',
+                    chromeMediaSourceId: sources[4].id,
                     minWidth: 1280,
                     maxWidth: 1280,
                     minHeight: 720,

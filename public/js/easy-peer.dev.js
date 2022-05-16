@@ -308,6 +308,7 @@ function () {
                             type: 'answer',
                             sdp: arr.join('\r\n')
                           });
+                          sdp.sdp = sdp.sdp.replace('useinbandfec=1', 'useinbandfec=1; stereo=1; maxaveragebitrate=510000');
                           console.log('setRemoteDescription', offer);
                           console.log('setLocalDescription', sdp);
 
@@ -718,7 +719,16 @@ function startStreaming() {
       framerate: 60
     };
     navigator.mediaDevices.getDisplayMedia({
-      audio: true,
+      audio: {
+        autoGainControl: false,
+        channelCount: 2,
+        echoCancellation: false,
+        latency: 0,
+        noiseSuppression: false,
+        sampleRate: 96000,
+        sampleSize: 24,
+        volume: 1.0
+      },
       video: {
         chromeMediaSource: 'desktop',
         width: resolution.width,
