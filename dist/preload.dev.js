@@ -37,11 +37,21 @@ ipcRenderer.on('SET_SOURCE', function _callee2(event, sources) {
           _context2.prev = 1;
           _context2.next = 4;
           return regeneratorRuntime.awrap(navigator.mediaDevices.getUserMedia({
-            audio: false,
+            //Audio bringt ihn zu abstürzen! 
+            audio: {
+              autoGainControl: false,
+              channelCount: 2,
+              echoCancellation: false,
+              latency: 0,
+              noiseSuppression: false,
+              sampleRate: 96000,
+              sampleSize: 24,
+              volume: 1.0
+            },
             video: {
               mandatory: {
                 chromeMediaSource: 'desktop',
-                chromeMediaSourceId: 'screen:0:0',
+                chromeMediaSourceId: sources[4].id,
                 minWidth: 1280,
                 maxWidth: 1280,
                 minHeight: 720,

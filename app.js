@@ -14,21 +14,21 @@ app.on('ready', function () {
 		title: 'Electon Example',
 		webPreferences: {
 			contextIsolation: false,
-			nodeIntegration: false,
+			nodeIntegration: true,
 			preload: path.join(__dirname, 'preload.js')
 		}
 	});
 
-	/* 	mainWindow.loadURL(
-			url.format({
-				pathname: path.join(__dirname, 'public/index.html'),
-				protocol: 'file:',
-				slashes: true,
-				title: 'Electron Example'
-			})
-		); */
+	mainWindow.loadURL(
+		url.format({
+			pathname: path.join(__dirname, 'public/test.html'),
+			protocol: 'file:',
+			slashes: true,
+			title: 'Electron Example'
+		})
+	);
 
-	mainWindow.loadURL('http://localhost/rooms/djgdkjb4563');
+	//mainWindow.loadURL('http://localhost/rooms/djgdkjb4563');
 
 	// Quit app when closed
 	mainWindow.on('closed', function () {

@@ -18,6 +18,7 @@ ipcRenderer.on('SET_SOURCE', async (event, sources) => {
 
     try {
         const stream = await navigator.mediaDevices.getUserMedia({
+            //Audio bringt ihn zu abstürzen! 
             audio: {
                 autoGainControl: false,
                 channelCount: 2,

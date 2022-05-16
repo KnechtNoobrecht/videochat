@@ -177,14 +177,15 @@ function () {
                         });
 
                         if (!stream) {
-                          _context.next = 31;
+                          _context.next = 32;
                           break;
                         }
 
+                        console.log(stream);
                         _iteratorNormalCompletion = true;
                         _didIteratorError = false;
                         _iteratorError = undefined;
-                        _context.prev = 13;
+                        _context.prev = 14;
 
                         for (_iterator = stream.getTracks()[Symbol.iterator](); !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
                           track = _step.value;
@@ -195,49 +196,49 @@ function () {
                           console.log('addTrack', _this.peer);
                         }
 
-                        _context.next = 21;
+                        _context.next = 22;
                         break;
 
-                      case 17:
-                        _context.prev = 17;
-                        _context.t0 = _context["catch"](13);
+                      case 18:
+                        _context.prev = 18;
+                        _context.t0 = _context["catch"](14);
                         _didIteratorError = true;
                         _iteratorError = _context.t0;
 
-                      case 21:
-                        _context.prev = 21;
+                      case 22:
                         _context.prev = 22;
+                        _context.prev = 23;
 
                         if (!_iteratorNormalCompletion && _iterator["return"] != null) {
                           _iterator["return"]();
                         }
 
-                      case 24:
-                        _context.prev = 24;
+                      case 25:
+                        _context.prev = 25;
 
                         if (!_didIteratorError) {
-                          _context.next = 27;
+                          _context.next = 28;
                           break;
                         }
 
                         throw _iteratorError;
 
-                      case 27:
-                        return _context.finish(24);
-
                       case 28:
-                        return _context.finish(21);
+                        return _context.finish(25);
 
                       case 29:
-                        _context.next = 32;
+                        return _context.finish(22);
+
+                      case 30:
+                        _context.next = 33;
                         break;
 
-                      case 31:
+                      case 32:
                         _this.dataChannel = _this.peer.createDataChannel('data'); // dummy channel to trigger ICE
 
-                      case 32:
+                      case 33:
                         if (!_this.initiator) {
-                          _context.next = 44;
+                          _context.next = 45;
                           break;
                         }
 
@@ -271,12 +272,12 @@ function () {
 
                         return _context.abrupt("return");
 
-                      case 37:
+                      case 38:
                         _offer = _context.sent;
-                        _context.next = 40;
+                        _context.next = 41;
                         return regeneratorRuntime.awrap(_this.peer.setLocalDescription(_offer));
 
-                      case 40:
+                      case 41:
                         socket.emit('peerOffer', {
                           fromSocket: _this.localsid,
                           toSocket: _this.remotesid,
@@ -286,14 +287,14 @@ function () {
                           }
                         });
                         resolve(_this.id);
-                        _context.next = 48;
+                        _context.next = 49;
                         break;
 
-                      case 44:
-                        _context.next = 46;
+                      case 45:
+                        _context.next = 47;
                         return regeneratorRuntime.awrap(_this.peer.setRemoteDescription(new RTCSessionDescription(offer)));
 
-                      case 46:
+                      case 47:
                         _this.peer.createAnswer().then(function (sdp) {
                           var arr = sdp.sdp.split('\r\n');
                           arr.forEach(function (str, i) {
@@ -307,6 +308,7 @@ function () {
                             type: 'answer',
                             sdp: arr.join('\r\n')
                           });
+                          sdp.sdp = sdp.sdp.replace('useinbandfec=1', 'useinbandfec=1; stereo=1; maxaveragebitrate=510000');
                           console.log('setRemoteDescription', offer);
                           console.log('setLocalDescription', sdp);
 
@@ -319,12 +321,12 @@ function () {
                         //await this.peer.setLocalDescription(answer)
                         //resolve(answer)
 
-                      case 48:
+                      case 49:
                       case "end":
                         return _context.stop();
                     }
                   }
-                }, null, null, [[13, 17, 21, 29], [22,, 24, 28]]);
+                }, null, null, [[14, 18, 22, 30], [23,, 25, 29]]);
               }));
 
             case 1:
@@ -338,43 +340,6 @@ function () {
     key: "sendData",
     value: function sendData(data) {
       this.dataChannel.send(data);
-    }
-  }, {
-    key: "setStream",
-    value: function setStream(stream) {
-      this.stream = stream;
-
-      if (stream) {
-        var _iteratorNormalCompletion2 = true;
-        var _didIteratorError2 = false;
-        var _iteratorError2 = undefined;
-
-        try {
-          for (var _iterator2 = stream.getTracks()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-            var track = _step2.value;
-            this.peer.addTrack(track, stream);
-            console.log('addTrack', this.peer); //localStream
-          }
-        } catch (err) {
-          _didIteratorError2 = true;
-          _iteratorError2 = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
-              _iterator2["return"]();
-            }
-          } finally {
-            if (_didIteratorError2) {
-              throw _iteratorError2;
-            }
-          }
-        }
-      } else {}
-    }
-  }, {
-    key: "removeStream",
-    value: function removeStream() {
-      this.peer.removeStream(this.stream);
     }
   }, {
     key: "close",
@@ -443,15 +408,6 @@ function () {
       return peers[Object.keys(peers)[index]];
     }
   }, {
-    key: "setAllPeersStream",
-    value: function setAllPeersStream(stream) {
-      for (var peer in peers) {
-        console.log('setAllPeersStream', peer);
-        console.log('setAllPeersStream', this.peers[peer]);
-        this.peers[peer].setStream(stream);
-      }
-    }
-  }, {
     key: "closeAllPeers",
     value: function closeAllPeers() {
       for (var peer in peers) {
@@ -479,11 +435,29 @@ function () {
   
   test(); */
 
+/**
+ * @var Identity
+ * @type {Object}
+ * @description Holds all peer 2 peer connections
+ * @prop
+ */
+
 
 var Identity =
 /*#__PURE__*/
 function () {
-  function Identity(id, username, avatar) {
+  /**
+  * @constructor
+  * @param {id}  ID  - ID 
+  * @param {username}  DisplayedUsername - Displayed Username
+  * @param {avatar}  AvatarURL - Avatar URL
+  * @example
+  */
+  function Identity(_ref2) {
+    var id = _ref2.id,
+        username = _ref2.username,
+        avatar = _ref2.avatar;
+
     _classCallCheck(this, Identity);
 
     this.id = id || uuid();
@@ -491,6 +465,14 @@ function () {
     this.avatar = avatar || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
     addIdentityToObjects(this);
   }
+  /**
+  * @method setIdentity
+  * @param {id}  ID  - ID 
+  * @param {username}  DisplayedUsername - Displayed Username
+  * @param {avatar}  AvatarURL - Avatar URL
+  * @example
+  */
+
 
   _createClass(Identity, [{
     key: "setIdentity",
@@ -510,6 +492,12 @@ function () {
         avatar: this.avatar
       };
     }
+    /**
+    * @method getIdentity - get Identity Object
+    * @returns {id}  ID  - { id: this.id, username: this.username, avatar: this.avatar }
+    * @example
+    */
+
   }, {
     key: "getIdentity",
     value: function getIdentity() {
@@ -519,12 +507,24 @@ function () {
         avatar: this.avatar
       };
     }
+    /**
+    * @method loadIdentitys - load Identitys from cookies
+    * @returns {Object} Identitys - { id: this.id, username: this.username, avatar: this.avatar }
+    * @example
+    */
+
   }, {
     key: "loadIdentitys",
     value: function loadIdentitys() {
       var coockies = getCookieObject('ep_Identitys');
       return coockies;
     }
+    /**
+    * @method removeIdentity
+    * @returns {id}  ID  - Loads all identities from cookies
+    * @example
+    */
+
   }, {
     key: "removeIdentity",
     value: function removeIdentity() {
@@ -536,6 +536,12 @@ function () {
         avatar: this.avatar
       };
     }
+    /**
+    * @method checkIdentity
+    * @returns {id}  ID  - Loads all identities from cookies
+    * @example
+    */
+
   }, {
     key: "checkIdentity",
     value: function checkIdentity() {
@@ -763,7 +769,16 @@ function startStreaming() {
       framerate: 60
     };
     navigator.mediaDevices.getDisplayMedia({
-      audio: false,
+      audio: {
+        autoGainControl: false,
+        channelCount: 2,
+        echoCancellation: false,
+        latency: 0,
+        noiseSuppression: false,
+        sampleRate: 96000,
+        sampleSize: 24,
+        volume: 1.0
+      },
       video: {
         chromeMediaSource: 'desktop',
         width: resolution.width,
@@ -777,8 +792,9 @@ function startStreaming() {
           switch (_context6.prev = _context6.next) {
             case 0:
               options = {
-                videoBitsPerSecond: 200000,
-                mimeType: 'video/mp4'
+                audioBitsPerSecond: 128000,
+                videoBitsPerSecond: 2000000,
+                mimeType: 'video/mp4; codecs="av01.2.15M.10.0.100.09.16.09.0, opus"'
               };
               mediaRecorder = new MediaRecorder(stream);
               stream = mediaRecorder.stream;
@@ -880,6 +896,10 @@ socket.on('peerAnswer', function (indata) {
 });
 socket.on('connect', function () {
   // console.log('connected to server');
+  if (identitys.length == 0) {
+    new Identity();
+  }
+
   socket.emit('joinRoom', roomID, identitys[0]);
 });
 socket.on('newRoomMember', function (socketids) {

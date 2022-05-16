@@ -275,15 +275,34 @@ class PeersManager {
   console.log("Identity Created", await checkUsernameTaken(this.username));
   
   test(); */
-
+/**
+ * @var Identity
+ * @type {Object}
+ * @description Holds all peer 2 peer connections
+ * @prop
+ */
 class Identity {
-    constructor(id, username, avatar) {
+    /**
+    * @constructor
+    * @param {id}  ID  - ID 
+    * @param {username}  DisplayedUsername - Displayed Username
+    * @param {avatar}  AvatarURL - Avatar URL
+    * @example
+    */
+    constructor({ id: id, username: username, avatar: avatar }) {
         this.id = id || uuid()
         this.username = username || 'Anonymous'
         this.avatar = avatar || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
         addIdentityToObjects(this)
     }
 
+    /**
+    * @method setIdentity
+    * @param {id}  ID  - ID 
+    * @param {username}  DisplayedUsername - Displayed Username
+    * @param {avatar}  AvatarURL - Avatar URL
+    * @example
+    */
     setIdentity(data) { // data = {id: id, username:username, avatar: avatar}
         this.id = data.id || this.id
         this.username = data.username || this.username
@@ -292,18 +311,40 @@ class Identity {
         return { id: this.id, username: this.username, avatar: this.avatar }
     }
 
+    /**
+    * @method getIdentity - get Identity Object
+    * @returns {id}  ID  - { id: this.id, username: this.username, avatar: this.avatar }
+    * @example
+    */
     getIdentity() {
         return { id: this.id, username: this.username, avatar: this.avatar }
     }
+
+    /**
+    * @method loadIdentitys - load Identitys from cookies
+    * @returns {Object} Identitys - { id: this.id, username: this.username, avatar: this.avatar }
+    * @example
+    */
     loadIdentitys() {
         let coockies = getCookieObject('ep_Identitys')
         return coockies
     }
+
+    /**
+    * @method removeIdentity
+    * @returns {id}  ID  - Loads all identities from cookies
+    * @example
+    */
     removeIdentity() {
         removeCookieObjectElement()
         delete this
         return { id: this.id, username: this.username, avatar: this.avatar }
     }
+    /**
+    * @method checkIdentity
+    * @returns {id}  ID  - Loads all identities from cookies
+    * @example
+    */
     checkIdentity() {
         let coockies = getCookieObject('ep_Identitys')
         if (coockies.length > 0) { }
@@ -463,7 +504,7 @@ function startStreaming() {
 
                 }
                 var mediaRecorder = new MediaRecorder(stream);
-			    stream = mediaRecorder.stream;
+                stream = mediaRecorder.stream;
                 localStream = stream;
                 localVideo.srcObject = stream;
                 resolve(stream);
@@ -527,6 +568,10 @@ socket.on('peerAnswer', (indata) => {
 })
 
 socket.on('connect', () => { // console.log('connected to server');
+
+    if (identitys.length == 0) {
+        new Identity();
+    }
 
     socket.emit('joinRoom', roomID, identitys[0])
 })

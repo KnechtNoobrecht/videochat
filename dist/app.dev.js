@@ -21,20 +21,17 @@ app.on('ready', function () {
     title: 'Electon Example',
     webPreferences: {
       contextIsolation: false,
-      nodeIntegration: false,
+      nodeIntegration: true,
       preload: path.join(__dirname, 'preload.js')
     }
   });
-  /* 	mainWindow.loadURL(
-  		url.format({
-  			pathname: path.join(__dirname, 'public/index.html'),
-  			protocol: 'file:',
-  			slashes: true,
-  			title: 'Electron Example'
-  		})
-  	); */
-
-  mainWindow.loadURL('http://localhost/rooms/djgdkjb4563'); // Quit app when closed
+  mainWindow.loadURL(url.format({
+    pathname: path.join(__dirname, 'public/test.html'),
+    protocol: 'file:',
+    slashes: true,
+    title: 'Electron Example'
+  })); //mainWindow.loadURL('http://localhost/rooms/djgdkjb4563');
+  // Quit app when closed
 
   mainWindow.on('closed', function () {
     app.quit();
@@ -136,12 +133,11 @@ ipcMain.handle('TestEvent', function _callee(event, data) {
     }
   });
 });
-ipcMain.handle('getSources', function _callee3(event, data) {
+ipcMain.handle('getSources', function _callee3(event) {
   return regeneratorRuntime.async(function _callee3$(_context3) {
     while (1) {
       switch (_context3.prev = _context3.next) {
         case 0:
-          console.log(data);
           desktopCapturer.getSources({
             types: ['window', 'screen']
           }).then(function _callee2(sources) {
@@ -159,7 +155,7 @@ ipcMain.handle('getSources', function _callee3(event, data) {
             });
           });
 
-        case 2:
+        case 1:
         case "end":
           return _context3.stop();
       }
