@@ -39,7 +39,7 @@ class Peer { /**
         this.remotesid = remotesid
         this.localsid = socket.id
         this.connected = false
-        this.identity = identity || new Identity()
+        this.identity = identity || new Identity({})
     }
 
     /**
@@ -126,9 +126,9 @@ class Peer { /**
                     this.peer.addTrack(track, stream);
                     console.log('addTrack', this.peer);
                 }
-            } else {
-                this.dataChannel = this.peer.createDataChannel('data'); // dummy channel to trigger ICE
             }
+
+            this.dataChannel = this.peer.createDataChannel('data'); // dummy channel to trigger ICE
 
             if (this.initiator) {
                 this.peer.createOffer().then(sdp => {
@@ -290,6 +290,7 @@ class Identity {
     * @example
     */
     constructor({ id: id, username: username, avatar: avatar }) {
+        //console.log('Identity Created', id, username, avatar);
         this.id = id || uuid()
         this.username = username || 'Anonymous'
         this.avatar = avatar || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
@@ -303,7 +304,7 @@ class Identity {
     * @param {avatar}  AvatarURL - Avatar URL
     * @example
     */
-    setIdentity(data) { // data = {id: id, username:username, avatar: avatar}
+    set(data) { // data = {id: id, username:username, avatar: avatar}
         this.id = data.id || this.id
         this.username = data.username || this.username
         this.avatar = data.avatar || this.avatar
@@ -316,7 +317,7 @@ class Identity {
     * @returns {id}  ID  - { id: this.id, username: this.username, avatar: this.avatar }
     * @example
     */
-    getIdentity() {
+    get() {
         return { id: this.id, username: this.username, avatar: this.avatar }
     }
 
@@ -362,9 +363,10 @@ function uuid() {
 
 // { id: this.id, username: this.username, avatar: this.avatar }
 function addCookieObjectElement(params) {
+    //console.log('addCookieObjectElement', params);
     var iCookie = getCookie('ep_Identitys')
     if (iCookie == '') {
-        var iCookie = JSON.stringify({})
+        iCookie = JSON.stringify({})
     }
 
     var iCookieObj = JSON.parse(iCookie)
@@ -448,30 +450,7 @@ function getCookieObject(cname) {
         return null
     }
 }
-function selectStream() {
-    var resolution = { width: 3840, height: 2160, framerate: 60 };
-    navigator.mediaDevices
-        .getDisplayMedia({
-            audio: false,
-            video: {
-                chromeMediaSource: 'desktop',
-                width: resolution.width,
-                height: resolution.height,
-                frameRate: resolution.framerate
-            }
-        })
-        .then(async (stream) => {
-            localStream = stream;
-            localVideo.srcObject = stream;
-            console.log('Streaming started', pm);
-            pm.setAllPeersStream(stream);
-            //makeCall(stream);
-            //p.addStream(stream);
-        })
-        .catch((err) => {
-            console.log('nay', err);
-        });
-}
+
 
 function startStreaming() {
     return new Promise((resolve, reject) => {
@@ -485,8 +464,8 @@ function startStreaming() {
                     echoCancellation: false,
                     latency: 0,
                     noiseSuppression: false,
-                    sampleRate: 96000,
-                    sampleSize: 24,
+                    sampleRate: 48000,
+                    sampleSize: 16,
                     volume: 1.0
                 },
                 video: {
@@ -516,7 +495,6 @@ function startStreaming() {
     })
 }
 
-
 function getStream(remotesid) {
     socket.emit('getStream', { fromSocket: socket.id, toSocket: remotesid });
 }
@@ -524,6 +502,26 @@ function getStream(remotesid) {
 function setLocalStream(stream) {
     localStream = stream;
 }
+
+var identitys = []
+function initIdentity() {
+    var ido = getCookieObject('ep_Identitys')
+    //console.log('ido ', ido);
+    if (ido) {
+        Object.keys(ido).forEach((id) => {
+            console.log('Identity = ', id, ido[id])
+            //identitys.push(new Identity(ido[id].id, ido[id].username, ido[id].avatar))
+            identitys.push(new Identity({ id: ido[id].id, username: ido[id].username, avatar: ido[id].avatar }))
+        })
+    } else {
+        identitys.push(new Identity({}))
+    }
+
+}
+initIdentity();
+
+
+
 
 // listen for incoming peer offers
 // { fromSocket: this.localsid, toSocket: this.remotesid, connectionID: this.connectionID, data: { offer: offer } }
@@ -569,9 +567,7 @@ socket.on('peerAnswer', (indata) => {
 
 socket.on('connect', () => { // console.log('connected to server');
 
-    if (identitys.length == 0) {
-        new Identity();
-    }
+
 
     socket.emit('joinRoom', roomID, identitys[0])
 })
@@ -580,7 +576,6 @@ socket.on('newRoomMember', (socketids) => {
     console.log('New Members = ', socketids)
     renderButtons(socketids)
 })
-
 
 //{ fromSocket: this.localsid, toSocket: this.remotesid, connectionID: this.connectionID, data: { offer: offer } }
 socket.on('getStream', async (indata) => {
@@ -602,13 +597,7 @@ socket.on('getStream', async (indata) => {
 
 var pm = new PeersManager()
 
-var ido = getCookieObject('ep_Identitys')
-var identitys = []
-if (ido) {
-    Object.keys(ido).forEach((id) => {
-        console.log('Identity = ', id, ido[id])
-        identitys.push(new Identity(ido[id].id, ido[id].username, ido[id].avatar))
-    })
-}
+
+
 
 //selectStream();

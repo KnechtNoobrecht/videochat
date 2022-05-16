@@ -177,7 +177,7 @@ function () {
                         });
 
                         if (!stream) {
-                          _context.next = 32;
+                          _context.next = 30;
                           break;
                         }
 
@@ -230,15 +230,10 @@ function () {
                         return _context.finish(22);
 
                       case 30:
-                        _context.next = 33;
-                        break;
-
-                      case 32:
                         _this.dataChannel = _this.peer.createDataChannel('data'); // dummy channel to trigger ICE
 
-                      case 33:
                         if (!_this.initiator) {
-                          _context.next = 45;
+                          _context.next = 43;
                           break;
                         }
 
@@ -272,12 +267,12 @@ function () {
 
                         return _context.abrupt("return");
 
-                      case 38:
+                      case 36:
                         _offer = _context.sent;
-                        _context.next = 41;
+                        _context.next = 39;
                         return regeneratorRuntime.awrap(_this.peer.setLocalDescription(_offer));
 
-                      case 41:
+                      case 39:
                         socket.emit('peerOffer', {
                           fromSocket: _this.localsid,
                           toSocket: _this.remotesid,
@@ -287,14 +282,14 @@ function () {
                           }
                         });
                         resolve(_this.id);
-                        _context.next = 49;
+                        _context.next = 47;
                         break;
 
-                      case 45:
-                        _context.next = 47;
+                      case 43:
+                        _context.next = 45;
                         return regeneratorRuntime.awrap(_this.peer.setRemoteDescription(new RTCSessionDescription(offer)));
 
-                      case 47:
+                      case 45:
                         _this.peer.createAnswer().then(function (sdp) {
                           var arr = sdp.sdp.split('\r\n');
                           arr.forEach(function (str, i) {
@@ -321,7 +316,7 @@ function () {
                         //await this.peer.setLocalDescription(answer)
                         //resolve(answer)
 
-                      case 49:
+                      case 47:
                       case "end":
                         return _context.stop();
                     }
@@ -460,6 +455,7 @@ function () {
 
     _classCallCheck(this, Identity);
 
+    //console.log('Identity Created', id, username, avatar);
     this.id = id || uuid();
     this.username = username || 'Anonymous';
     this.avatar = avatar || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
@@ -475,8 +471,8 @@ function () {
 
 
   _createClass(Identity, [{
-    key: "setIdentity",
-    value: function setIdentity(data) {
+    key: "set",
+    value: function set(data) {
       // data = {id: id, username:username, avatar: avatar}
       this.id = data.id || this.id;
       this.username = data.username || this.username;
@@ -499,8 +495,8 @@ function () {
     */
 
   }, {
-    key: "getIdentity",
-    value: function getIdentity() {
+    key: "get",
+    value: function get() {
       return {
         id: this.id,
         username: this.username,
@@ -566,10 +562,11 @@ function uuid() {
 
 
 function addCookieObjectElement(params) {
+  //console.log('addCookieObjectElement', params);
   var iCookie = getCookie('ep_Identitys');
 
   if (iCookie == '') {
-    var iCookie = JSON.stringify({});
+    iCookie = JSON.stringify({});
   }
 
   var iCookieObj = JSON.parse(iCookie);
@@ -725,42 +722,6 @@ function getCookieObject(cname) {
   }
 }
 
-function selectStream() {
-  var resolution = {
-    width: 3840,
-    height: 2160,
-    framerate: 60
-  };
-  navigator.mediaDevices.getDisplayMedia({
-    audio: false,
-    video: {
-      chromeMediaSource: 'desktop',
-      width: resolution.width,
-      height: resolution.height,
-      frameRate: resolution.framerate
-    }
-  }).then(function _callee2(stream) {
-    return regeneratorRuntime.async(function _callee2$(_context5) {
-      while (1) {
-        switch (_context5.prev = _context5.next) {
-          case 0:
-            localStream = stream;
-            localVideo.srcObject = stream;
-            console.log('Streaming started', pm);
-            pm.setAllPeersStream(stream); //makeCall(stream);
-            //p.addStream(stream);
-
-          case 4:
-          case "end":
-            return _context5.stop();
-        }
-      }
-    });
-  })["catch"](function (err) {
-    console.log('nay', err);
-  });
-}
-
 function startStreaming() {
   return new Promise(function (resolve, reject) {
     var resolution = {
@@ -775,7 +736,7 @@ function startStreaming() {
         echoCancellation: false,
         latency: 0,
         noiseSuppression: false,
-        sampleRate: 96000,
+        sampleRate: 48000,
         sampleSize: 24,
         volume: 1.0
       },
@@ -785,18 +746,18 @@ function startStreaming() {
         height: resolution.height,
         frameRate: resolution.framerate
       }
-    }).then(function _callee3(stream) {
+    }).then(function _callee2(stream) {
       var mediaRecorder;
-      return regeneratorRuntime.async(function _callee3$(_context6) {
+      return regeneratorRuntime.async(function _callee2$(_context5) {
         while (1) {
-          switch (_context6.prev = _context6.next) {
+          switch (_context5.prev = _context5.next) {
             case 0:
               options = {
                 audioBitsPerSecond: 128000,
                 videoBitsPerSecond: 2000000,
                 mimeType: 'video/mp4; codecs="av01.2.15M.10.0.100.09.16.09.0, opus"'
               };
-              mediaRecorder = new MediaRecorder(stream);
+              mediaRecorder = new MediaRecorder(stream, options);
               stream = mediaRecorder.stream;
               localStream = stream;
               localVideo.srcObject = stream;
@@ -804,7 +765,7 @@ function startStreaming() {
 
             case 6:
             case "end":
-              return _context6.stop();
+              return _context5.stop();
           }
         }
       });
@@ -824,15 +785,36 @@ function getStream(remotesid) {
 
 function setLocalStream(stream) {
   localStream = stream;
-} // listen for incoming peer offers
+}
+
+var identitys = [];
+
+function initIdentity() {
+  var ido = getCookieObject('ep_Identitys'); //console.log('ido ', ido);
+
+  if (ido) {
+    Object.keys(ido).forEach(function (id) {
+      console.log('Identity = ', id, ido[id]); //identitys.push(new Identity(ido[id].id, ido[id].username, ido[id].avatar))
+
+      identitys.push(new Identity({
+        id: ido[id].id,
+        username: ido[id].username,
+        avatar: ido[id].avatar
+      }));
+    });
+  } else {
+    identitys.push(new Identity({}));
+  }
+}
+
+initIdentity(); // listen for incoming peer offers
 // { fromSocket: this.localsid, toSocket: this.remotesid, connectionID: this.connectionID, data: { offer: offer } }
 
-
-socket.on('peerOffer', function _callee4(indata) {
+socket.on('peerOffer', function _callee3(indata) {
   var options, peer, outdata;
-  return regeneratorRuntime.async(function _callee4$(_context7) {
+  return regeneratorRuntime.async(function _callee3$(_context6) {
     while (1) {
-      switch (_context7.prev = _context7.next) {
+      switch (_context6.prev = _context6.next) {
         case 0:
           // console.log('incoming Peer offer = ', indata);
           // { offer: offer, initiatorsid: this.sid, connectionID: this.id }
@@ -842,11 +824,11 @@ socket.on('peerOffer', function _callee4(indata) {
             connectionID: indata.connectionID
           };
           peer = new Peer(options);
-          _context7.next = 4;
+          _context6.next = 4;
           return regeneratorRuntime.awrap(peer.init(indata.data.offer));
 
         case 4:
-          outdata = _context7.sent;
+          outdata = _context6.sent;
           pm.addPeer(peer);
           socket.emit('peerAnswer', {
             fromSocket: indata.toSocket,
@@ -859,32 +841,32 @@ socket.on('peerOffer', function _callee4(indata) {
 
         case 7:
         case "end":
-          return _context7.stop();
+          return _context6.stop();
       }
     }
   });
 });
-socket.on('newIceCandidate', function _callee5(indata) {
-  return regeneratorRuntime.async(function _callee5$(_context8) {
+socket.on('newIceCandidate', function _callee4(indata) {
+  return regeneratorRuntime.async(function _callee4$(_context7) {
     while (1) {
-      switch (_context8.prev = _context8.next) {
+      switch (_context7.prev = _context7.next) {
         case 0:
-          _context8.prev = 0;
-          _context8.next = 3;
+          _context7.prev = 0;
+          _context7.next = 3;
           return regeneratorRuntime.awrap(peers[indata.connectionID].peer.addIceCandidate(new RTCIceCandidate(indata.data.candidate)));
 
         case 3:
-          _context8.next = 8;
+          _context7.next = 8;
           break;
 
         case 5:
-          _context8.prev = 5;
-          _context8.t0 = _context8["catch"](0);
-          console.error('Error adding received ice candidate', _context8.t0);
+          _context7.prev = 5;
+          _context7.t0 = _context7["catch"](0);
+          console.error('Error adding received ice candidate', _context7.t0);
 
         case 8:
         case "end":
-          return _context8.stop();
+          return _context7.stop();
       }
     }
   }, null, null, [[0, 5]]);
@@ -896,10 +878,6 @@ socket.on('peerAnswer', function (indata) {
 });
 socket.on('connect', function () {
   // console.log('connected to server');
-  if (identitys.length == 0) {
-    new Identity();
-  }
-
   socket.emit('joinRoom', roomID, identitys[0]);
 });
 socket.on('newRoomMember', function (socketids) {
@@ -907,21 +885,21 @@ socket.on('newRoomMember', function (socketids) {
   renderButtons(socketids);
 }); //{ fromSocket: this.localsid, toSocket: this.remotesid, connectionID: this.connectionID, data: { offer: offer } }
 
-socket.on('getStream', function _callee6(indata) {
+socket.on('getStream', function _callee5(indata) {
   var options, peer, outdata;
-  return regeneratorRuntime.async(function _callee6$(_context9) {
+  return regeneratorRuntime.async(function _callee5$(_context8) {
     while (1) {
-      switch (_context9.prev = _context9.next) {
+      switch (_context8.prev = _context8.next) {
         case 0:
           console.log('getStream = ', indata);
           console.log('localStream = ', localStream);
 
           if (localStream) {
-            _context9.next = 5;
+            _context8.next = 5;
             break;
           }
 
-          _context9.next = 5;
+          _context8.next = 5;
           return regeneratorRuntime.awrap(startStreaming());
 
         case 5:
@@ -931,27 +909,18 @@ socket.on('getStream', function _callee6(indata) {
             remotesid: indata.fromSocket
           };
           peer = new Peer(options);
-          _context9.next = 10;
+          _context8.next = 10;
           return regeneratorRuntime.awrap(peer.init(null, localStream));
 
         case 10:
-          outdata = _context9.sent;
+          outdata = _context8.sent;
           pm.addPeer(peer);
 
         case 12:
         case "end":
-          return _context9.stop();
+          return _context8.stop();
       }
     }
   });
 });
-var pm = new PeersManager();
-var ido = getCookieObject('ep_Identitys');
-var identitys = [];
-
-if (ido) {
-  Object.keys(ido).forEach(function (id) {
-    console.log('Identity = ', id, ido[id]);
-    identitys.push(new Identity(ido[id].id, ido[id].username, ido[id].avatar));
-  });
-} //selectStream();
+var pm = new PeersManager(); //selectStream();
