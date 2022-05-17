@@ -15,10 +15,7 @@ io.on("connection", (socket) => {
 		//identity.sid = socket.id;
 		identitys[socket.id] = identity;
 		socket.join(roomID);
-		console.log("Subscribed", socket.id, "to room", roomID);
-		console.log("Userser in Room = ", roomID, " || ", await getSocketsOfRoom(roomID));
-		io.to(roomID).emit("newRoomMember", await getSocketsOfRoom(roomID));
-		//console.log('socket.rooms = ', socket);
+		console.log(identity.username + " joined room ", roomID);
 	});
 
 	socket.on("getRoomMember", async (roomID, cb) => {
@@ -66,8 +63,6 @@ io.on("connection", (socket) => {
 		console.log("getStream made by", data.fromSocket, " -> ", data.toSocket);
 		io.to(data.toSocket).emit("getStream", data);
 	});
-
-
 });
 
 io.of("/").adapter.on("create-room", (room) => {
@@ -75,12 +70,17 @@ io.of("/").adapter.on("create-room", (room) => {
 });
 
 io.of("/").adapter.on("join-room", async (room, id) => {
-	//io.to(room).emit('newRoomMember', await getSocketsOfRoom(room));
-	console.log(`socket ${id} has joined room ${room}`);
+	var sockets = await getSocketsOfRoom(room);
+	if (sockets[0].identity != undefined) {
+		io.to(room).emit("newRoomMember", sockets);
+	}
 });
 
-io.on("joinRoom", (socket, roomID) => {
-	console.log(socket, roomID, identity);
+io.of("/").adapter.on("leave-room", async (room, id) => {
+	var sockets = await getSocketsOfRoom(room);
+	//console.log(`socket ${id} has leaved room ${room}`);
+	io.to(room).emit('newRoomMember', sockets);
+
 });
 
 //use public folder

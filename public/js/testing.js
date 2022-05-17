@@ -20,4 +20,4 @@ function toogleTestButtons() {
         buttonsVis = true;
     }
 }
-toogleTestButtons();
+//toogleTestButtons();

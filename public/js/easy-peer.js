@@ -4,7 +4,13 @@ Steffen Reimann
 */
 const socket = io() // individuelle socketid in jedem neuen Peer-objekt ? nein! :D
 const roomID = window.location.pathname.split('/').pop()
-var localStream = null;
+
+
+// We now have a merged MediaStream!
+var localStream = null
+
+
+
 /**
  * @var peers
  * @type {Object}
@@ -23,7 +29,7 @@ class Peer { /**
     */
     constructor({ initiator: initiator, remotesid: remotesid, connectionID: connectionID, identity: identity }) {
         if (initiator) {
-            this.connectionID = uuid()
+            this.connectionID = connectionID || uuid()
         } else {
             this.connectionID = connectionID
         }
@@ -40,6 +46,7 @@ class Peer { /**
         this.localsid = socket.id
         this.connected = false
         this.identity = identity || new Identity({})
+        this.tracks = []
     }
 
     /**
@@ -66,7 +73,7 @@ class Peer { /**
                             if (!prevReport) {
                                 prevReport = report;
                             } else {
-                                console.log((report.bytesReceived * 8 - prevReport.bytesReceived * 8) / (report.timestamp - prevReport.timestamp));
+                                //console.log((report.bytesReceived * 8 - prevReport.bytesReceived * 8) / (report.timestamp - prevReport.timestamp));
                             }
                         }
                     });
@@ -81,6 +88,8 @@ class Peer { /**
                 if (this.peer.connectionState === 'disconnected') {
                     console.log('P2P connection closed!')
                     this.connected = false
+                    var remoteVideo = document.getElementById("remoteVideo-" + this.connectionID)
+                    remoteVideo.remove()
                 }
             })
             // this.peer.addEventListener('icecandidate', (event) => {});
@@ -102,10 +111,20 @@ class Peer { /**
                 }
             })
             this.peer.addEventListener('track', (event) => {
-                console.log('ontrack');
-                const [remoteStream] = event.streams
-                this.remoteStream = remoteStream
-                remoteVideo.srcObject = remoteStream;
+                console.log('ontrack', event);
+                this.remoteStream = event.streams[0]
+                var remoteVideo = document.getElementById("remoteVideo-" + this.connectionID)
+
+                if (remoteVideo) {
+                    remoteVideo.srcObject = this.remoteStream;
+                } else {
+                    remoteVideo = document.createElement('video')
+                    remoteVideo.id = "remoteVideo-" + this.connectionID
+                    remoteVideo.controls = true
+                    remoteVideo.autoplay = true
+                    remoteVideo.srcObject = this.remoteStream;
+                    videoWrapper.appendChild(remoteVideo)
+                }
                 remoteVideo.onloadedmetadata = (e) => remoteVideo.play();
             })
             this.peer.addEventListener('datachannel', (event) => {
@@ -115,15 +134,23 @@ class Peer { /**
                     console.log('event.channel DATA CHANNEL MESSAGE:', event.data);
                 });
                 this.dataChannel.onmessage = (event) => {
-                    console.log('this.dataChannel DATA CHANNEL MESSAGE:', event.data)
+                    var incommingdata
+                    try {
+                        incommingdata = JSON.parse(event.data)
+                    } catch (error) {
+                        incommingdata = event.data
+                    }
+                    console.log('this.dataChannel DATA CHANNEL MESSAGE:', incommingdata)
+                    console.log('typeof incommingdata:', typeof incommingdata)
                 }
             })
 
             if (stream) {
-                console.log(stream)
+                //console.log(stream)
                 for (const track of stream.getTracks()) {
                     console.log('addTrack', track);
-                    this.peer.addTrack(track, stream);
+                    var t = this.peer.addTrack(track, stream);
+                    this.tracks.push(t)
                     console.log('addTrack', this.peer);
                 }
             }
@@ -148,6 +175,7 @@ class Peer { /**
                     console.log('setLocalDescription', sdp);
 
                     this.peer.setLocalDescription(sdp);
+                    console.log('setLocalDescription remotesid = ', this.remotesid);
                     socket.emit('peerOffer', {
                         fromSocket: this.localsid,
                         toSocket: this.remotesid,
@@ -161,7 +189,6 @@ class Peer { /**
 
 
                 return
-
                 const offer = await this.peer.createOffer()
                 await this.peer.setLocalDescription(offer)
 
@@ -209,7 +236,8 @@ class Peer { /**
         })
     }
 
-    sendData(data) {
+    send(data) {
+        console.log('send data ');
         this.dataChannel.send(data)
     }
     close() {
@@ -218,7 +246,16 @@ class Peer { /**
     connect() {
         this.init()
     }
+    removeTracks() {
+        this.sendData({ removeTracks: true })
+        for (const key in this.tracks) {
+            const element = this.tracks[key];
+            console.log('removeTrack', element);
+            this.peer.removeTrack(element);
+        }
+    }
     remove() {
+        this.removeTracks()
         this.peer.close()
         delete peers[this.connectionID]
         delete this
@@ -236,13 +273,17 @@ class PeersManager {
         return peers
     }
 
-    getPeerBySocketID(socketID) {
-        for (const peer in peers) {
-            if (peers[peer.connectionID].remotesid === socketID) {
-                return peers[peer]
+    async getPeerBySocketID(socketID) {
+        return new Promise((resolve, reject) => {
+
+            for (const peer in peers) {
+                if (peers[peer].remotesid === socketID) {
+                    resolve(peers[peer])
+                }
             }
-        }
-        return null
+            reject(null)
+            //return null
+        })
     }
 
     getPeerByConnectionID(connectionID) {
@@ -256,18 +297,41 @@ class PeersManager {
     getPeerByIndex(index) {
         return peers[Object.keys(peers)[index]]
     }
+
     closeAllPeers() {
         for (const peer in peers) {
             peers[peer.connectionID].remove()
         }
         return peers
     }
+
     reconnectAllPeers() {
         for (const peer in peers) {
             peers[peer.connectionID].close()
             peers[peer.connectionID].connect()
         }
         return peers
+    }
+
+    async changeStream() {
+
+        await startStreaming()
+
+        for (const peer in this.peers) {
+            console.log('changeStream', this.peers[peer]);
+            var element = this.peers[peer]
+            //this.peers[peer.id].init();
+            if (element.initiator) {
+
+                let options = {
+                    initiator: true,
+                    remotesid: element.remotesid,
+                    connectionID: element.connectionID
+                }
+                let peer = new Peer(options)
+                var outdata = await peer.init(null, localStream);
+            }
+        }
     }
 }
 
@@ -450,12 +514,44 @@ function getCookieObject(cname) {
         return null
     }
 }
-
+function whatIsIt(object) {
+    if (object === null) {
+        return "null";
+    }
+    if (object === undefined) {
+        return "undefined";
+    }
+    if (object.constructor === ''.constructor) {
+        return "String";
+    }
+    if (object.constructor === [].constructor) {
+        return "Array";
+    }
+    if (object.constructor === {}.constructor) {
+        return "Object";
+    }
+    {
+        return "don't know";
+    }
+}
 
 function startStreaming() {
     return new Promise((resolve, reject) => {
 
-        var resolution = { width: 2560, height: 1440, framerate: 60 };
+        var options = {
+            resolution: {
+                width: 1920,
+                height: 1080,
+                framerate: 30
+            },
+            mediaRecorderOptions: {
+                mimeType: 'video/webm;codecs=opus,vp8',
+                videoBitsPerSecond: 2500000,
+                audioBitsPerSecond: 128000
+            },
+        }
+
+        var resolution = { width: 2560, height: 1440, framerate: 30 };
         navigator.mediaDevices
             .getDisplayMedia({
                 audio: {
@@ -470,23 +566,18 @@ function startStreaming() {
                 },
                 video: {
                     chromeMediaSource: 'desktop',
-                    width: resolution.width,
-                    height: resolution.height,
-                    frameRate: resolution.framerate
+                    width: options.resolution.width,
+                    height: options.resolution.height,
+                    frameRate: options.resolution.framerate
                 }
             })
             .then(async (stream) => {
-                options = {
-                    audioBitsPerSecond: 128000,
-                    videoBitsPerSecond: 2000000,
-                    mimeType: 'video/mp4; codecs="av01.2.15M.10.0.100.09.16.09.0, opus"'
-
-                }
-                var mediaRecorder = new MediaRecorder(stream);
+                stopStream()
+                var mediaRecorder = new MediaRecorder(stream, options.mediaRecorderOptions);
                 stream = mediaRecorder.stream;
                 localStream = stream;
-                localVideo.srcObject = stream;
-                resolve(stream);
+                localVideo.srcObject = localStream;
+                resolve(localStream);
             })
             .catch((err) => {
                 console.log('nay', err);
@@ -499,9 +590,53 @@ function getStream(remotesid) {
     socket.emit('getStream', { fromSocket: socket.id, toSocket: remotesid });
 }
 
-function setLocalStream(stream) {
-    localStream = stream;
+function stopStream() {
+    try {
+        let tracks = localVideo.srcObject.getTracks();
+        tracks.forEach(track => track.stop());
+        localVideo.srcObject = null;
+    } catch (error) {
+
+    }
+
 }
+
+async function readFile(input, toSocketID) {
+
+    let options = {
+        initiator: true,
+        remotesid: toSocketID
+    }
+    let peer = new Peer(options)
+    var outdata = await peer.init(null);
+    pm.addPeer(peer)
+
+    var reciver = await pm.getPeerBySocketID(toSocketID)
+    console.log('readFile', input, toSocketID, reciver);
+
+    peer.peer.addEventListener('datachannel', (event) => {
+        //this.dataChannel = event.channel
+        console.log('readyState ', event.channel.readyState);
+        if (event.channel.readyState) {
+            let file = input.files[0];
+            let fileReader = new FileReader();
+            fileReader.readAsArrayBuffer(file);
+            //fileReader.readAsDataURL(file);
+            fileReader.onload = function () {
+                // alert(fileReader.result);
+                //console.log(fileReader.result);
+                peer.send('fileReader.result');
+                peer.send(arrayBufferToString(fileReader.result));
+            };
+            fileReader.onerror = function () {
+                alert(fileReader.error);
+            };
+        }
+    })
+}
+
+
+
 
 var identitys = []
 function initIdentity() {
@@ -526,7 +661,7 @@ initIdentity();
 // listen for incoming peer offers
 // { fromSocket: this.localsid, toSocket: this.remotesid, connectionID: this.connectionID, data: { offer: offer } }
 socket.on('peerOffer', async (indata) => {
-    // console.log('incoming Peer offer = ', indata);
+    console.log('incoming Peer offer = ', indata);
 
     // { offer: offer, initiatorsid: this.sid, connectionID: this.id }
     let options = {
@@ -566,14 +701,11 @@ socket.on('peerAnswer', (indata) => {
 })
 
 socket.on('connect', () => { // console.log('connected to server');
-
-
-
     socket.emit('joinRoom', roomID, identitys[0])
 })
 
 socket.on('newRoomMember', (socketids) => {
-    console.log('New Members = ', socketids)
+    //console.log('New Members = ', socketids)
     renderButtons(socketids)
 })
 

@@ -12,18 +12,17 @@
       <button onclick="logCookies()">logCookies</button>
       <button onclick="logIdentitysArray()">logIdentitysArray</button>
       <button onclick="logPeerManager()">logPeerManager</button>
-      <button onclick="startStreaming()">logPeerManager</button>
+      
     </div>
-    <div class="container">
+    <div class="">
+      <button onclick="pm.changeStream()">Go Live</button>
       <div id="buttosdiv"></div>
 
-      <div class="videowrapper">
-        <video id="localVideo" autoplay controls></video>
-        <video id="remoteVideo" autoplay controls></video>
+      <div class="videowrapper" id="videowrapper">
+        <video id="localVideo" autoplay controls muted></video>
       </div>
     </div>
   </body>
-
   <script src="/socket.io/socket.io.js"></script>
 <!--  <script src="/js/main.js"></script> -->
    <script src="/js/easy-peer.js"></script>

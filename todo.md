@@ -1,9 +1,29 @@
--   bitrate erhöhen
-    https://stackoverflow.com/questions/57653899/how-to-increase-the-bitrate-of-webrtc
--   am client sdp settings anschauen
--   in mediastream reinballern was man will (windows changen, etc.)
--   kontrollelemente von videoelement begrenzen (nur ton und fullscreen)
--   localstream bei start muten
-# CSS
+### ✔️ bitrate erhöhen Am client sdp settings anschauen
+### ❌ in mediastream reinballern was man will (windows changen, etc.) 
+``` 
+Habe dazu video-stream-merger ausprobiert funktioniert aber ist nicht sehr effizient da mit canvas gearbeitet wird
+videocontext muss man nochmal ausprobieren
+```
+### ✔️ kontrollelemente von videoelement begrenzen (nur ton und fullscreen)
+### ✔️ localstream bei start muten
 
-- https://github.com/bbc/videocontext
+### ❌ CSS Framework
+### ❌ Datein verschicken 
+### ❌ Chat
+
+### UI:
+- liste von leuten in räumen
+- streams zuschauen
+- von grid in stage-mode wechseln (ein stream groß, andere klein/ausgeblendet)
+- stream starten button (mit auflösung und framerate)
+- identität erstellen wenn keine vorhanden ist (meistens beim ersten mal laden)
+- startseite: raum erstellen oder raum joinen
+- stream muten/fullscreen -> controls
+
+- zugriffsbeschränkugen für räume
+
+# Links 
+
+https://stackoverflow.com/questions/57653899/how-to-increase-the-bitrate-of-webrtc
+
+https://github.com/bbc/videocontext

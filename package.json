@@ -4,7 +4,7 @@
 	"description": "",
 	"main": "app.js",
 	"scripts": {
-		"start": "node server.js",
+		"server": "node server.js",
 		"app": "electron ./app.js --webrtc-max-cpu-consumption-percentage=100",
 		"install-all": "npm install && npm install --only=dev",
 		"package-mac": "electron-packager . --overwrite --platform=darwin --arch=x64 --icon=assets/icons/mac/icon.icns --prune=true --out=release-builds",
