@@ -635,6 +635,14 @@ async function readFile(input, toSocketID) {
     })
 }
 
+function handleIncommingChatMSG(params) {
+    
+}
+//{msg: ''}
+function handleOutgoingChatMSG(params) {
+    //console.log('handleOutgoingChatMSG', params);
+    socket.emit('chatMSG', params);
+}
 
 
 
@@ -725,6 +733,11 @@ socket.on('getStream', async (indata) => {
     let peer = new Peer(options)
     var outdata = await peer.init(null, localStream);
     pm.addPeer(peer)
+})
+
+socket.on('chatMSG', async (data) => {
+    console.log('chatMSG = ', data);
+    handleIncommingChatMSG(data);
 })
 
 var pm = new PeersManager()

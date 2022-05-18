@@ -1,31 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="initial-scale=1.0" />
-    <link rel="stylesheet" href="/css/main.css" />
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content=" initial-scale=1.0">
+    <link rel="stylesheet" href="/css/main.css">
     <title>WebRTC video stream</title>
-  </head>
-  <body>
-    <div class="testButtons" id="testButtons">
-      <button onclick="logCookies()">logCookies</button>
-      <button onclick="logIdentitysArray()">logIdentitysArray</button>
-      <button onclick="logPeerManager()">logPeerManager</button>
-      
-    </div>
-    <div class="">
-      <button onclick="pm.changeStream()">Go Live</button>
-      <div id="buttosdiv"></div>
+</head>
+<body>
+    <div class="grid-container">
+        <div class="left-sidebar">
+            <div class="users-startStream-wrapper">
+                <div class="startStream">
+                    <div class="framerate-wrapper">
+                        <div class="slider-framerate"></div>
+                        <span>30</span>
+                        <span>60</span>
+                    </div>
+                    <div class="resolution-wrapper">
+                        <div class="slider-resolution"></div>
+                        <span>1080p</span>
+                        <span>Quelle</span>
+                    </div>
+                    <div class="button-startStreaming">
+                        Start
+                    </div>
+                </div>
+            </div>
 
-      <div class="videowrapper" id="videowrapper">
-        <video id="localVideo" autoplay controls muted></video>
-      </div>
+            <div class="list-connected-users">
+                <div class="connected-user-wrapper">
+                    <svg width="33" height="33" viewBox="0 0 33 33" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16.5 6.875C11.1939 6.875 6.875 11.1939 6.875 16.5C6.875 21.8061 11.1939 26.125 16.5 26.125C21.8061 26.125 26.125 21.8061 26.125 16.5C26.125 11.1939 21.8061 6.875 16.5 6.875ZM16.5 23.375C12.7091 23.375 9.625 20.2909 9.625 16.5C9.625 12.7091 12.7091 9.625 16.5 9.625C20.2909 9.625 23.375 12.7091 23.375 16.5C23.375 20.2909 20.2909 23.375 16.5 23.375Z" fill="#F92C47"/>
+                        <path d="M16.5 12.375C14.2629 12.375 12.375 14.2629 12.375 16.5C12.375 18.7371 14.2629 20.625 16.5 20.625C18.7371 20.625 20.625 18.7371 20.625 16.5C20.625 14.2629 18.7371 12.375 16.5 12.375Z" fill="#F92C47"/>
+                    </svg>     
+                    <span class="connected-user-name"></span>
+                    <div class="button-watch">
+                        Watch
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="center-videos">
+            <div class="videowrapper" id="videowrapper">
+                div.
+                <video class="videoPlaceholder" src=""></video>
+                <video class="videoPlaceholder" src=""></video>
+                <video class="videoPlaceholder" src=""></video>
+                <video class="videoPlaceholder" src=""></video>
+                <video class="videoPlaceholder" src=""></video>
+            </div>
+        </div>
+        <div class="right-sidebar"></div>
     </div>
-  </body>
-  <script src="/socket.io/socket.io.js"></script>
-<!--  <script src="/js/main.js"></script> -->
-   <script src="/js/easy-peer.js"></script>
-  <script src="/js/main2.js"></script> 
-  <script src="/js/testing.js"></script>
+</body>
 </html>

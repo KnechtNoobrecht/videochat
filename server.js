@@ -95,6 +95,10 @@ app.get("/rooms/:id", function (req, res) {
 	res.sendFile(path.join(__dirname + "/public/video.html"));
 });
 
+app.get("/testing/rooms/:id", function (req, res) {
+	res.sendFile(path.join(__dirname + "/public/video-old.html"));
+});
+
 // reference test
 app.get("/rooms/reference/:id", function (req, res) {
 	res.sendFile(path.join(__dirname + "/public/reference.html"));

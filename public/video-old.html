@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="initial-scale=1.0" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <title>WebRTC video stream</title>
+  </head>
+  <body>
+    <div class="testButtons" id="testButtons">
+      <button onclick="logCookies()">logCookies</button>
+      <button onclick="logIdentitysArray()">logIdentitysArray</button>
+      <button onclick="logPeerManager()">logPeerManager</button>
+      
+    </div>
+    <div class="">
+      <button onclick="pm.changeStream()">Go Live</button>
+      <div id="buttosdiv"></div>
+
+      <div class="videowrapper" id="videowrapper">
+        <video id="localVideo" autoplay controls muted></video>
+      </div>
+    </div>
+  </body>
+  <script src="/socket.io/socket.io.js"></script>
+<!--  <script src="/js/main.js"></script> -->
+   <script src="/js/easy-peer.js"></script>
+  <script src="/js/main2.js"></script> 
+  <script src="/js/testing.js"></script>
+</html>
