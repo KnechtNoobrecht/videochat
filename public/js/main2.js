@@ -51,6 +51,7 @@ function toggleSlider(ctx) {
             } else {
                 resolutionSlider.classList.add("slider-right");
                 // set resolution
+                // window.screen.availHeight = window.screen.availWidth oder nicht spezifizieren ?
             }
             break;
     
