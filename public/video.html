@@ -10,21 +10,19 @@
 <body>
     <div class="grid-container">
         <div class="left-sidebar">
-            <div class="users-startStream-wrapper">
-                <div class="startStream">
-                    <div class="framerate-wrapper">
-                        <div class="slider-framerate"></div>
-                        <span>30</span>
-                        <span>60</span>
-                    </div>
-                    <div class="resolution-wrapper">
-                        <div class="slider-resolution"></div>
-                        <span>1080p</span>
-                        <span>Quelle</span>
-                    </div>
-                    <div class="button-startStreaming">
-                        Start
-                    </div>
+            <div class="startStream">
+                <div class="fr-rs-wrapper" id="framerateDiv">
+                    <div class="slider-framerate" id="slider-fr"></div>
+                    <span>30</span>
+                    <span>60</span>
+                </div>
+                <div class="fr-rs-wrapper" id="resolutionDiv">
+                    <div class="slider-resolution" id="slider-rs"></div>
+                    <span>1080p</span>
+                    <span>Quelle</span>
+                </div>
+                <div class="button-startStreaming">
+                    Start
                 </div>
             </div>
 
@@ -43,15 +41,26 @@
         </div>
         <div class="center-videos">
             <div class="videowrapper" id="videowrapper">
-                div.
-                <video class="videoPlaceholder" src=""></video>
-                <video class="videoPlaceholder" src=""></video>
-                <video class="videoPlaceholder" src=""></video>
-                <video class="videoPlaceholder" src=""></video>
-                <video class="videoPlaceholder" src=""></video>
+                <div class="videoElement">
+                    <video class="videoPlaceholder" src=""></video>
+                </div>
+                <div class="videoElement">
+                    <video class="videoPlaceholder" src=""></video>
+                </div> 
+                <div class="videoElement">
+                    <video class="videoPlaceholder" src=""></video>
+                </div> 
+                <div class="videoElement">
+                    <video class="videoPlaceholder" src=""></video>
+                </div> 
+                <div class="videoElement">
+                    <video class="videoPlaceholder" src=""></video>
+                </div> 
+                    
             </div>
         </div>
         <div class="right-sidebar"></div>
     </div>
 </body>
+<script src="/js/main2.js"></script>
 </html>

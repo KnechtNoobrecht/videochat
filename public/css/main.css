@@ -1,3 +1,19 @@
+@font-face {
+  font-family: Roboto;
+  src: url("/fonts/Roboto/Roboto-Regular.ttf");
+}
+@font-face {
+  font-family: RobotoMedium;
+  src: url("/fonts/Roboto/Roboto-Medium.ttf");
+}
+@font-face {
+  font-family: RobotoLight;
+  src: url("/fonts/Roboto/Roboto-Light.ttf");
+}
+@font-face {
+  font-family: RobotoBold;
+  src: url("/fonts/Roboto/Roboto-Bold.ttf");
+}
 *,
 ::before,
 ::after {
@@ -39,13 +55,76 @@ body {
   max-width: 50vw;
 }
 
-.videowrapper video:nth-child(odd):last-child {
+.videowrapper .videoElement:nth-child(odd):last-child {
   transform: translateX(50%);
   margin-left: 12px;
 }
 
-.videoPlaceholder {
+.videoElement {
+  border-radius: 10px;
   background-color: #055864;
+}
+
+.startStream {
+  margin: 25px 0 0 25px;
+  width: 420px;
+  height: 62px;
+  border-radius: 15px;
+  background-color: #2f3136;
+  display: flex;
+  justify-content: space-between;
+  padding: 9px 10px 9px 10px;
+  cursor: default;
+  user-select: none;
+}
+
+.fr-rs-wrapper {
+  background-color: #36393F;
+  border-radius: 10px;
+  font-family: Roboto;
+  font-size: 28px;
+  font-weight: 590;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+.fr-rs-wrapper span {
+  z-index: 1;
+}
+.fr-rs-wrapper span:first-of-type {
+  margin: 0 10px 0 10px;
+}
+.fr-rs-wrapper span:last-of-type {
+  margin: 0 10px 0 10px;
+}
+
+.slider, .slider-resolution, .slider-framerate {
+  position: absolute;
+  background-color: #6a6d70;
+  left: 3px;
+  width: calc(50% - 6px);
+  height: calc(100% - 6px);
+  border-radius: 7px;
+  transition: all 200ms;
+}
+.slider-right {
+  width: calc(50% - 3px);
+  transform: translateX(100%);
+}
+
+.button, .button-startStreaming {
+  border-radius: 5px;
+  padding: 5px 10px 5px 10px;
+  text-align: center;
+}
+.button-startStreaming {
+  background-color: #f92c47;
+  color: white;
+  font-size: 28px;
+  font-weight: 590;
+  font-family: RobotoMedium;
 }
 
 video {

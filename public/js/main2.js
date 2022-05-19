@@ -1,9 +1,16 @@
 //import { Peer, PeersManager } from 'easy-peer';
+const localVideo = document.getElementById('localVideo');
+const videoWrapper = document.getElementById('videowrapper')
+const framerateSlider = document.getElementById('slider-fr')
+const resolutionSlider = document.getElementById('slider-rs')
+const framerateDiv = document.getElementById('framerateDiv');
+const resolutionDiv = document.getElementById('resolutionDiv');
 
-socket.on("connect", async () => {
-    //var idd = new Identity();
-    //console.log(idd);
-});
+//socket.on("connect", async () => {
+//    //var idd = new Identity();
+//    //console.log(idd);
+//});
+
 
 function renderButtons(sioids) {
     var html = "";
@@ -25,5 +32,37 @@ async function callSID(sid) {
     pm.addPeer(p);
 }
 
-const localVideo = document.getElementById('localVideo');
-const videoWrapper = document.getElementById('videowrapper')
+function toggleSlider(ctx) {
+    switch (ctx.id) {
+        case "framerateDiv":
+            if (framerateSlider.classList.contains("slider-right")) {
+                framerateSlider.classList.remove("slider-right");
+                // set framerate
+            } else {
+                framerateSlider.classList.add("slider-right");
+                // set framerate
+            }
+            break;
+        
+        case "resolutionDiv":
+            if (resolutionSlider.classList.contains("slider-right")) {
+                resolutionSlider.classList.remove("slider-right");
+                // set resolution
+            } else {
+                resolutionSlider.classList.add("slider-right");
+                // set resolution
+            }
+            break;
+    
+        default:
+            break;
+    }
+}
+
+framerateDiv.onclick = function () {
+    toggleSlider(this)
+}
+
+resolutionDiv.onclick = function () {
+    toggleSlider(this)
+}
