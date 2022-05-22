@@ -467,6 +467,10 @@ class Room extends EventTarget {
         this.#event = new CustomEvent("memberChanged", { detail: { sid: sid, identity: identity } });
         this.dispatchEvent(this.#event);
     }
+    sendMsg(msg) {
+        var data = { room: this.id, msg: msg }
+        socket.emit('chatMSG', data);
+    }
 }
 
 
@@ -699,14 +703,11 @@ async function readFile(input, toSocketID) {
     })
 }
 
-function handleIncommingChatMSG(params) {
+function handleIncommingChatMSG(data) {
+    console.log('handleIncommingChatMSG', data);
+    renderNewChatMsg(data)
+}
 
-}
-//{msg: ''}
-function handleOutgoingChatMSG(params) {
-    //console.log('handleOutgoingChatMSG', params);
-    socket.emit('chatMSG', params);
-}
 
 
 

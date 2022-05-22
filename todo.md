@@ -11,16 +11,17 @@ videocontext muss man nochmal ausprobieren
 ### ❌ Datein verschicken 
 ### ❌ Chat
 
-### UI:
-- liste von leuten in räumen
-- streams zuschauen
-- von grid in stage-mode wechseln (ein stream groß, andere klein/ausgeblendet)
-- stream starten button (mit auflösung und framerate)
-- identität erstellen wenn keine vorhanden ist (meistens beim ersten mal laden)
-- startseite: raum erstellen oder raum joinen
-- stream muten/fullscreen -> controls
-
-- zugriffsbeschränkugen für räume
+## UI:
+### ✔️ liste von leuten in räumen
+### ✔️ streams zuschauen
+### ❌ von grid in stage-mode wechseln (ein stream groß, andere klein/ausgeblendet)
+### ❌ stream starten button (mit auflösung und framerate)
+### ❌ identität erstellen wenn keine vorhanden ist (meistens beim ersten mal laden)
+### ❌ startseite: raum erstellen oder raum joinen
+### ❌ stream muten/fullscreen -> controls
+### ❌ Chat Text Input Fixen es wird bleibt dem abschicken eine zeile bestehen
+### ❌ Rechtsklick auf User soll eigenes Context menu anzeigen mit verschiedenen funktionen
+### ❌ zugriffsbeschränkugen für räume
 
 # Links 
 

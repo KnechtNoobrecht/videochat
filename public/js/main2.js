@@ -144,6 +144,112 @@ function setStreamToWindow(peer) {
         icon.style = "display:none"
     };
 }
+//	{"room":"","msg":"öä##","fromSocket":"","fromIdenteity":{"id":"","username":"","avatar":"","isStreaming":}}
+function renderNewChatMsg(data) {
+    console.log("renderNewChatMsg", data);
+    console.log("data.fromIdentity", data.fromIdentity);
+    var chatBody = document.getElementsByClassName('chat-body')[0];
+    var chatMessageWrapper = document.createElement('div');
+    chatMessageWrapper.className = 'chat-message-wrapper';
+
+    var connectedUser = document.createElement('div');
+    connectedUser.className = 'connected-user';
+
+    var userImg = document.createElement('img');
+    userImg.src = data.fromIdentity.avatar;
+    var userName = document.createElement('span');
+    userName.innerHTML = data.fromIdentity.username;
+
+    connectedUser.appendChild(userImg);
+    connectedUser.appendChild(userName);
+
+    var chatMessage = document.createElement('div');
+    chatMessage.className = 'chat-message';
+    var msg = document.createElement('span');
+
+
+    if (isValidURL(data.msg)) {
+        if (matchYoutubeUrl(data.msg)) {
+            var ytid = youtubeUrlParser(data.msg);
+            // msg.innerHTML = `Youtube Link -> ${data.msg.link(data.msg)}`
+
+            var iframe = document.createElement('iframe');
+            iframe.src = `https://www.youtube.com/embed/${ytid.id}?autoplay=0&autohide=1&border=0&wmode=opaque&enablejsapi=1`;
+            /* iframe.setAttribute(
+                'src',
+                'https://www.youtube.com/embed/' + ytid.id + '?autoplay=1&autohide=1&border=0&wmode=opaque&enablejsapi=1'
+            ); */
+
+            iframe.setAttribute(
+                'allowfullscreen',
+                true
+            );
+            msg.appendChild(iframe);
+        } else {
+            msg.innerHTML = data.msg.link(data.msg)
+        }
+
+    } else {
+        msg.innerHTML = data.msg
+    }
+
+    chatMessage.appendChild(msg);
+    chatMessageWrapper.appendChild(connectedUser);
+    chatMessageWrapper.appendChild(chatMessage);
+
+    chatBody.appendChild(chatMessageWrapper);
+
+    chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+
+/* function isValidURL(value) {
+    var urlregex = /^(https?|ftp):\/\/([a-zA-Z0-9.-]+(:[a-zA-Z0-9.&%$-]+)*@)*((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}|([a-zA-Z0-9-]+\.)*[a-zA-Z0-9-]+\.(com|edu|gov|int|mil|net|org|biz|arpa|info|name|pro|aero|coop|museum|[a-zA-Z]{2}))(:[0-9]+)*(\/($|[a-zA-Z0-9.,?'\\+&%$#=~_-]+))*$/;
+    return urlregex.test(value);
+} */
+
+function isValidURL(str) {
+    console.log("isValidURL", str);
+    var pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
+        '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
+        '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+        '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+        '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+        '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
+    return !!pattern.test(str);
+}
+
+function matchYoutubeUrl(url) {
+    var p = /^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/;
+    if (url.match(p)) {
+        return url.match(p)[1];
+    }
+    return false;
+}
+
+function youtubeUrlParser(url) {
+
+    var timeToSec = function (str) {
+        var sec = 0;
+        if (/h/.test(str)) { sec += parseInt(str.match(/(\d+)h/, '$1')[0], 10) * 60 * 60; }
+        if (/m/.test(str)) { sec += parseInt(str.match(/(\d+)m/, '$1')[0], 10) * 60; }
+        if (/s/.test(str)) { sec += parseInt(str.match(/(\d+)s/, '$1')[0], 10); }
+        return sec;
+    };
+
+    var videoId = /^https?\:\/\/(www\.)?youtu\.be/.test(url) ? url.replace(/^https?\:\/\/(www\.)?youtu\.be\/([\w-]{11}).*/, "$2") : url.replace(/.*\?v\=([\w-]{11}).*/, "$1");
+    var videoStartTime = /[^a-z]t\=/.test(url) ? url.replace(/^.+t\=([\dhms]+).*$/, '$1') : 0;
+    var videoStartSeconds = videoStartTime ? timeToSec(videoStartTime) : 0;
+    var videoShowRelated = ~~/rel\=1/.test(url);
+
+    return {
+        id: videoId,
+        startString: videoStartTime,
+        startSeconds: videoStartSeconds,
+        showRelated: videoShowRelated
+    };
+
+}; // youtubeParser();
 
 function toggleSlider(ctx) {
     switch (ctx.id) {
@@ -172,6 +278,46 @@ function toggleSlider(ctx) {
             break;
     }
 }
+
+function sendMessage() {
+
+    var msg = document.getElementById('inputMsg').value;
+    console.log("sendMessage", msg);
+
+}
+
+document.getElementById('inputMsg').addEventListener('keydown', function (e) {
+    console.log("keydown", e);
+    var rows = e.srcElement.value.split("\n").length + 1;
+
+
+    if (e.keyCode == 13 && !e.shiftKey) {
+        //sendMessage();
+        var msg = e.srcElement.value
+        msg = msg.replace(/\n\r?/g, '<br />')
+        room.sendMsg(msg);
+        resetTextarea()
+        rows = 0
+    } else if (e.keyCode == 13) {
+        rows++;
+    }
+    if (e.srcElement.value == "") {
+        rows = 0
+    }
+    e.srcElement.style.height = (rows * 15) + "px";
+    document.getElementsByClassName('chat-body')[0].style.bottom = (70 + (rows * 15)) + "px";
+    document.getElementsByClassName('chat-body')[0].scrollBy(0, 180);
+});
+
+resetTextarea = function () {
+    console.log("resetTextarea");
+    var elem = document.getElementById('inputMsg')
+    elem.value = elem.value.replace(/\n\r?/g, '')
+    elem.value = ''
+}
+
+
+
 
 framerateDiv.onclick = function () {
     toggleSlider(this)

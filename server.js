@@ -67,9 +67,12 @@ io.on("connection", (socket) => {
 		io.to(data.toSocket).emit("getStream", data);
 	});
 	socket.on("chatMSG", (data) => {
-		// data = { offer: offer, initiatorsid: this.sid, connectionID: this.id }
+		// data = { room: this.id, msg: msg }
 		console.log("chatMSG made by", data);
-		//	io.to(data.toSocket).emit("getStream", data);
+		data.fromSocket = socket.id;
+		data.fromIdentity = identitys[socket.id];
+
+		io.to(data.room).emit("chatMSG", data);
 	});
 
 	socket.on("memberStartStreaming", (data) => {
@@ -143,7 +146,4 @@ function getSocketsOfRoom(roomID) {
 		}
 		resolve(socketids);
 	});
-}
-function getSocketByID(params) {
-
 }
