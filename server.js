@@ -13,9 +13,12 @@ io.on("connection", (socket) => {
 
 	socket.on("joinRoom", async (roomID, identity) => {
 		//identity.sid = socket.id;
+		identity.isStreaming = false;
 		identitys[socket.id] = identity;
 		socket.join(roomID);
 		console.log(identity.username + " joined room ", roomID);
+		var sockets = await getSocketsOfRoom(roomID);
+		socket.emit("membersLoaded", sockets);
 	});
 
 	socket.on("getRoomMember", async (roomID, cb) => {
@@ -63,6 +66,25 @@ io.on("connection", (socket) => {
 		console.log("getStream made by", data.fromSocket, " -> ", data.toSocket);
 		io.to(data.toSocket).emit("getStream", data);
 	});
+	socket.on("chatMSG", (data) => {
+		// data = { offer: offer, initiatorsid: this.sid, connectionID: this.id }
+		console.log("chatMSG made by", data);
+		//	io.to(data.toSocket).emit("getStream", data);
+	});
+
+	socket.on("memberStartStreaming", (data) => {
+		// data = { offer: offer, initiatorsid: this.sid, connectionID: this.id }
+		console.log("To Room = ", data);
+		identitys[socket.id].isStreaming = true;
+		io.sockets.in(data).emit("memberStreamingState", socket.id, identitys[socket.id]);
+	});
+
+	socket.on("memberStopStreaming", (data) => {
+		// data = { offer: offer, initiatorsid: this.sid, connectionID: this.id }
+		console.log("To Room = ", data);
+		identitys[socket.id].isStreaming = false;
+		io.sockets.in(data).emit("memberStreamingState", socket.id, identitys[socket.id]);
+	});
 });
 
 io.of("/").adapter.on("create-room", (room) => {
@@ -72,15 +94,14 @@ io.of("/").adapter.on("create-room", (room) => {
 io.of("/").adapter.on("join-room", async (room, id) => {
 	var sockets = await getSocketsOfRoom(room);
 	if (sockets[0].identity != undefined) {
-		io.to(room).emit("newRoomMember", sockets);
+		io.to(room).emit("memberAdded", sockets, id, identitys[id]);
 	}
 });
 
 io.of("/").adapter.on("leave-room", async (room, id) => {
 	var sockets = await getSocketsOfRoom(room);
-	//console.log(`socket ${id} has leaved room ${room}`);
-	io.to(room).emit('newRoomMember', sockets);
-
+	console.log(`socket ${id} has leaved room ${room}`);
+	io.to(room).emit('memberRemoved', sockets, id, identitys[id]);
 });
 
 //use public folder
@@ -122,4 +143,7 @@ function getSocketsOfRoom(roomID) {
 		}
 		resolve(socketids);
 	});
+}
+function getSocketByID(params) {
+
 }

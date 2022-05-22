@@ -32,6 +32,119 @@ async function callSID(sid) {
     pm.addPeer(p);
 }
 
+
+room.addEventListener("memberAdded", function (e) {
+    var identity = e.detail.identity;
+    var socketid = e.detail.sid;
+    console.log("newMember event ", identity, socketid);
+    var div = document.getElementById(identity.id);
+    if (!div) {
+        var namePlaceholder = document.createElement('div');
+        namePlaceholder.innerHTML = identity.username;
+        namePlaceholder.className = 'namePlaceholder';
+
+        var imgPlaceholder = document.createElement('img');
+        imgPlaceholder.src = identity.avatar
+        imgPlaceholder.className = 'avatar';
+
+        var newVideoElement = document.createElement('div');
+        newVideoElement.id = socketid + 'video';
+        newVideoElement.className = "videoElement";
+
+        var videoPlaceholder = document.createElement('video');
+
+        newVideoElement.appendChild(namePlaceholder);
+        newVideoElement.appendChild(imgPlaceholder);
+        newVideoElement.appendChild(videoPlaceholder);
+
+        document.getElementById('videowrapper').appendChild(newVideoElement);
+
+
+
+        var connectedUserWrapper = document.createElement('div');
+        connectedUserWrapper.className = 'connected-user-wrapper';
+        connectedUserWrapper.id = socketid + 'username';
+
+
+        var connectedUser = document.createElement('div');
+        connectedUser.className = 'connected-user';
+
+        var connectedUserImg = document.createElement('img');
+        connectedUserImg.src = identity.avatar;
+        var connectedUserName = document.createElement('span');
+        connectedUserName.innerHTML = identity.username;
+
+        connectedUser.appendChild(connectedUserImg);
+        connectedUser.appendChild(connectedUserName);
+        connectedUserWrapper.appendChild(connectedUser);
+
+
+        var buttonWatch = document.createElement('div');
+        buttonWatch.className = 'button-watch';
+        buttonWatch.onclick = () => getStream(socketid)
+
+        var liveIcon = document.createElement('img');
+        liveIcon.src = '/svg/LiveButton1.svg';
+        var liveText = document.createElement('span');
+        liveText.innerHTML = 'Watch';
+
+        buttonWatch.appendChild(liveIcon);
+        buttonWatch.appendChild(liveText);
+        connectedUserWrapper.appendChild(buttonWatch);
+
+        document.getElementById('connected-users-list').appendChild(connectedUserWrapper);
+
+        if (identity.isStreaming) {
+            buttonWatch.style = "display:flex !important";
+        } else {
+            buttonWatch.style = "display:none !important";
+        }
+    }
+});
+
+room.addEventListener("memberRemoved", function (e) {
+    var identity = e.detail.identity;
+    var socketid = e.detail.sid;
+    console.log("removeMember event ", identity, socketid);
+    var videowrapper = document.getElementById('videowrapper');
+    videowrapper.removeChild(document.getElementById(socketid + 'video'));
+
+    var connectedUsersList = document.getElementById('connected-users-list');
+    connectedUsersList.removeChild(document.getElementById(socketid + 'username'));
+
+});
+
+room.addEventListener("memberChanged", function (e) {
+    var identity = e.detail.identity;
+    var socketid = e.detail.sid;
+    console.log("removeMember memberChanged ", identity, socketid);
+    //var videowrapper = document.getElementById('videowrapper');
+
+    var userElement = document.getElementById(socketid + 'username');
+    userElement.getElementsByTagName('span')[0].innerHTML = identity.username;
+    userElement.getElementsByTagName('img')[0].src = identity.avatar;
+
+    if (identity.isStreaming) {
+        userElement.getElementsByClassName('button-watch')[0].style = "display:flex !important";
+    } else {
+        userElement.getElementsByClassName('button-watch')[0].style = "display:none !important";
+    }
+});
+
+function setStreamToWindow(peer) {
+    console.log("setStreamToWindow");
+    var videoWrapper = document.getElementById(peer.remotesid + 'video')
+    var remoteVideo = videoWrapper.getElementsByTagName('video')[0]
+    var icon = videoWrapper.getElementsByTagName('img')[0]
+
+
+    remoteVideo.srcObject = peer.remoteStream;
+    remoteVideo.onloadedmetadata = (e) => {
+        remoteVideo.play()
+        icon.style = "display:none"
+    };
+}
+
 function toggleSlider(ctx) {
     switch (ctx.id) {
         case "framerateDiv":
@@ -43,7 +156,7 @@ function toggleSlider(ctx) {
                 // set framerate
             }
             break;
-        
+
         case "resolutionDiv":
             if (resolutionSlider.classList.contains("slider-right")) {
                 resolutionSlider.classList.remove("slider-right");
@@ -53,7 +166,7 @@ function toggleSlider(ctx) {
                 // set resolution
             }
             break;
-    
+
         default:
             break;
     }
@@ -66,3 +179,4 @@ framerateDiv.onclick = function () {
 resolutionDiv.onclick = function () {
     toggleSlider(this)
 }
+

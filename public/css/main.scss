@@ -66,9 +66,110 @@ body {
 }
 
 .videoElement {
+  position: relative;
   border-radius: 10px;
   background-color: #055864;
 }
+
+.avatar {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: #055864;
+}
+
+.namePlaceholder {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background-color: #2f3136;
+  color: white;
+  font-size: 18px;
+  font-weight: 590;
+  font-family: RobotoMedium;
+  border-radius: 10px;
+  padding: 5px;
+}
+
+.list-connected-users {
+  margin: 25px 0 0 25px;
+  width: 420px;
+  border-radius: 15px;
+  background-color: #2f3136;
+  justify-content: space-between;
+  padding: 9px 10px 9px 10px;
+  cursor: default;
+  user-select: none;
+}
+
+.connected-user-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 12px;
+}
+
+.connected-user {
+  display: flex;
+  width: 100%;
+  align-items: center;
+}
+
+.connected-user img {
+  display: flex;
+  width: 40px;
+  align-items: center;
+  border-radius: 50%;
+}
+
+.connected-user span {
+  color: white;
+  font-size: 18px;
+  font-weight: 590;
+  font-family: RobotoMedium;
+  padding-left: 15px;
+
+}
+
+
+
+
+
+.button-watch {
+  //width: 100px;
+  position: absolute;
+  right: 0px;
+  height: 45px;
+  border-radius: 25px;
+  background-color: #6a6d70;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.button-watch img {
+  width: 50px;
+  height: 50px;
+  fill: #6a6d70;
+}
+
+.button-watch span {
+  color: white;
+  font-size: 18px;
+  font-weight: 590;
+  font-family: RobotoMedium;
+  padding-right: 15px;
+}
+
+
+
+
 
 .startStream {
   margin: 25px 0 0 25px;
@@ -99,9 +200,10 @@ body {
     z-index: 1;
   }
 
-  span:first-of-type{
+  span:first-of-type {
     margin: 0 10px 0 10px;
   }
+
   span:last-of-type {
     margin: 0 10px 0 10px;
   }
@@ -147,7 +249,7 @@ body {
 }
 
 video {
-  width: 100% ;
+  width: 100%;
 }
 
 /* Could Use thise as well for Individual Controls */
