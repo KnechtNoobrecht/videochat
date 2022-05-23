@@ -1,26 +1,27 @@
+## UI:
+### ✔️ liste von leuten in räumen
+### ✔️ streams zuschauen
+### ❌ von grid in stage-mode wechseln (ein stream groß, andere klein/ausgeblendet)
+### ❌ stream starten button (mit auflösung und framerate)
+### ❌ stream muten/fullscreen -> controls
+### ❌ Oberfläche für verschiedene Größen anpassen bzw. verbessern
+### ❌ Chat UI verbessern
+### ❌ Für chat emojis picker 
+### ❌ Rechtsklick auf User soll eigenes Context menu anzeigen mit verschiedenen funktionen
+
+## Funktionen:
+### ❌ identität erstellen wenn keine vorhanden ist (meistens beim ersten mal laden)
+### ❌ startseite: raum erstellen oder raum joinen
+### ❌ zugriffsbeschränkugen für räume
+### ❌ Chat Text Input Fixen es bleibt beim abschicken eine zeile bestehen
 ### ✔️ bitrate erhöhen Am client sdp settings anschauen
-### ❌ in mediastream reinballern was man will (windows changen, etc.) 
-``` 
-Habe dazu video-stream-merger ausprobiert funktioniert aber ist nicht sehr effizient da mit canvas gearbeitet wird
-videocontext muss man nochmal ausprobieren
-```
+### ✔️ Stream zwischen Fenstern wechseln können 
 ### ✔️ kontrollelemente von videoelement begrenzen (nur ton und fullscreen)
 ### ✔️ localstream bei start muten
-
-### ❌ CSS Framework
 ### ❌ Datein verschicken 
-### ❌ Chat
+### ✔️ Chat
+### ❌ Auf Chat msg reagieren und antworten können.
 
-### UI:
-- liste von leuten in räumen
-- streams zuschauen
-- von grid in stage-mode wechseln (ein stream groß, andere klein/ausgeblendet)
-- stream starten button (mit auflösung und framerate)
-- identität erstellen wenn keine vorhanden ist (meistens beim ersten mal laden)
-- startseite: raum erstellen oder raum joinen
-- stream muten/fullscreen -> controls
-
-- zugriffsbeschränkugen für räume
 
 # Links 
 

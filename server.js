@@ -13,9 +13,12 @@ io.on("connection", (socket) => {
 
 	socket.on("joinRoom", async (roomID, identity) => {
 		//identity.sid = socket.id;
+		identity.isStreaming = false;
 		identitys[socket.id] = identity;
 		socket.join(roomID);
 		console.log(identity.username + " joined room ", roomID);
+		var sockets = await getSocketsOfRoom(roomID);
+		socket.emit("membersLoaded", sockets);
 	});
 
 	socket.on("getRoomMember", async (roomID, cb) => {
@@ -63,6 +66,29 @@ io.on("connection", (socket) => {
 		console.log("getStream made by", data.fromSocket, " -> ", data.toSocket);
 		io.to(data.toSocket).emit("getStream", data);
 	});
+	socket.on("chatMSG", async (data) => {
+		// data = { room: this.id, msg: msg }
+		console.log("chatMSG made by", data);
+		data.fromSocket = socket.id;
+		data.fromIdentity = identitys[socket.id];
+		data.msg = await parseText(data.msg)
+		io.to(data.room).emit("chatMSG", data);
+	});
+
+	socket.on("memberStartStreaming", (data) => {
+		// data = { offer: offer, initiatorsid: this.sid, connectionID: this.id }
+		console.log("To Room = ", data);
+		identitys[socket.id].isStreaming = true;
+		io.sockets.in(data).emit("memberStreamingState", socket.id, identitys[socket.id]);
+	});
+
+	socket.on("memberStopStreaming", (data) => {
+		// data = { offer: offer, initiatorsid: this.sid, connectionID: this.id }
+		console.log("To Room = ", data);
+		identitys[socket.id].isStreaming = false;
+		io.sockets.in(data).emit("memberStreamingState", socket.id, identitys[socket.id]);
+	});
+
 });
 
 io.of("/").adapter.on("create-room", (room) => {
@@ -72,15 +98,14 @@ io.of("/").adapter.on("create-room", (room) => {
 io.of("/").adapter.on("join-room", async (room, id) => {
 	var sockets = await getSocketsOfRoom(room);
 	if (sockets[0].identity != undefined) {
-		io.to(room).emit("newRoomMember", sockets);
+		io.to(room).emit("memberAdded", sockets, id, identitys[id]);
 	}
 });
 
 io.of("/").adapter.on("leave-room", async (room, id) => {
 	var sockets = await getSocketsOfRoom(room);
-	//console.log(`socket ${id} has leaved room ${room}`);
-	io.to(room).emit('newRoomMember', sockets);
-
+	console.log(`socket ${id} has leaved room ${room}`);
+	io.to(room).emit('memberRemoved', sockets, id, identitys[id]);
 });
 
 //use public folder
@@ -122,4 +147,117 @@ function getSocketsOfRoom(roomID) {
 		}
 		resolve(socketids);
 	});
+}
+
+async function parseText(message) {
+	var urls = detectURLs(message)
+	console.log(urls);
+	if (urls) {
+		for (let index = 0; index < urls.length; index++) {
+			const element = urls[index];
+			console.log("element", element);
+			var type = await getContentType(element)
+			var html = renderTypeHTML(type)
+			message = message.replace(element, html)
+		}
+	}
+	return message
+}
+
+function renderTypeHTML(type) {
+	var ret = ""
+	switch (type.content.type) {
+		case 'video':
+			console.log("renderTypeHTML video");
+			ret = `<video controls src="${type.url}"></video>`
+			break;
+		case 'image':
+			console.log("renderTypeHTML image");
+			ret = `<a href="${type.url}" target="_blank" rel="noopener noreferrer"><img src="${type.url}"></a>`
+			break;
+		case 'text':
+			console.log("renderTypeHTML text");
+			ret = `<a href="${type.url}" target="_blank" rel="noopener noreferrer">${type.url}</a>`
+			break;
+		default:
+			break;
+	}
+	return ret;
+}
+
+function detectURLs(message) {
+	var urlRegex = /(((https?:\/\/)|(www\.))[^\s]+)/g;
+	return message.match(urlRegex)
+}
+
+function isValidURL(str) {
+	console.log("isValidURL", str);
+	var pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
+		'((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
+		'((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+		'(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+		'(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+		'(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
+	return !!pattern.test(str);
+}
+
+function matchYoutubeUrl(url) {
+	var p = /^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/;
+	if (url.match(p)) {
+		return url.match(p)[1];
+	}
+	return false;
+}
+
+function youtubeUrlParser(url) {
+
+	var timeToSec = function (str) {
+		var sec = 0;
+		if (/h/.test(str)) { sec += parseInt(str.match(/(\d+)h/, '$1')[0], 10) * 60 * 60; }
+		if (/m/.test(str)) { sec += parseInt(str.match(/(\d+)m/, '$1')[0], 10) * 60; }
+		if (/s/.test(str)) { sec += parseInt(str.match(/(\d+)s/, '$1')[0], 10); }
+		return sec;
+	};
+
+	var videoId = /^https?\:\/\/(www\.)?youtu\.be/.test(url) ? url.replace(/^https?\:\/\/(www\.)?youtu\.be\/([\w-]{11}).*/, "$2") : url.replace(/.*\?v\=([\w-]{11}).*/, "$1");
+	var videoStartTime = /[^a-z]t\=/.test(url) ? url.replace(/^.+t\=([\dhms]+).*$/, '$1') : 0;
+	var videoStartSeconds = videoStartTime ? timeToSec(videoStartTime) : 0;
+	var videoShowRelated = ~~/rel\=1/.test(url);
+
+	return {
+		id: videoId,
+		startString: videoStartTime,
+		startSeconds: videoStartSeconds,
+		showRelated: videoShowRelated
+	};
+
+}; // youtubeParser();
+
+
+async function getContentType(url) {
+	return new Promise(async function (resolve, reject) {
+		console.log("getContentType = ", url);
+		const myURL = new URL(url);
+		console.log("myURL", myURL);
+		const res1 = await fetch(myURL, { method: 'HEAD' });
+		console.log("myURL", res1.headers.get("content-type"));
+
+		const res = await fetch(url, { method: 'HEAD' });
+		if (res.ok) {
+			var ct = res.headers.get("content-type");
+			var index = ct.indexOf(";");
+			var contentType
+			if (index > 0) {
+				contentType = ct.substring(0, index);
+			} else {
+				contentType = ct.substring(0, ct.length);
+			}
+			var splittedType = contentType.split('/');
+			let charset = ct.substring(index + 1, ct.length).split("=")[1];
+			var d = { url: url, content: { type: splittedType[0], format: splittedType[1] }, charset: charset };
+			resolve(d);
+		} else {
+			reject(res.status);
+		}
+	})
 }

@@ -19,7 +19,9 @@ var localStream = null
  */
 var peers = {}
 
-class Peer { /**
+class Peer extends EventTarget {
+    #event;
+    /**
     * @constructor
     * @method init()
     * @param {boolean}  initiator  - true if initiator
@@ -28,6 +30,7 @@ class Peer { /**
     * @example
     */
     constructor({ initiator: initiator, remotesid: remotesid, connectionID: connectionID, identity: identity }) {
+        super();
         if (initiator) {
             this.connectionID = connectionID || uuid()
         } else {
@@ -113,19 +116,21 @@ class Peer { /**
             this.peer.addEventListener('track', (event) => {
                 console.log('ontrack', event);
                 this.remoteStream = event.streams[0]
-                var remoteVideo = document.getElementById("remoteVideo-" + this.connectionID)
-
-                if (remoteVideo) {
-                    remoteVideo.srcObject = this.remoteStream;
-                } else {
-                    remoteVideo = document.createElement('video')
-                    remoteVideo.id = "remoteVideo-" + this.connectionID
-                    remoteVideo.controls = true
-                    remoteVideo.autoplay = true
-                    remoteVideo.srcObject = this.remoteStream;
-                    videoWrapper.appendChild(remoteVideo)
-                }
-                remoteVideo.onloadedmetadata = (e) => remoteVideo.play();
+                setStreamToWindow(this)
+                /*                this.remoteStream = event.streams[0]
+                               var remoteVideo = document.getElementById("remoteVideo-" + this.connectionID)
+               
+                               if (remoteVideo) {
+                                   remoteVideo.srcObject = this.remoteStream;
+                               } else {
+                                   remoteVideo = document.createElement('video')
+                                   remoteVideo.id = "remoteVideo-" + this.connectionID
+                                   remoteVideo.controls = true
+                                   remoteVideo.autoplay = true
+                                   remoteVideo.srcObject = this.remoteStream;
+                                   videoWrapper.appendChild(remoteVideo)
+                               }
+                               remoteVideo.onloadedmetadata = (e) => remoteVideo.play(); */
             })
             this.peer.addEventListener('datachannel', (event) => {
                 //this.dataChannel = event.channel
@@ -415,6 +420,68 @@ class Identity {
         if (coockies.length > 0) { }
     }
 }
+
+
+//{ socket: sockets[index].id, identity: identitys[sockets[index].id] }
+class RoomMember {
+    /**
+    * @constructor
+    * @param {remotesid}  ID  - ID 
+    * @param {identity}  DisplayedUsername - Displayed Username
+    * @example
+    */
+    constructor({ socket: remotesid, identity: identity }) {
+        console.log('Identity Created', remotesid, identity);
+    }
+}
+
+
+
+class Room extends EventTarget {
+    #event;
+    constructor() {
+        super();
+        this.id = window.location.pathname.split('/').pop()
+        this.members = {}
+    }
+    addMember(sid, identity) {
+        if (!this.members[sid]) {
+            this.members[sid] = { sid: sid, identity: identity }
+
+            this.#event = new CustomEvent("memberAdded", { detail: { sid: sid, identity: identity } });
+            this.dispatchEvent(this.#event);
+        } else {
+            //console.log('Member already in room')
+        }
+    }
+    removeMember(sid, identity) {
+        if (this.members[sid]) {
+            delete this.members[sid]
+            this.#event = new CustomEvent("memberRemoved", { detail: { sid: sid, identity: identity } });
+            this.dispatchEvent(this.#event);
+        } else {
+            console.log('Member not in room')
+        }
+    }
+    changeMember(sid, identity) {
+        this.#event = new CustomEvent("memberChanged", { detail: { sid: sid, identity: identity } });
+        this.dispatchEvent(this.#event);
+    }
+    sendMsg(msg) {
+        var data = { room: this.id, msg: msg }
+        socket.emit('chatMSG', data);
+    }
+}
+
+
+var room = new Room();
+
+
+
+
+
+
+
 // Helper Functions
 
 function uuid() {
@@ -576,7 +643,8 @@ function startStreaming() {
                 var mediaRecorder = new MediaRecorder(stream, options.mediaRecorderOptions);
                 stream = mediaRecorder.stream;
                 localStream = stream;
-                localVideo.srcObject = localStream;
+                // localVideo.srcObject = localStream;
+                socket.emit('memberStartStreaming', room.id);
                 resolve(localStream);
             })
             .catch((err) => {
@@ -598,7 +666,7 @@ function stopStream() {
     } catch (error) {
 
     }
-
+    socket.emit('memberStopStreaming', room.id);
 }
 
 async function readFile(input, toSocketID) {
@@ -635,14 +703,12 @@ async function readFile(input, toSocketID) {
     })
 }
 
-function handleIncommingChatMSG(params) {
-    
+function handleIncommingChatMSG(data) {
+    console.log('handleIncommingChatMSG', data);
+    renderNewChatMsg(data)
 }
-//{msg: ''}
-function handleOutgoingChatMSG(params) {
-    //console.log('handleOutgoingChatMSG', params);
-    socket.emit('chatMSG', params);
-}
+
+
 
 
 
@@ -652,7 +718,7 @@ function initIdentity() {
     //console.log('ido ', ido);
     if (ido) {
         Object.keys(ido).forEach((id) => {
-            console.log('Identity = ', id, ido[id])
+            //console.log('Identity = ', id, ido[id])
             //identitys.push(new Identity(ido[id].id, ido[id].username, ido[id].avatar))
             identitys.push(new Identity({ id: ido[id].id, username: ido[id].username, avatar: ido[id].avatar }))
         })
@@ -712,10 +778,30 @@ socket.on('connect', () => { // console.log('connected to server');
     socket.emit('joinRoom', roomID, identitys[0])
 })
 
-socket.on('newRoomMember', (socketids) => {
-    //console.log('New Members = ', socketids)
-    renderButtons(socketids)
+socket.on('membersLoaded', (sockets) => {
+    // console.log('membersLoaded = ', socket, identity);
+    for (const key in sockets) {
+        const element = sockets[key];
+        room.addMember(element.socket, element.identity)
+    }
 })
+
+socket.on('memberAdded', (sockets, sid, identity) => {
+    //console.log('New Members = ', sid, identity);
+    room.addMember(sid, identity)
+})
+
+socket.on('memberRemoved', (sockets, sid, identity) => {
+    console.log('memberRemoved = ', sid, identity)
+    room.removeMember(sid, identity)
+})
+
+socket.on('memberStreamingState', (sid, identity) => {
+    console.log('memberStreamingState = ', identity)
+    room.changeMember(sid, identity)
+})
+
+
 
 //{ fromSocket: this.localsid, toSocket: this.remotesid, connectionID: this.connectionID, data: { offer: offer } }
 socket.on('getStream', async (indata) => {

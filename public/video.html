@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -7,6 +8,7 @@
     <link rel="stylesheet" href="/css/main.css">
     <title>WebRTC video stream</title>
 </head>
+
 <body>
     <div class="grid-container">
         <div class="left-sidebar">
@@ -21,39 +23,17 @@
                     <span>1080p</span>
                     <span>Quelle</span>
                 </div>
-                <div class="button-startStreaming">
+                <div onclick="startStreaming()" class="button-startStreaming">
                     Start
                 </div>
             </div>
 
-            <div class="list-connected-users">
-                <div class="connected-user-wrapper">
-                    <div>
-                        <svg width="33" height="33" viewBox="0 0 33 33" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M16.5 6.875C11.1939 6.875 6.875 11.1939 6.875 16.5C6.875 21.8061 11.1939 26.125 16.5 26.125C21.8061 26.125 26.125 21.8061 26.125 16.5C26.125 11.1939 21.8061 6.875 16.5 6.875ZM16.5 23.375C12.7091 23.375 9.625 20.2909 9.625 16.5C9.625 12.7091 12.7091 9.625 16.5 9.625C20.2909 9.625 23.375 12.7091 23.375 16.5C23.375 20.2909 20.2909 23.375 16.5 23.375Z" fill="#F92C47"/>
-                            <path d="M16.5 12.375C14.2629 12.375 12.375 14.2629 12.375 16.5C12.375 18.7371 14.2629 20.625 16.5 20.625C18.7371 20.625 20.625 18.7371 20.625 16.5C20.625 14.2629 18.7371 12.375 16.5 12.375Z" fill="#F92C47"/>
-                        </svg>     
-                        <span class="connected-user-name">User 1</span>
-                    </div>
-                    <div class="button-watch">
-                        Watch
-                    </div>
-                </div>
-                <div class="connected-user-wrapper">
-                    <svg width="33" height="33" viewBox="0 0 33 33" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M16.5 6.875C11.1939 6.875 6.875 11.1939 6.875 16.5C6.875 21.8061 11.1939 26.125 16.5 26.125C21.8061 26.125 26.125 21.8061 26.125 16.5C26.125 11.1939 21.8061 6.875 16.5 6.875ZM16.5 23.375C12.7091 23.375 9.625 20.2909 9.625 16.5C9.625 12.7091 12.7091 9.625 16.5 9.625C20.2909 9.625 23.375 12.7091 23.375 16.5C23.375 20.2909 20.2909 23.375 16.5 23.375Z" fill="#F92C47"/>
-                        <path d="M16.5 12.375C14.2629 12.375 12.375 14.2629 12.375 16.5C12.375 18.7371 14.2629 20.625 16.5 20.625C18.7371 20.625 20.625 18.7371 20.625 16.5C20.625 14.2629 18.7371 12.375 16.5 12.375Z" fill="#F92C47"/>
-                    </svg>     
-                    <span class="connected-user-name"></span>
-                    <div class="button-watch">
-                        Watch
-                    </div>
-                </div>
+            <div class="list-connected-users" id="connected-users-list">
             </div>
-        </div>
+
         <div class="center-videos">
             <div class="videowrapper" id="videowrapper">
-                <div class="videoElement">
+                <!-- <div class="videoElement">
                     <video class="videoPlaceholder" src=""></video>
                 </div>
                 <div class="videoElement">
@@ -67,12 +47,39 @@
                 </div> 
                 <div class="videoElement">
                     <video class="videoPlaceholder" src=""></video>
-                </div> 
-                    
+                </div>   -->
+
             </div>
         </div>
-        <div class="right-sidebar"></div>
-    </div>
+        <div id="rs" class="right-sidebar">
+            <div class="chat-wrapper">
+
+                <div class="chat-body">
+                    <!-- <div class="chat-message-wrapper">
+                        <div class="connected-user">
+                            <img src="https://external-content.duckduckgo.com/iu/?u=https://i.pinimg.com/280x280_RS/31/c9/0f/31c90ff8e26ae36b6adac2c7dbcfcc97.jpg&amp;f=1&amp;nofb=1" class="">
+                            <span>herbbert</span>
+                        </div>
+                        <div class="chat-message">
+                            <span>Hallo wie gehts</span>
+                        </div>
+                    </div> -->
+                </div>
+
+                <div class="chat-input">
+
+                    <textarea type="text" id="inputMsg" autocomplete="off" placeholder="Nachricht"></textarea>
+                    <!-- <button onclick="sendMessage()" class="chat-send-button">
+                        <img src="/svg/send.svg" />
+                    </button> -->
+                </div>
+            </div>
+        </div>
 </body>
+<script src="/socket.io/socket.io.js"></script>
+
+<script src="/js/easy-peer.js"></script>
 <script src="/js/main2.js"></script>
+<script src="/js/uifw.js"></script>
+
 </html>
