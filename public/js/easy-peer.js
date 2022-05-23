@@ -451,7 +451,7 @@ class Room extends EventTarget {
             this.#event = new CustomEvent("memberAdded", { detail: { sid: sid, identity: identity } });
             this.dispatchEvent(this.#event);
         } else {
-            console.log('Member already in room')
+            //console.log('Member already in room')
         }
     }
     removeMember(sid, identity) {
@@ -718,7 +718,7 @@ function initIdentity() {
     //console.log('ido ', ido);
     if (ido) {
         Object.keys(ido).forEach((id) => {
-            console.log('Identity = ', id, ido[id])
+            //console.log('Identity = ', id, ido[id])
             //identitys.push(new Identity(ido[id].id, ido[id].username, ido[id].avatar))
             identitys.push(new Identity({ id: ido[id].id, username: ido[id].username, avatar: ido[id].avatar }))
         })
@@ -787,7 +787,7 @@ socket.on('membersLoaded', (sockets) => {
 })
 
 socket.on('memberAdded', (sockets, sid, identity) => {
-    console.log('New Members = ', sid, identity);
+    //console.log('New Members = ', sid, identity);
     room.addMember(sid, identity)
 })
 

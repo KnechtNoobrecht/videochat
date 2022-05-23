@@ -1,10 +1,5 @@
 //import { Peer, PeersManager } from 'easy-peer';
-const localVideo = document.getElementById('localVideo');
-const videoWrapper = document.getElementById('videowrapper')
-const framerateSlider = document.getElementById('slider-fr')
-const resolutionSlider = document.getElementById('slider-rs')
-const framerateDiv = document.getElementById('framerateDiv');
-const resolutionDiv = document.getElementById('resolutionDiv');
+
 
 //socket.on("connect", async () => {
 //    //var idd = new Identity();
@@ -36,7 +31,7 @@ async function callSID(sid) {
 room.addEventListener("memberAdded", function (e) {
     var identity = e.detail.identity;
     var socketid = e.detail.sid;
-    console.log("newMember event ", identity, socketid);
+    // console.log("newMember event ", identity, socketid);
     var div = document.getElementById(identity.id);
     if (!div) {
         var namePlaceholder = document.createElement('div');
@@ -168,30 +163,9 @@ function renderNewChatMsg(data) {
     var msg = document.createElement('span');
 
 
-    if (isValidURL(data.msg)) {
-        if (matchYoutubeUrl(data.msg)) {
-            var ytid = youtubeUrlParser(data.msg);
-            // msg.innerHTML = `Youtube Link -> ${data.msg.link(data.msg)}`
+    msg.innerHTML = data.msg
 
-            var iframe = document.createElement('iframe');
-            iframe.src = `https://www.youtube.com/embed/${ytid.id}?autoplay=0&autohide=1&border=0&wmode=opaque&enablejsapi=1`;
-            /* iframe.setAttribute(
-                'src',
-                'https://www.youtube.com/embed/' + ytid.id + '?autoplay=1&autohide=1&border=0&wmode=opaque&enablejsapi=1'
-            ); */
 
-            iframe.setAttribute(
-                'allowfullscreen',
-                true
-            );
-            msg.appendChild(iframe);
-        } else {
-            msg.innerHTML = data.msg.link(data.msg)
-        }
-
-    } else {
-        msg.innerHTML = data.msg
-    }
 
     chatMessage.appendChild(msg);
     chatMessageWrapper.appendChild(connectedUser);
@@ -207,6 +181,8 @@ function renderNewChatMsg(data) {
     var urlregex = /^(https?|ftp):\/\/([a-zA-Z0-9.-]+(:[a-zA-Z0-9.&%$-]+)*@)*((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}|([a-zA-Z0-9-]+\.)*[a-zA-Z0-9-]+\.(com|edu|gov|int|mil|net|org|biz|arpa|info|name|pro|aero|coop|museum|[a-zA-Z]{2}))(:[0-9]+)*(\/($|[a-zA-Z0-9.,?'\\+&%$#=~_-]+))*$/;
     return urlregex.test(value);
 } */
+
+
 
 function isValidURL(str) {
     console.log("isValidURL", str);
@@ -251,33 +227,7 @@ function youtubeUrlParser(url) {
 
 }; // youtubeParser();
 
-function toggleSlider(ctx) {
-    switch (ctx.id) {
-        case "framerateDiv":
-            if (framerateSlider.classList.contains("slider-right")) {
-                framerateSlider.classList.remove("slider-right");
-                // set framerate
-            } else {
-                framerateSlider.classList.add("slider-right");
-                // set framerate
-            }
-            break;
 
-        case "resolutionDiv":
-            if (resolutionSlider.classList.contains("slider-right")) {
-                resolutionSlider.classList.remove("slider-right");
-                // set resolution
-            } else {
-                resolutionSlider.classList.add("slider-right");
-                // set resolution
-                // window.screen.availHeight = window.screen.availWidth oder nicht spezifizieren ?
-            }
-            break;
-
-        default:
-            break;
-    }
-}
 
 function sendMessage() {
 
@@ -294,7 +244,7 @@ document.getElementById('inputMsg').addEventListener('keydown', function (e) {
     if (e.keyCode == 13 && !e.shiftKey) {
         //sendMessage();
         var msg = e.srcElement.value
-        msg = msg.replace(/\n\r?/g, '<br />')
+        msg = msg.replace(/\n\r?/g, ' <br />')
         room.sendMsg(msg);
         resetTextarea()
         rows = 0
@@ -309,6 +259,32 @@ document.getElementById('inputMsg').addEventListener('keydown', function (e) {
     document.getElementsByClassName('chat-body')[0].scrollBy(0, 180);
 });
 
+
+document.getElementById('rs').addEventListener('drop', function (e) {
+    e.preventDefault(); // stops the browser from redirecting 
+    e.stopPropagation();
+    console.log("drop", e);
+    return false;
+}, false)
+
+
+document.getElementById('rs').addEventListener("dragenter", function (e) {
+    e.preventDefault(); // stops the browser from redirecting 
+    e.stopPropagation();
+    //console.log("dragenter", e);
+    document.getElementById('rs').style.backgroundColor = "rgba(0,0,0,0.1)";
+    return false;
+}, false);
+
+document.getElementById('rs').addEventListener("dragleave", function (e) {
+    e.preventDefault(); // stops the browser from redirecting 
+    e.stopPropagation();
+    //console.log("dragenter", e);
+    document.getElementById('rs').style.backgroundColor = "rgba(0,0,0,0)";
+    return false;
+}, false);
+
+
 resetTextarea = function () {
     console.log("resetTextarea");
     var elem = document.getElementById('inputMsg')
@@ -319,11 +295,4 @@ resetTextarea = function () {
 
 
 
-framerateDiv.onclick = function () {
-    toggleSlider(this)
-}
-
-resolutionDiv.onclick = function () {
-    toggleSlider(this)
-}
 
