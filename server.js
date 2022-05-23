@@ -156,9 +156,16 @@ async function parseText(message) {
 		for (let index = 0; index < urls.length; index++) {
 			const element = urls[index];
 			console.log("element", element);
-			var type = await getContentType(element)
-			var html = renderTypeHTML(type)
-			message = message.replace(element, html)
+			try {
+				var type = await getContentType(element)
+				var html = renderTypeHTML(type)
+				message = message.replace(element, html)
+			} catch (error) {
+				console.log("error for ", error);
+			}
+
+
+
 		}
 	}
 	return message
@@ -237,27 +244,38 @@ function youtubeUrlParser(url) {
 async function getContentType(url) {
 	return new Promise(async function (resolve, reject) {
 		console.log("getContentType = ", url);
-		const myURL = new URL(url);
+
+		/* const myURL = new URL(url);
+
 		console.log("myURL", myURL);
 		const res1 = await fetch(myURL, { method: 'HEAD' });
-		console.log("myURL", res1.headers.get("content-type"));
+		console.log("myURL", res1.headers.get("content-type")); */
 
-		const res = await fetch(url, { method: 'HEAD' });
-		if (res.ok) {
-			var ct = res.headers.get("content-type");
-			var index = ct.indexOf(";");
-			var contentType
-			if (index > 0) {
-				contentType = ct.substring(0, index);
+		var res;
+		try {
+			res = await fetch(url, { method: 'HEAD' });
+			if (res.ok) {
+				var ct = res.headers.get("content-type");
+				var index = ct.indexOf(";");
+				var contentType
+				if (index > 0) {
+					contentType = ct.substring(0, index);
+				} else {
+					contentType = ct.substring(0, ct.length);
+				}
+				var splittedType = contentType.split('/');
+				let charset = ct.substring(index + 1, ct.length).split("=")[1];
+				var d = { url: url, content: { type: splittedType[0], format: splittedType[1] }, charset: charset };
+				resolve(d);
 			} else {
-				contentType = ct.substring(0, ct.length);
+				reject(res.status);
 			}
-			var splittedType = contentType.split('/');
-			let charset = ct.substring(index + 1, ct.length).split("=")[1];
-			var d = { url: url, content: { type: splittedType[0], format: splittedType[1] }, charset: charset };
-			resolve(d);
-		} else {
-			reject(res.status);
+		} catch (error) {
+			console.log("error", error);
+			reject(null);
+
 		}
+
+
 	})
 }

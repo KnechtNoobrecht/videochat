@@ -51,6 +51,7 @@ iframe {
   height: 100vh;
   display: grid;
   place-items: center;
+  overflow-y: auto;
 }
 
 .videowrapper {
@@ -292,7 +293,7 @@ textarea {
   background-color: #36393F;
   border-radius: 10px;
   font-family: Roboto;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 590;
   color: white;
   display: flex;
