@@ -44,3 +44,45 @@ function toggleSlider(ctx) {
             break;
     }
 }
+
+
+
+
+class Modal {
+    constructor(wrapper) {
+        this.wrapper = wrapper
+        this.wrapper.classList.add('modal-wrapper');
+        this.wrapper.classList.add('hide');
+        this.id = this.wrapper.id;
+        document.body.appendChild(this.wrapper);
+    }
+
+    open() {
+        this.wrapper.classList.add('show');
+        this.wrapper.classList.remove('hide');
+        //this.#wrapper.style.display = "block";
+    }
+
+    close() {
+        this.wrapper.classList.remove('show');
+        this.wrapper.classList.add('hide');
+        //this.#wrapper.style.display = "none";
+    }
+}
+
+var modals = {}
+function initModals() {
+    var mods = document.getElementsByTagName('modal');
+    for (const modal in mods) {
+        const element = mods[modal];
+        if (element.id) {
+            var m = new Modal(element);
+            modals[m.id] = m;
+        }
+    }
+}
+initModals();
+
+function setCssVar(variable, value) {
+    document.documentElement.style.setProperty('--' + variable, value);
+}

@@ -1,26 +1,23 @@
-@import 'vars';
-
+:root {
+  --primary_color_bg: #305ccc;
+}
 
 @font-face {
   font-family: Roboto;
-  src: url('/fonts/Roboto/Roboto-Regular.ttf');
+  src: url("/fonts/Roboto/Roboto-Regular.ttf");
 }
-
 @font-face {
   font-family: RobotoMedium;
-  src: url('/fonts/Roboto/Roboto-Medium.ttf');
+  src: url("/fonts/Roboto/Roboto-Medium.ttf");
 }
-
 @font-face {
   font-family: RobotoLight;
-  src: url('/fonts/Roboto/Roboto-Light.ttf');
+  src: url("/fonts/Roboto/Roboto-Light.ttf");
 }
-
 @font-face {
   font-family: RobotoBold;
-  src: url('/fonts/Roboto/Roboto-Bold.ttf');
+  src: url("/fonts/Roboto/Roboto-Bold.ttf");
 }
-
 *,
 ::before,
 ::after {
@@ -35,7 +32,7 @@ body {
 
 a {
   text-decoration: none;
-  color: rgb(115, 199, 255);
+  color: #73c7ff;
 }
 
 iframe {
@@ -64,7 +61,6 @@ iframe {
 .videowrapper {
   display: grid;
   place-content: center;
-  // make grid-template-columns 50% for two elements and 100% for one element
   grid-template-columns: 1fr 1fr;
   grid-template-areas: "video video";
   width: 100%;
@@ -116,7 +112,6 @@ iframe {
   justify-content: space-between;
   padding: 9px 10px 9px 10px;
   cursor: default;
-
 }
 
 .connected-user-wrapper {
@@ -145,7 +140,6 @@ iframe {
   font-weight: 590;
   font-family: RobotoMedium;
   padding-left: 15px;
-
 }
 
 .right-sidebar {
@@ -179,7 +173,7 @@ iframe {
   /* color of the scroll thumb */
   border-radius: 20px;
   /* roundness of the scroll thumb */
-  border: 3px solid rgb(255, 255, 255);
+  border: 3px solid white;
   /* creates padding around scroll thumb */
 }
 
@@ -187,7 +181,6 @@ iframe {
   position: relative;
   width: 420px;
   height: 100%;
-
 }
 
 .chat-message {
@@ -210,7 +203,6 @@ iframe {
   padding: 9px 10px 9px 10px;
   cursor: default;
 }
-
 
 .chat-input {
   position: absolute;
@@ -242,7 +234,6 @@ textarea {
 }
 
 .button-watch {
-  //width: 100px;
   position: absolute;
   right: 0px;
   height: 45px;
@@ -268,10 +259,6 @@ textarea {
   font-family: RobotoMedium;
   padding-right: 15px;
 }
-
-
-
-
 
 .startStream {
   margin: 25px 0 0 25px;
@@ -300,11 +287,10 @@ textarea {
 .connected-user-wrapper {
   display: flex;
   justify-content: space-between;
-
-  div span {
-    font-family: RobotoLight;
-    color: #fff;
-  }
+}
+.connected-user-wrapper div span {
+  font-family: RobotoLight;
+  color: #fff;
 }
 
 .fr-rs-wrapper {
@@ -318,21 +304,18 @@ textarea {
   justify-content: space-between;
   align-items: center;
   position: relative;
-
-  span {
-    z-index: 1;
-  }
-
-  span:first-of-type {
-    margin: 0 10px 0 10px;
-  }
-
-  span:last-of-type {
-    margin: 0 10px 0 10px;
-  }
+}
+.fr-rs-wrapper span {
+  z-index: 1;
+}
+.fr-rs-wrapper span:first-of-type {
+  margin: 0 10px 0 10px;
+}
+.fr-rs-wrapper span:last-of-type {
+  margin: 0 10px 0 10px;
 }
 
-.slider {
+.slider, .slider-resolution, .slider-framerate {
   position: absolute;
   background-color: #6a6d70;
   left: 3px;
@@ -340,23 +323,13 @@ textarea {
   height: calc(100% - 6px);
   border-radius: 7px;
   transition: all 200ms;
-
-  &-framerate {
-    @extend .slider;
-  }
-
-  &-resolution {
-    @extend .slider;
-  }
-
-  &-right {
-    width: calc(50% - 3px);
-    transform: translateX(100%);
-  }
+}
+.slider-right {
+  width: calc(50% - 3px);
+  transform: translateX(100%);
 }
 
-
-.button {
+.button, .button-watch, .button-startStreaming {
   border-radius: 10px;
   padding: 5px 10px 5px 10px;
   text-align: center;
@@ -364,19 +337,15 @@ textarea {
   font-weight: 590;
   font-family: RobotoMedium;
   user-select: none;
-
-  &-startStreaming {
-    @extend .button;
-    background-color: #f92c47;
-    font-size: 28px;
-  }
-
-  &-watch {
-    @extend .button;
-    background-color: #36393F;
-    color: #e9e9e9;
-    font-size: 20px;
-  }
+}
+.button-startStreaming {
+  background-color: #f92c47;
+  font-size: 28px;
+}
+.button-watch {
+  background-color: #36393F;
+  color: #e9e9e9;
+  font-size: 20px;
 }
 
 video {
@@ -387,10 +356,6 @@ video {
 video::-webkit-media-controls-play-button {
   display: none;
 }
-
-//video::-webkit-media-controls-volume-slider {}
-
-//video::-webkit-media-controls-mute-button {}
 
 video::-webkit-media-controls-timeline {
   display: none;
@@ -456,26 +421,22 @@ modal {
   display: none;
 }
 
-.btn {
+.btn, .btn-secondary, .btn-primary {
   border-radius: 10px;
   padding: 5px 10px 5px 10px;
   text-align: center;
-  color: rgb(110, 110, 110);
+  color: #6e6e6e;
   font-weight: 590;
   font-family: RobotoMedium;
   user-select: none;
   cursor: pointer;
   border: 0;
-
-  &-primary {
-    @extend .btn;
-    background-color: var(--primary_color_bg);
-    font-size: 28px;
-  }
-
-  &-secondary {
-    @extend .btn;
-    background-color: var(--primary_color_bg);
-    font-size: 20px;
-  }
+}
+.btn-primary {
+  background-color: var(--primary_color_bg);
+  font-size: 28px;
+}
+.btn-secondary {
+  background-color: var(--primary_color_bg);
+  font-size: 20px;
 }

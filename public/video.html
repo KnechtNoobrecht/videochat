@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content=" initial-scale=1.0">
-    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/dist/main.css">
     <title>WebRTC video stream</title>
 </head>
 
@@ -76,6 +76,23 @@
                 </div>
             </div>
         </div>
+    </div>
+    <modal id="testmodal" class="hide">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Modal Header</h2>
+                <button class="btn-secondary" onclick="modals.testmodal.close()">X</button>
+            </div>
+            <div class="modal-body">
+                <p>Some text in the Modal Body</p>
+                <p>Some other text...</p>
+            </div>
+            <div class="modal-footer">
+                <h3>Modal Footer</h3>
+
+            </div>
+        </div>
+    </modal>
 </body>
 <script src="/socket.io/socket.io.js"></script>
 
