@@ -4,6 +4,9 @@ const app = express();
 const server = require("http").createServer(app);
 const io = require("socket.io")(server);
 const { v4: uuidv4 } = require("uuid");
+var sass = require('node-sass');
+fs = require('fs');
+
 const PORT = 80;
 
 var identitys = {};
@@ -111,12 +114,21 @@ io.of("/").adapter.on("leave-room", async (room, id) => {
 //use public folder
 app.use(express.static(__dirname + "/public/"));
 
-app.get("/", function (req, res) {
+
+app.get("/", async function (req, res) {
 	console.log("get /");
+	//await renderSCSS()
 	res.redirect("/rooms/" + uuidv4());
 });
 
-app.get("/rooms/:id", function (req, res) {
+app.get("/css/dist/main.css", async function (req, res) {
+	console.log("get /css/dist/main.css", mainCSS);
+	//mainCSS
+	res.send(mainCSS);
+});
+
+app.get("/rooms/:id", async function (req, res) {
+	//await renderSCSS()
 	res.sendFile(path.join(__dirname + "/public/video.html"));
 });
 
@@ -279,3 +291,58 @@ async function getContentType(url) {
 
 	})
 }
+
+
+
+// SCSS Compiler and Reloader 
+var mainCSS = ""
+var sassFiles = ['main'];
+async function renderSCSS(reloadClients) {
+	return new Promise(async function (resolve, reject) {
+		for (const key in sassFiles) {
+			const element = path.join(__dirname, 'public', 'css', sassFiles[key] + '.scss');
+			try {
+				sass.render({
+					file: element,
+				}, function (err, result) {
+					if (err) {
+						console.log("err", err.formatted);
+						//reject(err);
+					} else {
+						console.log('SCSS compiled!');
+						fs.writeFile(path.join(__dirname, 'public', 'css', 'dist', sassFiles[key] + '.css'), result.css, function (err) {
+							//
+
+							if (err) {
+								console.log('SCSS File write to Disk Error = ', err);
+							} else {
+								if (reloadClients) {
+									io.emit('reloadCSS');
+								}
+								resolve(result);
+							}
+						});
+
+					}
+				});
+			} catch (error) {
+				console.log("error", error);
+			}
+		}
+	})
+}
+
+renderSCSS()
+
+var sassWatcherFiles = ['vars', 'main'];
+function watchSCSS() {
+	for (const key in sassWatcherFiles) {
+		const element = path.join(__dirname, 'public', 'css', sassWatcherFiles[key] + '.scss');
+		console.log("watchSCSS", element);
+		fs.watchFile(element, function (curr, prev) {
+			renderSCSS(true);
+		});
+	}
+}
+
+watchSCSS()

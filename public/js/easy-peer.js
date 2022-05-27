@@ -100,6 +100,10 @@ class Peer extends EventTarget {
                 console.log('onicecandidateerror')
                 console.log(event)
             })
+            this.peer.addEventListener('negotiationneeded', (event) => {
+                console.log('negotiation needed')
+                console.log(event)
+            })
             this.peer.addEventListener('icecandidate', (event) => {
                 console.log('icecandidate')
                 if (event.candidate) {
@@ -478,10 +482,6 @@ var room = new Room();
 
 
 
-
-
-
-
 // Helper Functions
 
 function uuid() {
@@ -605,20 +605,7 @@ function whatIsIt(object) {
 function startStreaming() {
     return new Promise((resolve, reject) => {
 
-        var options = {
-            resolution: {
-                width: 1920,
-                height: 1080,
-                framerate: 30
-            },
-            mediaRecorderOptions: {
-                mimeType: 'video/webm;codecs=opus,vp8',
-                videoBitsPerSecond: 2500000,
-                audioBitsPerSecond: 128000
-            },
-        }
 
-        var resolution = { width: 2560, height: 1440, framerate: 30 };
         navigator.mediaDevices
             .getDisplayMedia({
                 audio: {
@@ -633,14 +620,14 @@ function startStreaming() {
                 },
                 video: {
                     chromeMediaSource: 'desktop',
-                    width: options.resolution.width,
-                    height: options.resolution.height,
-                    frameRate: options.resolution.framerate
+                    width: localStreamOptions.resolution.width,
+                    height: localStreamOptions.resolution.height,
+                    frameRate: localStreamOptions.resolution.framerate
                 }
             })
             .then(async (stream) => {
                 stopStream()
-                var mediaRecorder = new MediaRecorder(stream, options.mediaRecorderOptions);
+                var mediaRecorder = new MediaRecorder(stream, localStreamOptions.mediaRecorderOptions);
                 stream = mediaRecorder.stream;
                 localStream = stream;
                 // localVideo.srcObject = localStream;
@@ -651,6 +638,47 @@ function startStreaming() {
                 console.log('nay', err);
                 reject(err);
             });
+    })
+}
+
+function startCamStreaming() {
+    return new Promise((resolve, reject) => {
+
+        if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
+            navigator.mediaDevices
+                .getUserMedia({
+                    video: {
+                        width: {
+                            min: 1280,
+                            ideal: localStreamOptions.resolution.width,
+                            max: 2560,
+                        },
+                        height: {
+                            min: 720,
+                            ideal: localStreamOptions.resolution.height,
+                            max: 1440,
+                        },
+                        frameRate: {
+                            min: 5,
+                            ideal: localStreamOptions.resolution.framerate,
+                            max: 60,
+                        }
+                    }
+                })
+                .then(async (stream) => {
+                    stopStream()
+                    var mediaRecorder = new MediaRecorder(stream, localStreamOptions.mediaRecorderOptions);
+                    stream = mediaRecorder.stream;
+                    localStream = stream;
+                    // localVideo.srcObject = localStream;
+                    socket.emit('memberStartStreaming', room.id);
+                    resolve(localStream);
+                })
+                .catch((err) => {
+                    console.log('nay', err);
+                    reject(err);
+                });
+        }
     })
 }
 
@@ -826,9 +854,31 @@ socket.on('chatMSG', async (data) => {
     handleIncommingChatMSG(data);
 })
 
+socket.on('reloadCSS', async () => {
+    console.log('CSS Reloaded!');
+    var links = document.getElementsByTagName("link");
+    for (var cl in links) {
+        var link = links[cl];
+        if (link.rel === "stylesheet") {
+            link.href += "";
+        }
+    }
+})
+
 var pm = new PeersManager()
 
 
-
+var localStreamOptions = {
+    resolution: {
+        width: 1920,
+        height: 1080,
+        framerate: 30
+    },
+    mediaRecorderOptions: {
+        mimeType: 'video/webm;codecs=opus,vp8',
+        videoBitsPerSecond: 2500000,
+        audioBitsPerSecond: 128000
+    }
+}
 
 //selectStream();
