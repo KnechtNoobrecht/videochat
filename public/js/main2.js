@@ -48,6 +48,24 @@ room.addEventListener("memberAdded", function (e) {
 
         var videoPlaceholder = document.createElement('video');
 
+        var fullscreenBTN = document.createElement('button');
+        fullscreenBTN.className = "fullscreenBTN";
+        fullscreenBTN.innerHTML = "Fullscreen";
+        fullscreenBTN.onclick = function () {
+            videoPlaceholder.requestFullscreen();
+        }
+        var streamVolumeSlider = document.createElement('input');
+        streamVolumeSlider.className = "streamVolumeSlider";
+        streamVolumeSlider.type = "range";
+        streamVolumeSlider.min = "0";
+        streamVolumeSlider.max = "100";
+        streamVolumeSlider.value = "100";
+        streamVolumeSlider.oninput = function () {
+            videoPlaceholder.volume = streamVolumeSlider.value / 100;
+        }
+
+        newVideoElement.appendChild(fullscreenBTN);
+        newVideoElement.appendChild(streamVolumeSlider);
         newVideoElement.appendChild(namePlaceholder);
         newVideoElement.appendChild(imgPlaceholder);
         newVideoElement.appendChild(videoPlaceholder);

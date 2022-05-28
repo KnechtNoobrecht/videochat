@@ -80,12 +80,14 @@ iframe {
 
 .videoElement {
   position: relative;
+  z-index: 0;
   border-radius: 10px;
   background-color: var(--primary_color_bg);
 }
 
 .avatar {
   position: absolute;
+  z-index: 0;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
@@ -97,8 +99,37 @@ iframe {
 
 .namePlaceholder {
   position: absolute;
+  z-index: 0;
   bottom: 10px;
   left: 10px;
+  background-color: var(--primary_color_bg);
+  color: white;
+  font-size: 18px;
+  font-weight: 590;
+  font-family: RobotoMedium;
+  border-radius: 10px;
+  padding: 5px;
+}
+
+.fullscreenBTN {
+  position: absolute;
+  z-index: 99;
+  right: 10px;
+  bottom: 10px;
+  background-color: var(--primary_color_bg);
+  color: white;
+  font-size: 18px;
+  font-weight: 590;
+  font-family: RobotoMedium;
+  border-radius: 10px;
+  padding: 5px;
+}
+
+.streamVolumeSlider {
+  position: absolute;
+  z-index: 99;
+  bottom: 10px;
+  right: 110px;
   background-color: var(--primary_color_bg);
   color: white;
   font-size: 18px;
