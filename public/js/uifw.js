@@ -86,3 +86,22 @@ initModals();
 function setCssVar(variable, value) {
     document.documentElement.style.setProperty('--' + variable, value);
 }
+
+var firstTime = true;
+if (document.addEventListener) {
+    document.addEventListener('contextmenu', function (e) {
+        if (firstTime) {
+            firstTime = false;
+            console.log("You've tried to open context menu", e); //here you draw your own menu
+            e.preventDefault();
+        } else {
+            firstTime = true;
+        }
+
+    }, false);
+} else {
+    document.attachEvent('oncontextmenu', function () {
+        alert("You've tried to open context menu");
+        window.event.returnValue = false;
+    });
+}
