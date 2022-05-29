@@ -32,7 +32,7 @@ async function callSID(sid) {
 
 
 room.addEventListener("memberAdded", function (e) {
-    cloneVideoElement(e.detail.identity, e.detail.sid) 
+    cloneVideoElement(e.detail.identity, e.detail.sid)
     cloneUserElement(e.detail.identity, e.detail.sid)
 });
 
@@ -66,14 +66,14 @@ room.addEventListener("memberChanged", function (e) {
 });
 
 function setStreamToWindow(peer) {
-    console.log("setStreamToWindow");
+    console.log("setStreamToWindow", peer);
     var videoWrapper = document.getElementById('videoElement_' + peer.remotesid)
     var remoteVideo = videoWrapper.getElementsByTagName('video')[0]
-    var icon = videoWrapper.getElementsByTagName('img')[0]
+    //var icon = videoWrapper.getElementsByTagName('img')[0]
     remoteVideo.srcObject = peer.remoteStream;
     remoteVideo.onloadedmetadata = (e) => {
         remoteVideo.play()
-        icon.style = "display:none"
+        //icon.style = "display:none"
     };
 }
 //	{"room":"","msg":"öä##","fromSocket":"","fromIdenteity":{"id":"","username":"","avatar":"","isStreaming":}}
@@ -125,18 +125,21 @@ function cloneVideoElement(identity, socketid) {
     clone.querySelector('.namePlaceholder').innerText = identity.username;
     clone.querySelector('.avatar').src = identity.avatar
     //clone.querySelector('.videoElement').id = socketid + 'video';
+    clone.onclick = function () {
+        console.log("videoElement_" + socketid + " clicked");
+    }
     clone.querySelector('.fullscreenBTN').onclick = function () {
-        videoPlaceholder.requestFullscreen();
+        clone.querySelector('video').requestFullscreen();
     }
     clone.querySelector('.streamVolumeSlider').oninput = function () {
-        videoPlaceholder.volume = streamVolumeSlider.value / 100;
+        clone.querySelector('video').volume = clone.querySelector('.streamVolumeSlider').value / 100;
     }
     document.getElementById('videowrapper').appendChild(clone);
 }
 
 function cloneUserElement(identity, socketid) {
     var clone = document.getElementById('connectedUserTemplate').cloneNode(true).content.children[0];
-    
+
     clone.id = 'userElement_' + socketid
     clone.querySelector('.connected-user').querySelector('span').innerText = identity.username;
     clone.querySelector('.connected-user').querySelector('img').src = identity.avatar;

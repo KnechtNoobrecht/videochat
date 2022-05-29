@@ -22,14 +22,20 @@ var peers = {}
 class Peer extends EventTarget {
     #event;
     /**
-    * @constructor
-    * @method init()
-    * @param {boolean}  initiator  - true if initiator
-    * @param {String}  remotesid - The SocketIO id of the other client
-    * @param {String}  connectionID - The from this p2p Connection
-    * @example
-    */
-    constructor({ initiator: initiator, remotesid: remotesid, connectionID: connectionID, identity: identity }) {
+     * @constructor
+     * @method init()
+     * @param {boolean}  initiator  - true if initiator
+     * @param {String}  remotesid - The SocketIO id of the other client
+     * @param {String}  connectionID - The from this p2p Connection
+     * @example
+     */
+    constructor({
+        initiator: initiator,
+        remotesid: remotesid,
+        connectionID: connectionID,
+        identity: identity,
+        type: type
+    }) {
         super();
         if (initiator) {
             this.connectionID = connectionID || uuid()
@@ -38,7 +44,9 @@ class Peer extends EventTarget {
         }
 
         this.peer = new RTCPeerConnection({
-            iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+            iceServers: [{
+                urls: 'stun:stun.l.google.com:19302'
+            }]
         })
 
         this.stream
@@ -49,21 +57,24 @@ class Peer extends EventTarget {
         this.localsid = socket.id
         this.connected = false
         this.identity = identity || new Identity({})
+        this.type = type || 'video'
         this.tracks = []
     }
 
     /**
-    * @method init
-    * @description Try To connect to socketid
-    * @returns {Promise}  Returns a Promise
-    * @example
-    */
+     * @method init
+     * @description Try To connect to socketid
+     * @returns {Promise}  Returns a Promise
+     * @example
+     */
     async init(offer, stream) {
         return new Promise(async (resolve, reject) => {
             peers[this.connectionID] = this
 
             var prevReport = null;
             var that = this;
+            var infoData = document.getElementById('videoElement_' + this.remotesid).querySelector('.infoData')
+
             var t = setInterval(function () {
                 // console.log('jo hi');
                 if (!that.peer) {
@@ -76,7 +87,12 @@ class Peer extends EventTarget {
                             if (!prevReport) {
                                 prevReport = report;
                             } else {
+                                //console.log('infoData', infoData);
+                                var bitrate = Math.round((report.bytesReceived * 8 - prevReport.bytesReceived * 8) / (report.timestamp - prevReport.timestamp));
+                                //infoData.innerHTML = '<p>' + (report.bytesReceived * 8 - prevReport.bytesReceived * 8) / (report.timestamp - prevReport.timestamp) + 'Bit</p>'
+                                infoData.innerHTML = '<p>' + bitrate + ' Bit</p>'
                                 //console.log((report.bytesReceived * 8 - prevReport.bytesReceived * 8) / (report.timestamp - prevReport.timestamp));
+
                             }
                         }
                     });
@@ -91,14 +107,15 @@ class Peer extends EventTarget {
                 if (this.peer.connectionState === 'disconnected') {
                     console.log('P2P connection closed!')
                     this.connected = false
-                    var remoteVideo = document.getElementById("remoteVideo-" + this.connectionID)
-                    remoteVideo.remove()
+                    this.remove();
+                    //var remoteVideo = document.getElementById("remoteVideo-" + this.connectionID)
+                    //remoteVideo.remove()
                 }
             })
             // this.peer.addEventListener('icecandidate', (event) => {});
             this.peer.addEventListener('icecandidateerror', (event) => {
-                console.log('onicecandidateerror')
-                console.log(event)
+                // console.log('onicecandidateerror')
+                // console.log(event)
             })
             this.peer.addEventListener('negotiationneeded', (event) => {
                 console.log('negotiation needed')
@@ -138,7 +155,7 @@ class Peer extends EventTarget {
             })
             this.peer.addEventListener('datachannel', (event) => {
                 //this.dataChannel = event.channel
-                console.log('datachannel', event.channel);
+                //console.log('datachannel', event.channel);
                 event.channel.addEventListener('message', (event) => {
                     console.log('event.channel DATA CHANNEL MESSAGE:', event.data);
                 });
@@ -256,7 +273,9 @@ class Peer extends EventTarget {
         this.init()
     }
     removeTracks() {
-        this.sendData({ removeTracks: true })
+        this.send({
+            removeTracks: true
+        })
         for (const key in this.tracks) {
             const element = this.tracks[key];
             console.log('removeTrack', element);
@@ -264,10 +283,12 @@ class Peer extends EventTarget {
         }
     }
     remove() {
-        this.removeTracks()
+        //this.removeTracks()
         this.peer.close()
         delete peers[this.connectionID]
+        delete pm.peers[this.connectionID]
         delete this
+        console.log('remove peer', peers);
     }
 }
 
@@ -290,7 +311,7 @@ class PeersManager {
                     resolve(peers[peer])
                 }
             }
-            reject(null)
+            resolve(null)
             //return null
         })
     }
@@ -356,13 +377,17 @@ class PeersManager {
  */
 class Identity {
     /**
-    * @constructor
-    * @param {id}  ID  - ID 
-    * @param {username}  DisplayedUsername - Displayed Username
-    * @param {avatar}  AvatarURL - Avatar URL
-    * @example
-    */
-    constructor({ id: id, username: username, avatar: avatar }) {
+     * @constructor
+     * @param {id}  ID  - ID 
+     * @param {username}  DisplayedUsername - Displayed Username
+     * @param {avatar}  AvatarURL - Avatar URL
+     * @example
+     */
+    constructor({
+        id: id,
+        username: username,
+        avatar: avatar
+    }) {
         //console.log('Identity Created', id, username, avatar);
         this.id = id || uuid()
         this.username = username || 'Anonymous'
@@ -371,57 +396,73 @@ class Identity {
     }
 
     /**
-    * @method setIdentity
-    * @param {id}  ID  - ID 
-    * @param {username}  DisplayedUsername - Displayed Username
-    * @param {avatar}  AvatarURL - Avatar URL
-    * @example
-    */
+     * @method setIdentity
+     * @param {id}  ID  - ID 
+     * @param {username}  DisplayedUsername - Displayed Username
+     * @param {avatar}  AvatarURL - Avatar URL
+     * @example
+     */
     set(data) { // data = {id: id, username:username, avatar: avatar}
         this.id = data.id || this.id
         this.username = data.username || this.username
         this.avatar = data.avatar || this.avatar
-        addCookieObjectElement({ id: this.id, username: this.username, avatar: this.avatar })
-        return { id: this.id, username: this.username, avatar: this.avatar }
+        addCookieObjectElement({
+            id: this.id,
+            username: this.username,
+            avatar: this.avatar
+        })
+        return {
+            id: this.id,
+            username: this.username,
+            avatar: this.avatar
+        }
     }
 
     /**
-    * @method getIdentity - get Identity Object
-    * @returns {id}  ID  - { id: this.id, username: this.username, avatar: this.avatar }
-    * @example
-    */
+     * @method getIdentity - get Identity Object
+     * @returns {id}  ID  - { id: this.id, username: this.username, avatar: this.avatar }
+     * @example
+     */
     get() {
-        return { id: this.id, username: this.username, avatar: this.avatar }
+        return {
+            id: this.id,
+            username: this.username,
+            avatar: this.avatar
+        }
     }
 
     /**
-    * @method loadIdentitys - load Identitys from cookies
-    * @returns {Object} Identitys - { id: this.id, username: this.username, avatar: this.avatar }
-    * @example
-    */
+     * @method loadIdentitys - load Identitys from cookies
+     * @returns {Object} Identitys - { id: this.id, username: this.username, avatar: this.avatar }
+     * @example
+     */
     loadIdentitys() {
         let coockies = getCookieObject('ep_Identitys')
         return coockies
     }
 
     /**
-    * @method removeIdentity
-    * @returns {id}  ID  - Loads all identities from cookies
-    * @example
-    */
+     * @method removeIdentity
+     * @returns {id}  ID  - Loads all identities from cookies
+     * @example
+     */
     removeIdentity() {
         removeCookieObjectElement()
         delete this
-        return { id: this.id, username: this.username, avatar: this.avatar }
+        return {
+            id: this.id,
+            username: this.username,
+            avatar: this.avatar
+        }
     }
     /**
-    * @method checkIdentity
-    * @returns {id}  ID  - Loads all identities from cookies
-    * @example
-    */
+     * @method checkIdentity
+     * @returns {id}  ID  - Loads all identities from cookies
+     * @example
+     */
     checkIdentity() {
         let coockies = getCookieObject('ep_Identitys')
-        if (coockies.length > 0) { }
+        if (coockies.length > 0) {}
     }
 }
 
@@ -429,12 +470,15 @@ class Identity {
 //{ socket: sockets[index].id, identity: identitys[sockets[index].id] }
 class RoomMember {
     /**
-    * @constructor
-    * @param {remotesid}  ID  - ID 
-    * @param {identity}  DisplayedUsername - Displayed Username
-    * @example
-    */
-    constructor({ socket: remotesid, identity: identity }) {
+     * @constructor
+     * @param {remotesid}  ID  - ID 
+     * @param {identity}  DisplayedUsername - Displayed Username
+     * @example
+     */
+    constructor({
+        socket: remotesid,
+        identity: identity
+    }) {
         console.log('Identity Created', remotesid, identity);
     }
 }
@@ -450,9 +494,17 @@ class Room extends EventTarget {
     }
     addMember(sid, identity) {
         if (!this.members[sid]) {
-            this.members[sid] = { sid: sid, identity: identity }
+            this.members[sid] = {
+                sid: sid,
+                identity: identity
+            }
 
-            this.#event = new CustomEvent("memberAdded", { detail: { sid: sid, identity: identity } });
+            this.#event = new CustomEvent("memberAdded", {
+                detail: {
+                    sid: sid,
+                    identity: identity
+                }
+            });
             this.dispatchEvent(this.#event);
         } else {
             //console.log('Member already in room')
@@ -461,18 +513,31 @@ class Room extends EventTarget {
     removeMember(sid, identity) {
         if (this.members[sid]) {
             delete this.members[sid]
-            this.#event = new CustomEvent("memberRemoved", { detail: { sid: sid, identity: identity } });
+            this.#event = new CustomEvent("memberRemoved", {
+                detail: {
+                    sid: sid,
+                    identity: identity
+                }
+            });
             this.dispatchEvent(this.#event);
         } else {
             console.log('Member not in room')
         }
     }
     changeMember(sid, identity) {
-        this.#event = new CustomEvent("memberChanged", { detail: { sid: sid, identity: identity } });
+        this.#event = new CustomEvent("memberChanged", {
+            detail: {
+                sid: sid,
+                identity: identity
+            }
+        });
         this.dispatchEvent(this.#event);
     }
     sendMsg(msg) {
-        var data = { room: this.id, msg: msg }
+        var data = {
+            room: this.id,
+            msg: msg
+        }
         socket.emit('chatMSG', data);
     }
 }
@@ -505,6 +570,7 @@ function addCookieObjectElement(params) {
     setCookie('ep_Identitys', JSON.stringify(iCookieObj), 365)
     return getCookieObject('ep_Identitys')
 }
+
 function removeCookieObjectElement(id) {
     var iCookie = getCookie('ep_Identitys')
     if (iCookie == '') {
@@ -516,6 +582,7 @@ function removeCookieObjectElement(id) {
     setCookie('ep_Identitys', JSON.stringify(iCookieObj), 365)
     return getCookieObject(id)
 }
+
 function getIdentityByUsernameInCookie(username) {
     var coo = getCookieObject('ep_Identitys')
     for (var i in coo) {
@@ -525,6 +592,7 @@ function getIdentityByUsernameInCookie(username) {
     }
     return null
 }
+
 function getIdentityByUsernameInIdentityObject(username) {
     for (var i in identitys) {
         if (identitys[i].username === username) {
@@ -545,20 +613,30 @@ async function checkUsernameTaken(username) {
 async function addIdentityToObjects(data) {
     var a = await getIdentityByUsernameInCookie(data.username)
     if (a === null) {
-        addCookieObjectElement({ id: data.id, username: data.username, avatar: data.avatar })
+        addCookieObjectElement({
+            id: data.id,
+            username: data.username,
+            avatar: data.avatar
+        })
     }
 
     var b = await getIdentityByUsernameInIdentityObject(data.username)
     if (b === null) {
-        identitys.push({ id: data.id, username: data.username, avatar: data.avatar })
+        identitys.push({
+            id: data.id,
+            username: data.username,
+            avatar: data.avatar
+        })
     }
 }
+
 function setCookie(cname, cvalue, exdays) {
     const d = new Date()
     d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000)
     let expires = 'expires=' + d.toUTCString()
     document.cookie = cname + '=' + cvalue + ';' + expires + ';path=/'
 }
+
 function getCookie(cname) {
     let name = cname + '='
     let decodedCookie = decodeURIComponent(document.cookie)
@@ -574,6 +652,7 @@ function getCookie(cname) {
     }
     return ''
 }
+
 function getCookieObject(cname) {
     try {
         return JSON.parse(getCookie(cname))
@@ -581,6 +660,7 @@ function getCookieObject(cname) {
         return null
     }
 }
+
 function whatIsIt(object) {
     if (object === null) {
         return "null";
@@ -596,8 +676,7 @@ function whatIsIt(object) {
     }
     if (object.constructor === {}.constructor) {
         return "Object";
-    }
-    {
+    } {
         return "don't know";
     }
 }
@@ -630,9 +709,18 @@ function startStreaming() {
                 var mediaRecorder = new MediaRecorder(stream, localStreamOptions.mediaRecorderOptions);
                 stream = mediaRecorder.stream;
                 localStream = stream;
-                // localVideo.srcObject = localStream;
-                socket.emit('memberStartStreaming', room.id);
-                resolve(localStream);
+
+                var videoWrapper = document.getElementById('videoElement_' + socket.id)
+                var localVideo = videoWrapper.getElementsByTagName('video')[0]
+                var icon = videoWrapper.getElementsByTagName('img')[0]
+                localVideo.srcObject = localStream;
+
+                localVideo.onloadedmetadata = (e) => {
+                    localVideo.play()
+                    socket.emit('memberStartStreaming', room.id);
+                    icon.style = "display:none"
+                    resolve(localStream);
+                };
             })
             .catch((err) => {
                 console.log('nay', err);
@@ -683,7 +771,10 @@ function startCamStreaming() {
 }
 
 function getStream(remotesid) {
-    socket.emit('getStream', { fromSocket: socket.id, toSocket: remotesid });
+    socket.emit('getStream', {
+        fromSocket: socket.id,
+        toSocket: remotesid
+    });
 }
 
 function stopStream() {
@@ -741,6 +832,7 @@ function handleIncommingChatMSG(data) {
 
 
 var identitys = []
+
 function initIdentity() {
     var ido = getCookieObject('ep_Identitys')
     //console.log('ido ', ido);
@@ -748,7 +840,11 @@ function initIdentity() {
         Object.keys(ido).forEach((id) => {
             //console.log('Identity = ', id, ido[id])
             //identitys.push(new Identity(ido[id].id, ido[id].username, ido[id].avatar))
-            identitys.push(new Identity({ id: ido[id].id, username: ido[id].username, avatar: ido[id].avatar }))
+            identitys.push(new Identity({
+                id: ido[id].id,
+                username: ido[id].username,
+                avatar: ido[id].avatar
+            }))
         })
     } else {
         identitys.push(new Identity({}))
@@ -839,14 +935,23 @@ socket.on('getStream', async (indata) => {
         await startStreaming()
     }
 
-    console.log('getStream = ')
+    var availablePeer = await pm.getPeerBySocketID(indata.fromSocket)
+    console.log('Available Peer = ', availablePeer)
+    if (availablePeer) {
+        console.log('remove Available Peer = ')
+        availablePeer.remove()
+    }
+    console.log('pm.peers = ', pm.peers)
+
     let options = {
         initiator: true,
-        remotesid: indata.fromSocket
+        remotesid: indata.fromSocket,
+        type: 'video'
     }
     let peer = new Peer(options)
     var outdata = await peer.init(null, localStream);
     pm.addPeer(peer)
+
 })
 
 socket.on('chatMSG', async (data) => {
