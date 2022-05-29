@@ -21,7 +21,10 @@ function renderButtons(sioids) {
 }
 
 async function callSID(sid) {
-    var options = { initiator: true, remotesid: sid };
+    var options = {
+        initiator: true,
+        remotesid: sid
+    };
     var p = new Peer(options);
     await p.init(null);
     pm.addPeer(p);
@@ -29,90 +32,8 @@ async function callSID(sid) {
 
 
 room.addEventListener("memberAdded", function (e) {
-    var identity = e.detail.identity;
-    var socketid = e.detail.sid;
-    // console.log("newMember event ", identity, socketid);
-    var div = document.getElementById(identity.id);
-    if (!div) {
-        var namePlaceholder = document.createElement('div');
-        namePlaceholder.innerHTML = identity.username;
-        namePlaceholder.className = 'namePlaceholder';
-
-        var imgPlaceholder = document.createElement('img');
-        imgPlaceholder.src = identity.avatar
-        imgPlaceholder.className = 'avatar';
-
-        var newVideoElement = document.createElement('div');
-        newVideoElement.id = socketid + 'video';
-        newVideoElement.className = "videoElement";
-
-        var videoPlaceholder = document.createElement('video');
-
-        var fullscreenBTN = document.createElement('button');
-        fullscreenBTN.className = "fullscreenBTN";
-        fullscreenBTN.innerHTML = "Fullscreen";
-        fullscreenBTN.onclick = function () {
-            videoPlaceholder.requestFullscreen();
-        }
-        var streamVolumeSlider = document.createElement('input');
-        streamVolumeSlider.className = "streamVolumeSlider";
-        streamVolumeSlider.type = "range";
-        streamVolumeSlider.min = "0";
-        streamVolumeSlider.max = "100";
-        streamVolumeSlider.value = "100";
-        streamVolumeSlider.oninput = function () {
-            videoPlaceholder.volume = streamVolumeSlider.value / 100;
-        }
-
-        newVideoElement.appendChild(fullscreenBTN);
-        newVideoElement.appendChild(streamVolumeSlider);
-        newVideoElement.appendChild(namePlaceholder);
-        newVideoElement.appendChild(imgPlaceholder);
-        newVideoElement.appendChild(videoPlaceholder);
-
-        document.getElementById('videowrapper').appendChild(newVideoElement);
-
-
-
-        var connectedUserWrapper = document.createElement('div');
-        connectedUserWrapper.className = 'connected-user-wrapper';
-        connectedUserWrapper.id = socketid + 'username';
-
-
-        var connectedUser = document.createElement('div');
-        connectedUser.className = 'connected-user';
-
-        var connectedUserImg = document.createElement('img');
-        connectedUserImg.src = identity.avatar;
-        var connectedUserName = document.createElement('span');
-        connectedUserName.innerHTML = identity.username;
-
-        connectedUser.appendChild(connectedUserImg);
-        connectedUser.appendChild(connectedUserName);
-        connectedUserWrapper.appendChild(connectedUser);
-
-
-        var buttonWatch = document.createElement('div');
-        buttonWatch.className = 'button-watch';
-        buttonWatch.onclick = () => getStream(socketid)
-
-        var liveIcon = document.createElement('img');
-        liveIcon.src = '/svg/LiveButton1.svg';
-        var liveText = document.createElement('span');
-        liveText.innerHTML = 'Watch';
-
-        buttonWatch.appendChild(liveIcon);
-        buttonWatch.appendChild(liveText);
-        connectedUserWrapper.appendChild(buttonWatch);
-
-        document.getElementById('connected-users-list').appendChild(connectedUserWrapper);
-
-        if (identity.isStreaming) {
-            buttonWatch.style = "display:flex !important";
-        } else {
-            buttonWatch.style = "display:none !important";
-        }
-    }
+    cloneVideoElement(e.detail.identity, e.detail.sid) 
+    cloneUserElement(e.detail.identity, e.detail.sid)
 });
 
 room.addEventListener("memberRemoved", function (e) {
@@ -120,10 +41,10 @@ room.addEventListener("memberRemoved", function (e) {
     var socketid = e.detail.sid;
     console.log("removeMember event ", identity, socketid);
     var videowrapper = document.getElementById('videowrapper');
-    videowrapper.removeChild(document.getElementById(socketid + 'video'));
+    videowrapper.removeChild(document.getElementById('videoElement_' + socketid));
 
     var connectedUsersList = document.getElementById('connected-users-list');
-    connectedUsersList.removeChild(document.getElementById(socketid + 'username'));
+    connectedUsersList.removeChild(document.getElementById('userElement_' + socketid));
 
 });
 
@@ -133,7 +54,7 @@ room.addEventListener("memberChanged", function (e) {
     console.log("removeMember memberChanged ", identity, socketid);
     //var videowrapper = document.getElementById('videowrapper');
 
-    var userElement = document.getElementById(socketid + 'username');
+    var userElement = document.getElementById('userElement_' + socketid);
     userElement.getElementsByTagName('span')[0].innerHTML = identity.username;
     userElement.getElementsByTagName('img')[0].src = identity.avatar;
 
@@ -146,11 +67,9 @@ room.addEventListener("memberChanged", function (e) {
 
 function setStreamToWindow(peer) {
     console.log("setStreamToWindow");
-    var videoWrapper = document.getElementById(peer.remotesid + 'video')
+    var videoWrapper = document.getElementById('videoElement_' + peer.remotesid)
     var remoteVideo = videoWrapper.getElementsByTagName('video')[0]
     var icon = videoWrapper.getElementsByTagName('img')[0]
-
-
     remoteVideo.srcObject = peer.remoteStream;
     remoteVideo.onloadedmetadata = (e) => {
         remoteVideo.play()
@@ -200,6 +119,36 @@ function renderNewChatMsg(data) {
     return urlregex.test(value);
 } */
 
+function cloneVideoElement(identity, socketid) {
+    var clone = document.getElementById('videoElementTemplate').cloneNode(true).content.children[0];
+    clone.id = 'videoElement_' + socketid
+    clone.querySelector('.namePlaceholder').innerText = identity.username;
+    clone.querySelector('.avatar').src = identity.avatar
+    //clone.querySelector('.videoElement').id = socketid + 'video';
+    clone.querySelector('.fullscreenBTN').onclick = function () {
+        videoPlaceholder.requestFullscreen();
+    }
+    clone.querySelector('.streamVolumeSlider').oninput = function () {
+        videoPlaceholder.volume = streamVolumeSlider.value / 100;
+    }
+    document.getElementById('videowrapper').appendChild(clone);
+}
+
+function cloneUserElement(identity, socketid) {
+    var clone = document.getElementById('connectedUserTemplate').cloneNode(true).content.children[0];
+    
+    clone.id = 'userElement_' + socketid
+    clone.querySelector('.connected-user').querySelector('span').innerText = identity.username;
+    clone.querySelector('.connected-user').querySelector('img').src = identity.avatar;
+    clone.querySelector('.button-watch').onclick = () => getStream(socketid)
+    document.getElementById('connected-users-list').appendChild(clone);
+    if (identity.isStreaming) {
+        clone.querySelector('.button-watch').style = "display:flex !important";
+    } else {
+        clone.querySelector('.button-watch').style = "display:none !important";
+    }
+}
+
 
 
 function isValidURL(str) {
@@ -225,9 +174,15 @@ function youtubeUrlParser(url) {
 
     var timeToSec = function (str) {
         var sec = 0;
-        if (/h/.test(str)) { sec += parseInt(str.match(/(\d+)h/, '$1')[0], 10) * 60 * 60; }
-        if (/m/.test(str)) { sec += parseInt(str.match(/(\d+)m/, '$1')[0], 10) * 60; }
-        if (/s/.test(str)) { sec += parseInt(str.match(/(\d+)s/, '$1')[0], 10); }
+        if (/h/.test(str)) {
+            sec += parseInt(str.match(/(\d+)h/, '$1')[0], 10) * 60 * 60;
+        }
+        if (/m/.test(str)) {
+            sec += parseInt(str.match(/(\d+)m/, '$1')[0], 10) * 60;
+        }
+        if (/s/.test(str)) {
+            sec += parseInt(str.match(/(\d+)s/, '$1')[0], 10);
+        }
         return sec;
     };
 
@@ -309,8 +264,3 @@ resetTextarea = function () {
     elem.value = elem.value.replace(/\n\r?/g, '')
     elem.value = ''
 }
-
-
-
-
-

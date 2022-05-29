@@ -9,13 +9,13 @@ const resolutionDiv = document.getElementById('resolutionDiv');
 
 
 
-framerateDiv.onclick = function () {
+/* framerateDiv.onclick = function () {
     toggleSlider(this)
 }
 
 resolutionDiv.onclick = function () {
     toggleSlider(this)
-}
+} */
 
 function toggleSlider(ctx) {
     switch (ctx.id) {
@@ -93,7 +93,7 @@ if (document.addEventListener) {
         if (firstTime) {
             firstTime = false;
             console.log("You've tried to open context menu", e); //here you draw your own menu
-            e.preventDefault();
+           // e.preventDefault();
         } else {
             firstTime = true;
         }

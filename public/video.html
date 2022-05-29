@@ -12,48 +12,13 @@
 <body>
     <div class="grid-container">
         <div class="left-sidebar">
-            <div class="startStream">
-                <div class="fr-rs-wrapper" id="framerateDiv">
-                    <div class="slider-framerate" id="slider-fr"></div>
-                    <span>30</span>
-                    <span>60</span>
-                </div>
-                <div class="fr-rs-wrapper" id="resolutionDiv">
-                    <div class="slider-resolution" id="slider-rs"></div>
-                    <span>1080p</span>
-                    <span>Quelle</span>
-                </div>
-                <div onclick="startStreaming()" class="button-startStreaming">
-                    Start
-                </div>
-                <div onclick="startCamStreaming()" class="button-startStreaming">
-                    Start Cam
-                </div>
-            </div>
-
             <div class="list-connected-users" id="connected-users-list">
             </div>
         </div>
 
         <div class="center-videos">
-            <div class="videowrapper" id="videowrapper">
-                <!-- <div class="videoElement">
-                    <video class="videoPlaceholder" src=""></video>
-                </div>
-                <div class="videoElement">
-                    <video class="videoPlaceholder" src=""></video>
-                </div> 
-                <div class="videoElement">
-                    <video class="videoPlaceholder" src=""></video>
-                </div> 
-                <div class="videoElement">
-                    <video class="videoPlaceholder" src=""></video>
-                </div> 
-                <div class="videoElement">
-                    <video class="videoPlaceholder" src=""></video>
-                </div>   -->
-
-            </div>
+            <div class="videowrapper" id="videowrapper"></div>
+            <span class="startStream">Start Stream</span>
         </div>
         <div id="rs" class="right-sidebar">
             <div class="chat-wrapper">
@@ -92,10 +57,35 @@
             </div>
             <div class="modal-footer">
                 <h3>Modal Footer</h3>
-
             </div>
         </div>
     </modal>
+
+    <template id="videoElementTemplate">
+        <div id="" class="videoElement">
+            <button class="fullscreenBTN">
+                <img src="/svg/fullscreen.svg" alt="">
+            </button>
+            <input class="streamVolumeSlider" type="range" min="0" max="100">
+            <div class="namePlaceholder">placeholder</div>
+            <img src="" class="avatar">
+            <video></video>
+        </div>
+    </template>
+
+    <template id="connectedUserTemplate">
+        <div class="connected-user-wrapper" id="">
+            <div class="connected-user">
+                <img src="">
+                <span>placeholder</span>
+            </div>
+            <div class="button-watch" style="display: none !important;">
+                <img src="/svg/LiveButton1.svg">
+                <span>Watch</span>
+            </div>
+        </div>
+    </template>
+
 </body>
 <script src="/socket.io/socket.io.js"></script>
 

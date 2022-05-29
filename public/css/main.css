@@ -1,29 +1,22 @@
-@font-face {
-  font-family: Roboto;
-  src: url("/fonts/Roboto/Roboto-Regular.ttf");
+@import url(https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap);
+:root {
+  --primary_color_bg: #2f3136;
 }
-@font-face {
-  font-family: RobotoMedium;
-  src: url("/fonts/Roboto/Roboto-Medium.ttf");
-}
-@font-face {
-  font-family: RobotoLight;
-  src: url("/fonts/Roboto/Roboto-Light.ttf");
-}
-@font-face {
-  font-family: RobotoBold;
-  src: url("/fonts/Roboto/Roboto-Bold.ttf");
-}
+
 *,
 ::before,
 ::after {
   box-sizing: border-box;
 }
 
-body {
+body, html {
   margin: 0;
   padding: 0;
   background-color: #202225;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+}
+body :focus, html :focus {
+  outline: none;
 }
 
 a {
@@ -54,15 +47,29 @@ iframe {
   overflow-y: auto;
 }
 
+.startStream {
+  color: white;
+  position: absolute;
+  bottom: 25px;
+  background-color: #f92c47;
+  font-weight: 600;
+  font-size: 1.4rem;
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+}
+
 .videowrapper {
   display: grid;
   place-content: center;
   grid-template-columns: 1fr 1fr;
   grid-template-areas: "video video";
   width: 100%;
+  height: 100%;
   grid-row-gap: 1vw;
   grid-column-gap: 1vw;
-  max-width: 50vw;
+  max-width: 55vw;
+  align-content: stretch;
 }
 
 .videowrapper .videoElement:nth-child(odd):last-child {
@@ -72,39 +79,67 @@ iframe {
 
 .videoElement {
   position: relative;
+  z-index: 0;
   border-radius: 10px;
-  background-color: #055864;
+  background-color: var(--primary_color_bg);
 }
 
 .avatar {
   position: absolute;
+  z-index: 0;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  background-color: #055864;
 }
 
 .namePlaceholder {
   position: absolute;
+  z-index: 0;
   bottom: 10px;
   left: 10px;
-  background-color: #2f3136;
+  background-color: rgba(var(--primary_color_bg), 0.82);
   color: white;
   font-size: 18px;
-  font-weight: 590;
-  font-family: RobotoMedium;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 5px;
+}
+
+.fullscreenBTN {
+  position: absolute;
+  z-index: 99;
+  right: 12px;
+  bottom: 10px;
+  background-color: var(--primary_color_bg);
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 0;
+  border: none;
+}
+
+.streamVolumeSlider {
+  position: absolute;
+  z-index: 99;
+  bottom: 10px;
+  right: 40px;
+  background-color: var(--primary_color_bg);
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
   border-radius: 10px;
   padding: 5px;
 }
 
 .list-connected-users {
+  max-width: 370px;
   margin: 25px 0 0 25px;
-  width: 420px;
   border-radius: 15px;
-  background-color: #2f3136;
+  background-color: var(--primary_color_bg);
   justify-content: space-between;
   padding: 9px 10px 9px 10px;
   cursor: default;
@@ -132,17 +167,15 @@ iframe {
 
 .connected-user span {
   color: white;
-  font-size: 18px;
-  font-weight: 590;
-  font-family: RobotoMedium;
+  font-size: 1rem;
+  font-weight: 600;
   padding-left: 15px;
 }
 
 .right-sidebar {
-  position: absolute;
-  right: 0px;
-  width: 420px;
+  box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.25), 0 3px 15px 8px rgba(0, 0, 0, 0.08);
   height: 100%;
+  border-radius: 5px 0 0 5px;
 }
 
 .chat-body {
@@ -160,7 +193,7 @@ iframe {
 }
 
 .chat-body::-webkit-scrollbar-track {
-  background: #2f3136;
+  background: var(--primary_color_bg);
   /* color of the tracking area */
 }
 
@@ -175,17 +208,15 @@ iframe {
 
 .chat-wrapper {
   position: relative;
-  width: 420px;
   height: 100%;
 }
 
 .chat-message {
   position: relative;
   left: 55px;
-  color: white;
-  font-size: 12px;
-  font-weight: 590;
-  font-family: RobotoMedium;
+  color: #d1d1d1;
+  font-size: 1rem;
+  font-weight: 400;
 }
 
 .chat-message-wrapper {
@@ -195,20 +226,20 @@ iframe {
   margin: 15px 0px 15px 0px;
   width: 420px;
   border-radius: 15px;
-  background-color: #2f3136;
+  background-color: var(--primary_color_bg);
   padding: 9px 10px 9px 10px;
   cursor: default;
 }
 
 .chat-input {
   position: absolute;
-  width: 100%;
+  left: 0px;
   right: 0px;
-  bottom: 10px;
+  bottom: 0px;
   color: white;
   font-size: 12px;
-  font-weight: 590;
-  font-family: RobotoMedium;
+  font-weight: 600;
+  margin: 10px 5px 10px 5px;
 }
 
 textarea {
@@ -216,16 +247,16 @@ textarea {
   min-height: 40px;
   height: 40px;
   padding: 12px 20px;
-  margin: 8px 0;
+  margin: 0px 0;
   border: none;
   border-radius: 5px;
   box-sizing: border-box;
   color: white;
   font-size: 12px;
-  font-weight: 590;
-  font-family: RobotoMedium;
-  background-color: #2f3136;
+  font-weight: 600;
+  background-color: var(--primary_color_bg);
   resize: none;
+  font-family: Inter, -apple-system, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
   overflow: hidden;
 }
 
@@ -251,33 +282,8 @@ textarea {
 .button-watch span {
   color: white;
   font-size: 18px;
-  font-weight: 590;
-  font-family: RobotoMedium;
+  font-weight: 600;
   padding-right: 15px;
-}
-
-.startStream {
-  margin: 25px 0 0 25px;
-  min-width: 401px;
-  max-width: 426px;
-  border-radius: 15px;
-  background-color: #2f3136;
-  display: flex;
-  justify-content: space-between;
-  padding: 9px 10px 9px 10px;
-  cursor: default;
-  user-select: none;
-}
-
-.list-connected-users {
-  min-width: 401px;
-  max-width: 426px;
-  border-radius: 15px;
-  background-color: #2f3136;
-  margin: 20px 0 0 25px;
-  padding: 9px 10px 9px 10px;
-  cursor: default;
-  user-select: none;
 }
 
 .connected-user-wrapper {
@@ -285,44 +291,9 @@ textarea {
   justify-content: space-between;
 }
 .connected-user-wrapper div span {
-  font-family: RobotoLight;
+  font-weight: 500;
   color: #fff;
-}
-
-.fr-rs-wrapper {
-  background-color: #36393F;
-  border-radius: 10px;
-  font-family: Roboto;
-  font-size: 24px;
-  font-weight: 590;
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: relative;
-}
-.fr-rs-wrapper span {
-  z-index: 1;
-}
-.fr-rs-wrapper span:first-of-type {
-  margin: 0 10px 0 10px;
-}
-.fr-rs-wrapper span:last-of-type {
-  margin: 0 10px 0 10px;
-}
-
-.slider, .slider-resolution, .slider-framerate {
-  position: absolute;
-  background-color: #6a6d70;
-  left: 3px;
-  width: calc(50% - 6px);
-  height: calc(100% - 6px);
-  border-radius: 7px;
-  transition: all 200ms;
-}
-.slider-right {
-  width: calc(50% - 3px);
-  transform: translateX(100%);
+  font-size: 1rem;
 }
 
 .button, .button-watch, .button-startStreaming {
@@ -330,8 +301,7 @@ textarea {
   padding: 5px 10px 5px 10px;
   text-align: center;
   color: white;
-  font-weight: 590;
-  font-family: RobotoMedium;
+  font-weight: 600;
   user-select: none;
 }
 .button-startStreaming {
@@ -345,7 +315,9 @@ textarea {
 }
 
 video {
+  position: absolute;
   width: 100%;
+  height: 100%;
 }
 
 /* Could Use thise as well for Individual Controls */
@@ -367,4 +339,81 @@ video::-webkit-media-controls-current-time-display {
   top: 0;
   left: 0;
   background-color: #175ec7;
+}
+
+modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 99999;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: #36393F;
+  border-radius: 10px 10px 0 0;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  background-color: var(--primary_color_bg);
+  border-radius: 0 0 0px 0px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: #36393F;
+  border-radius: 0 0 10px 10px;
+}
+
+.show {
+  display: flex;
+}
+
+.hide {
+  display: none;
+}
+
+.btn, .btn-secondary, .btn-primary {
+  border-radius: 10px;
+  padding: 5px 10px 5px 10px;
+  text-align: center;
+  color: #6e6e6e;
+  font-weight: 600;
+  user-select: none;
+  cursor: pointer;
+  border: 1;
+}
+.btn-primary {
+  background-color: var(--primary_color_bg);
+  font-size: 28px;
+}
+.btn-secondary {
+  background-color: var(--primary_color_bg);
+  font-size: 20px;
+}
+
+@media only screen and (max-width: 1600px) {
+  .right-sidebar {
+    display: none;
+  }
+
+  .grid-container {
+    grid-template-columns: 1fr 4fr;
+  }
 }
