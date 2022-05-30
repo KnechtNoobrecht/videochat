@@ -49,7 +49,8 @@ iframe {
 
 .grid-container {
   display: grid;
-  grid-template-columns: 1fr 3fr 1fr; }
+  grid-template-columns: 1fr 3fr 1fr;
+  transition: all 0.3s ease 0s; }
 
 .center-videos {
   height: 100vh;
@@ -67,7 +68,7 @@ iframe {
 .startStream {
   color: white;
   position: absolute;
-  bottom: -47px;
+  bottom: 25px;
   background-color: #f92c47;
   font-weight: 600;
   font-size: 1.4rem;
@@ -75,7 +76,7 @@ iframe {
   padding: 10px;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.2, 0.4, 0.8, 1);
-  opacity: 0; }
+  opacity: 1; }
 
 .videowrapper {
   display: grid;
@@ -86,7 +87,7 @@ iframe {
   height: 100%;
   grid-row-gap: 1vw;
   grid-column-gap: 1vw;
-  max-width: 55vw;
+  padding: 0 1vw 0 1vw;
   align-content: stretch; }
 
 .videowrapper-2 {
@@ -215,7 +216,8 @@ iframe {
   overflow-x: hidden;
   top: 0px;
   bottom: 70px;
-  right: 0px; }
+  right: 0px;
+  width: 100%; }
 
 .chat-wrapper {
   position: relative;
@@ -233,7 +235,7 @@ iframe {
   flex-direction: column;
   align-items: flex-start;
   margin: 15px 0px 15px 0px;
-  width: 420px;
+  width: 100%;
   border-radius: 15px;
   background-color: var(--primary_color_bg);
   padding: 9px 10px 9px 10px;

@@ -76,7 +76,7 @@ class Peer extends EventTarget {
             var infoDataIn = document.getElementById('videoElement_' + this.remotesid).querySelector('#infoData_In')
             var infoDataOut = document.getElementById('videoElement_' + this.localsid).querySelector('#infoData_Out')
 
-            var t = setInterval(function () {
+            this.timer = setInterval(function () {
                 // console.log('jo hi');
                 if (!that.peer) {
                     prevReport = null;
@@ -93,7 +93,8 @@ class Peer extends EventTarget {
                                 var bitrateReceived = Math.round((report.bytesReceived * 8 - prevReport.bytesReceived * 8) / (report.timestamp - prevReport.timestamp));
 
                                 //infoData.innerHTML = '<p>' + (report.bytesReceived * 8 - prevReport.bytesReceived * 8) / (report.timestamp - prevReport.timestamp) + 'Bit</p>'
-                                infoDataIn.innerHTML = `<p>Bitrate = ${bitrateReceived} kBit <br> 
+                                infoDataIn.innerHTML = `<p>Received <br>
+                                Bitrate = ${bitrateReceived} kBit <br> 
                                 Frames Dropped = ${report.framesDropped} <br>
                                 FPS = ${report.framesPerSecond} <br>
                                 packets Lost = ${report.packetsLost} <br>
@@ -103,15 +104,15 @@ class Peer extends EventTarget {
                                 //console.log((report.bytesReceived * 8 - prevReport.bytesReceived * 8) / (report.timestamp - prevReport.timestamp));
 
                             }
-                        }
-                        if (report.type === 'outbound-rtp' && report.mediaType === 'video') {
+                        } else if (report.type === 'outbound-rtp' && report.mediaType === 'video') {
                             if (!prevReport) {
                                 prevReport = report;
                             } else {
                                 //console.log('report outbound-rtp = ', report);
                                 var bitrateSent = Math.round((report.bytesSent * 8 - prevReport.bytesSent * 8) / (report.timestamp - prevReport.timestamp));
 
-                                infoDataOut.innerHTML = `<p>Bitrate = ${bitrateSent} kBit <br> 
+                                infoDataOut.innerHTML = `<p>Sent <br> 
+                                Bitrate = ${bitrateSent} kBit <br> 
                                 FPS = ${report.framesPerSecond} <br>
                                 Res = ${report.frameHeight} x ${report.frameWidth} <br>
                                 </p>`
@@ -374,7 +375,7 @@ class PeersManager {
             var element = this.peers[peer]
             //this.peers[peer.id].init();
             if (element.initiator) {
-
+                clearInterval(element.timer)
                 let options = {
                     initiator: true,
                     remotesid: element.remotesid,
@@ -382,6 +383,7 @@ class PeersManager {
                 }
                 let peer = new Peer(options)
                 var outdata = await peer.init(null, localStream);
+                //element.remove()
             }
         }
     }
@@ -728,9 +730,18 @@ function startStreaming() {
             })
             .then(async (stream) => {
                 stopStream()
+                console.log('streaming started', stream);
+
                 var mediaRecorder = new MediaRecorder(stream, localStreamOptions.mediaRecorderOptions);
                 stream = mediaRecorder.stream;
                 localStream = stream;
+
+                if (localStream.getAudioTracks().length == 0) {
+                    var AudioContext = window.AudioContext || window.webkitAudioContext;
+                    var audioCtx = new AudioContext();
+                    var dest = audioCtx.createMediaStreamDestination();
+                    localStream.addTrack(dest.stream.getAudioTracks()[0]);
+                }
 
                 var videoWrapper = document.getElementById('videoElement_' + socket.id)
                 var localVideo = videoWrapper.getElementsByTagName('video')[0]
@@ -801,11 +812,12 @@ function getStream(remotesid) {
 
 function stopStream() {
     try {
-        let tracks = localVideo.srcObject.getTracks();
+        let tracks = localStream.getTracks();
         tracks.forEach(track => track.stop());
         localVideo.srcObject = null;
+        localStream = null;
     } catch (error) {
-
+        console.log(error);
     }
     socket.emit('memberStopStreaming', room.id);
 }
@@ -882,6 +894,12 @@ initIdentity();
 // { fromSocket: this.localsid, toSocket: this.remotesid, connectionID: this.connectionID, data: { offer: offer } }
 socket.on('peerOffer', async (indata) => {
     console.log('incoming Peer offer = ', indata);
+
+    var currentPeer = await pm.getPeerByConnectionID(indata.connectionID)
+    if (currentPeer) {
+        clearInterval(currentPeer.timer)
+        currentPeer.peer.close()
+    }
 
     // { offer: offer, initiatorsid: this.sid, connectionID: this.id }
     let options = {
@@ -1009,3 +1027,28 @@ var localStreamOptions = {
 }
 
 //selectStream();
+
+
+function getBrowser() {
+    var ua = navigator["userAgent"]
+
+    if (ua.indexOf("Chrome") > -1) {
+        return "Chrome"
+    } else if (ua.indexOf("Firefox") > -1) {
+        return "Firefox"
+    } else if (ua.indexOf("Safari") > -1) {
+        return "Safari"
+    } else if (ua.indexOf("Opera") > -1) {
+        return "Opera"
+    } else if (ua.indexOf("MSIE") > -1) {
+        return "IE"
+    } else {
+        return "Unknown"
+    }
+}
+
+function tritratrallaala() {
+    document.getElementById('knecht').innerHTML = getBrowser();
+}
+
+tritratrallaala()

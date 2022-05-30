@@ -276,7 +276,7 @@ function toggleChat() {
     console.log("toggleChat", str);
     if (isChatOpen) {
 
-        document.getElementById('grid-container').style.gridTemplateColumns = "1fr 3fr 0fr";
+        document.getElementById('grid-container').style.gridTemplateColumns = "1fr 4fr 0fr";
         chatbtn.style.transform = "rotate(0deg)";
     } else {
 
@@ -285,3 +285,6 @@ function toggleChat() {
     }
     isChatOpen = !isChatOpen
 }
+
+
+console.log('chrome://webrtc-internals/');
