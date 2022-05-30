@@ -141,7 +141,8 @@ iframe {
   left: 10px;
   background-color: #00559f;
   color: white;
-  border-radius: 10px; }
+  border-radius: 10px;
+  width: max-content; }
 
 .fullscreenBTN {
   position: absolute;

@@ -73,7 +73,8 @@ class Peer extends EventTarget {
 
             var prevReport = null;
             var that = this;
-            var infoData = document.getElementById('videoElement_' + this.remotesid).querySelector('.infoData')
+            var infoDataIn = document.getElementById('videoElement_' + this.remotesid).querySelector('#infoData_In')
+            var infoDataOut = document.getElementById('videoElement_' + this.localsid).querySelector('#infoData_Out')
 
             var t = setInterval(function () {
                 // console.log('jo hi');
@@ -83,27 +84,37 @@ class Peer extends EventTarget {
                 }
                 that.peer.getStats(null).then(reporter => {
                     reporter.forEach(report => {
-
                         if (report.type === 'inbound-rtp' && report.mediaType === 'video') {
                             if (!prevReport) {
                                 prevReport = report;
                             } else {
-                                console.log(report);
+                                //console.log(report);
                                 //console.log('infoData', infoData);
                                 var bitrateReceived = Math.round((report.bytesReceived * 8 - prevReport.bytesReceived * 8) / (report.timestamp - prevReport.timestamp));
 
                                 //infoData.innerHTML = '<p>' + (report.bytesReceived * 8 - prevReport.bytesReceived * 8) / (report.timestamp - prevReport.timestamp) + 'Bit</p>'
-                                infoData.innerHTML = `<p>Bitrate = ${bitrateReceived} kBit <br> 
+                                infoDataIn.innerHTML = `<p>Bitrate = ${bitrateReceived} kBit <br> 
                                 Frames Dropped = ${report.framesDropped} <br>
                                 FPS = ${report.framesPerSecond} <br>
                                 packets Lost = ${report.packetsLost} <br>
                                 Res = ${report.frameHeight} x ${report.frameWidth} <br>
-                                
-                                
                                 </p>`
 
                                 //console.log((report.bytesReceived * 8 - prevReport.bytesReceived * 8) / (report.timestamp - prevReport.timestamp));
 
+                            }
+                        }
+                        if (report.type === 'outbound-rtp' && report.mediaType === 'video') {
+                            if (!prevReport) {
+                                prevReport = report;
+                            } else {
+                                //console.log('report outbound-rtp = ', report);
+                                var bitrateSent = Math.round((report.bytesSent * 8 - prevReport.bytesSent * 8) / (report.timestamp - prevReport.timestamp));
+
+                                infoDataOut.innerHTML = `<p>Bitrate = ${bitrateSent} kBit <br> 
+                                FPS = ${report.framesPerSecond} <br>
+                                Res = ${report.frameHeight} x ${report.frameWidth} <br>
+                                </p>`
                             }
                         }
                     });

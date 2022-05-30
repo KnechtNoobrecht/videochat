@@ -4,7 +4,13 @@ const url = require('url');
 
 // SET ENV
 process.env.NODE_ENV = 'development';
-const { app, BrowserWindow, Menu, ipcMain, desktopCapturer } = electron;
+const {
+	app,
+	BrowserWindow,
+	Menu,
+	ipcMain,
+	desktopCapturer
+} = electron;
 
 app.on('ready', function () {
 	// Create new window
@@ -21,8 +27,8 @@ app.on('ready', function () {
 
 	mainWindow.loadURL(
 		url.format({
-			pathname: path.join(__dirname, 'public/test.html'),
-			protocol: 'file:',
+			pathname: 'localhost/rooms/wte',
+			protocol: 'http:',
 			slashes: true,
 			title: 'Electron Example'
 		})
@@ -35,9 +41,9 @@ app.on('ready', function () {
 		app.quit();
 	});
 
-	mainWindow.on('minimize', function (event) { });
+	mainWindow.on('minimize', function (event) {});
 
-	mainWindow.on('restore', function (event) { });
+	mainWindow.on('restore', function (event) {});
 	// Build menu from template
 	const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
 	// Insert menu
@@ -50,9 +56,13 @@ const mainMenuTemplate = [
 	// Each object is a dropdown
 	{
 		label: 'Application',
-		submenu: [
-			{ label: 'About Application', selector: 'orderFrontStandardAboutPanel:' },
-			{ type: 'separator' },
+		submenu: [{
+				label: 'About Application',
+				selector: 'orderFrontStandardAboutPanel:'
+			},
+			{
+				type: 'separator'
+			},
 			{
 				label: 'Quit',
 				accelerator: 'Command+Q',
@@ -64,10 +74,19 @@ const mainMenuTemplate = [
 	},
 	{
 		label: 'Edit',
-		submenu: [
-			{ label: 'Undo', accelerator: 'CmdOrCtrl+Z', selector: 'undo:' },
-			{ label: 'Redo', accelerator: 'Shift+CmdOrCtrl+Z', selector: 'redo:' },
-			{ type: 'separator' },
+		submenu: [{
+				label: 'Undo',
+				accelerator: 'CmdOrCtrl+Z',
+				selector: 'undo:'
+			},
+			{
+				label: 'Redo',
+				accelerator: 'Shift+CmdOrCtrl+Z',
+				selector: 'redo:'
+			},
+			{
+				type: 'separator'
+			},
 			{
 				label: 'Test Function Call',
 				accelerator: 'CmdOrCtrl+S',
@@ -75,11 +94,29 @@ const mainMenuTemplate = [
 					testFunction();
 				}
 			},
-			{ type: 'separator' },
-			{ label: 'Cut', accelerator: 'CmdOrCtrl+X', selector: 'cut:' },
-			{ label: 'Copy', accelerator: 'CmdOrCtrl+C', selector: 'copy:' },
-			{ label: 'Paste', accelerator: 'CmdOrCtrl+V', selector: 'paste:' },
-			{ label: 'Select All', accelerator: 'CmdOrCtrl+A', selector: 'selectAll:' }
+			{
+				type: 'separator'
+			},
+			{
+				label: 'Cut',
+				accelerator: 'CmdOrCtrl+X',
+				selector: 'cut:'
+			},
+			{
+				label: 'Copy',
+				accelerator: 'CmdOrCtrl+C',
+				selector: 'copy:'
+			},
+			{
+				label: 'Paste',
+				accelerator: 'CmdOrCtrl+V',
+				selector: 'paste:'
+			},
+			{
+				label: 'Select All',
+				accelerator: 'CmdOrCtrl+A',
+				selector: 'selectAll:'
+			}
 		]
 	}
 ];
@@ -93,8 +130,7 @@ if (process.platform == 'darwin') {
 if (process.env.NODE_ENV !== 'production') {
 	mainMenuTemplate.push({
 		label: 'Developer Tools',
-		submenu: [
-			{
+		submenu: [{
 				role: 'reload'
 			},
 			{
@@ -114,7 +150,9 @@ ipcMain.handle('TestEvent', async (event, data) => {
 });
 
 ipcMain.handle('getSources', async (event) => {
-	desktopCapturer.getSources({ types: ['window', 'screen'] }).then(async sources => {
+	desktopCapturer.getSources({
+		types: ['window', 'screen']
+	}).then(async sources => {
 
 		mainWindow.webContents.send('SET_SOURCE', sources);
 
@@ -124,11 +162,9 @@ ipcMain.handle('getSources', async (event) => {
 
 // This is the Test Function that you can call from Menu
 var i = 0;
+
 function testFunction(params) {
 	i++;
 	console.log('You Click in Menu the Test Button i = ', i);
 	mainWindow.send('TestEvent', i);
 }
-
-
-
