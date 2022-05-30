@@ -272,8 +272,8 @@ var isChatOpen = true;
 var chatbtn = document.getElementsByClassName('chat-open-close-btn')[0];
 
 function toggleChat() {
-    var str = document.getElementById('grid-container').style.gridTemplateColumn
-    console.log("toggleChat", str);
+    var str = document.getElementById('grid-container').style
+    console.log("toggleChat", str.gridTemplateColumns);
     if (isChatOpen) {
 
         document.getElementById('grid-container').style.gridTemplateColumns = "1fr 4fr 0fr";
@@ -286,5 +286,17 @@ function toggleChat() {
     isChatOpen = !isChatOpen
 }
 
+
+var ro = new ResizeObserver(entries => {
+    for (let entry of entries) {
+        const cr = entry.contentRect;
+        console.log('Element:', entry.target);
+        console.log(`Element size: ${cr.width}px x ${cr.height}px`);
+        console.log(`Element padding: ${cr.top}px ; ${cr.left}px`);
+    }
+});
+
+// Observe one or multiple elements
+ro.observe(document.getElementById('videowrapper'));
 
 console.log('chrome://webrtc-internals/');

@@ -730,10 +730,13 @@ function startStreaming() {
             })
             .then(async (stream) => {
                 stopStream()
-                console.log('streaming started', stream);
+                //console.log('streaming started', stream);
 
-                var mediaRecorder = new MediaRecorder(stream, localStreamOptions.mediaRecorderOptions);
-                stream = mediaRecorder.stream;
+                if (getBrowser() === 'Firefox') {
+                    var mediaRecorder = new MediaRecorder(stream, localStreamOptions.mediaRecorderOptions);
+                    stream = mediaRecorder.stream;
+                }
+
                 localStream = stream;
 
                 if (localStream.getAudioTracks().length == 0) {
@@ -1046,9 +1049,3 @@ function getBrowser() {
         return "Unknown"
     }
 }
-
-function tritratrallaala() {
-    document.getElementById('knecht').innerHTML = getBrowser();
-}
-
-tritratrallaala()
