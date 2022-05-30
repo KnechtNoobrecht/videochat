@@ -267,3 +267,21 @@ resetTextarea = function () {
     elem.value = elem.value.replace(/\n\r?/g, '')
     elem.value = ''
 }
+
+var isChatOpen = true;
+var chatbtn = document.getElementsByClassName('chat-open-close-btn')[0];
+
+function toggleChat() {
+    var str = document.getElementById('grid-container').style.gridTemplateColumn
+    console.log("toggleChat", str);
+    if (isChatOpen) {
+
+        document.getElementById('grid-container').style.gridTemplateColumns = "1fr 3fr 0fr";
+        chatbtn.style.transform = "rotate(0deg)";
+    } else {
+
+        document.getElementById('grid-container').style.gridTemplateColumns = "1fr 3fr 1fr";
+        chatbtn.style.transform = "rotate(180deg)";
+    }
+    isChatOpen = !isChatOpen
+}
