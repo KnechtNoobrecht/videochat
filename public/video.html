@@ -10,7 +10,7 @@
 </head>
 
 <body>
-    <div class="grid-container">
+    <div id="grid-container" class="grid-container">
         <div class="left-sidebar">
             <div class="list-connected-users" id="connected-users-list">
             </div>
@@ -22,7 +22,9 @@
         </div>
         <div id="rs" class="right-sidebar">
             <div class="chat-wrapper">
-
+                <div onclick="toggleChat()" class="chat-open-close-btn">
+                    <img src="/svg/test.svg">
+                </div>
                 <div class="chat-body">
                     <!-- <div class="chat-message-wrapper">
                         <div class="connected-user">
