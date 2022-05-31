@@ -2,6 +2,18 @@
 :root {
   --primary_color_bg: #2f3136; }
 
+@media only screen and (max-width: 1600px) {
+  .grid-container {
+    grid-template-columns: 1fr 4fr 0fr; }
+  .videowrapper {
+    grid-template-columns: 1fr 1fr; }
+  .bot_bar_hover {
+    width: 80% !important; } }
+
+@media only screen and (max-width: 900px) {
+  .bot_bar_hover {
+    width: 95% !important; } }
+
 *,
 ::before,
 ::after {
@@ -386,8 +398,64 @@ modal {
   font-weight: 600;
   cursor: pointer; }
 
-@media only screen and (max-width: 1600px) {
-  .right-sidebar {
-    display: none; }
-  .grid-container {
-    grid-template-columns: 1fr 4fr; } }
+.bot_bar {
+  position: absolute;
+  background-color: #36393F;
+  border-radius: 10px 10px 0px 0px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 10px;
+  bottom: 0px;
+  transition: all 0.3s cubic-bezier(0.2, 0.4, 0.8, 1);
+  padding-top: 0px;
+  width: 100%; }
+
+.bot_bar_hover {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 50%;
+  height: 60px;
+  border-radius: 10px 10px 0px 0px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 10px 0px 10px;
+  transform: translateX(-50%); }
+
+.bot_bar_hover:hover > .bot_bar {
+  height: 50px; }
+
+.bot_bar_hover:hover > .bot_bar > .bot_bar_item {
+  visibility: visible;
+  height: 50px;
+  padding-top: 0px; }
+
+.bot_bar_item {
+  transition: all 0.3s cubic-bezier(0.2, 0.4, 0.8, 1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 400;
+  cursor: pointer;
+  font-size: inherit;
+  padding-top: 30px;
+  padding-left: 10px;
+  padding-right: 10px;
+  visibility: hidden; }
+
+.bot_bar_item:hover {
+  color: #b1b1b1; }
+
+.bot_bar_item img {
+  width: 30px;
+  height: 30px;
+  margin-right: 0px; }
+
+.chat-message-time {
+  font-size: 12px !important;
+  font-weight: 250 !important; }

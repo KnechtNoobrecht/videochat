@@ -6,6 +6,7 @@
 	"scripts": {
 		"server": "node server.js",
 		"app": "electron ./app.js --webrtc-max-cpu-consumption-percentage=100",
+		"server-tunnel": "ssh -p 22 -N -R 6565:localhost:80 msfi08@h2899502.stratoserver.net",
 		"install-all": "npm install && npm install --only=dev",
 		"package-mac": "electron-packager . --overwrite --platform=darwin --arch=x64 --icon=assets/icons/mac/icon.icns --prune=true --out=release-builds",
 		"package-win": "electron-packager . --overwrite --asar=true --platform=win32 --arch=x64 --icon=assets/icons/win/icon.ico --prune=true --out=release-builds --version-string.CompanyName=CE --version-string.FileDescription=CE --version-string.ProductName=\"Electon Example\"",

@@ -1,4 +1,3 @@
-
 const localVideo = document.getElementById('localVideo');
 const videoWrapper = document.getElementById('videowrapper')
 const framerateSlider = document.getElementById('slider-fr')
@@ -71,14 +70,23 @@ class Modal {
 }
 
 var modals = {}
+
 function initModals() {
-    var mods = document.getElementsByTagName('modal');
-    for (const modal in mods) {
-        const element = mods[modal];
-        if (element.id) {
-            var m = new Modal(element);
-            modals[m.id] = m;
-        }
+    var mods = Array.from(document.getElementsByTagName('modal'));
+    console.log(mods);
+
+    for (var i = 0; i < mods.length; i++) {
+        console.log('mods[', i, '] ', mods[i]);
+        // console.log('i ', i);
+        var m = new Modal(mods[i]);
+        modals[m.id] = m;
+    }
+
+
+    document.getElementById('username').value = identitys[0].username;
+    document.getElementById('avatar').value = identitys[0].avatar;
+    if (identitys[0].username == 'Anonymous') {
+        openProfileModal()
     }
 }
 initModals();
@@ -93,7 +101,7 @@ if (document.addEventListener) {
         if (firstTime) {
             firstTime = false;
             console.log("You've tried to open context menu", e); //here you draw your own menu
-           // e.preventDefault();
+            // e.preventDefault();
         } else {
             firstTime = true;
         }
@@ -104,4 +112,26 @@ if (document.addEventListener) {
         alert("You've tried to open context menu");
         window.event.returnValue = false;
     });
+}
+
+function openProfileModal() {
+    modals.setIdent.open()
+}
+
+function saveProfile() {
+    // document.getElementById('username').value = identitys[0].username;
+    // document.getElementById('avatar').value = identitys[0].avatar;
+    identitys[0].set({
+        username: document.getElementById('username').value,
+        avatar: document.getElementById('avatar').value
+    });
+
+    socket.emit('memberChangeIdentity', {
+        username: identitys[0].username,
+        avatar: identitys[0].avatar,
+        room: room.id
+    });
+    if (identitys[0].username != 'Anonymous') {
+        modals.setIdent.close()
+    }
 }

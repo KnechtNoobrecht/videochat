@@ -51,10 +51,15 @@ room.addEventListener("memberRemoved", function (e) {
 room.addEventListener("memberChanged", function (e) {
     var identity = e.detail.identity;
     var socketid = e.detail.sid;
-    console.log("removeMember memberChanged ", identity, socketid);
+    console.log("memberChanged ", identity, socketid);
     //var videowrapper = document.getElementById('videowrapper');
 
     var userElement = document.getElementById('userElement_' + socketid);
+    var videoElement = document.getElementById('videoElement_' + socketid);
+
+    videoElement.querySelector('.namePlaceholder').innerText = identity.username;
+    videoElement.querySelector('.avatar').src = identity.avatar
+
     userElement.getElementsByTagName('span')[0].innerHTML = identity.username;
     userElement.getElementsByTagName('img')[0].src = identity.avatar;
 
@@ -62,6 +67,14 @@ room.addEventListener("memberChanged", function (e) {
         userElement.getElementsByClassName('button-watch')[0].style = "display:flex !important";
     } else {
         userElement.getElementsByClassName('button-watch')[0].style = "display:none !important";
+    }
+
+    var userMsgs = Array.from(document.getElementsByName('msg_' + identity.id));
+    console.log("userMsgs", userMsgs);
+
+    for (var i = 0; i < userMsgs.length; i++) {
+        userMsgs[i].querySelector('.connected-user').querySelector('.chat-message-username').innerText = identity.username;
+        userMsgs[i].querySelector('.connected-user').querySelector('img').src = identity.avatar
     }
 });
 
@@ -80,7 +93,9 @@ function setStreamToWindow(peer) {
 function renderNewChatMsg(data) {
     console.log("renderNewChatMsg", data);
     console.log("data.fromIdentity", data.fromIdentity);
+
     var chatBody = document.getElementsByClassName('chat-body')[0];
+
     var chatMessageWrapper = document.createElement('div');
     chatMessageWrapper.className = 'chat-message-wrapper';
 
@@ -95,14 +110,13 @@ function renderNewChatMsg(data) {
     connectedUser.appendChild(userImg);
     connectedUser.appendChild(userName);
 
+
     var chatMessage = document.createElement('div');
     chatMessage.className = 'chat-message';
     var msg = document.createElement('span');
 
 
     msg.innerHTML = data.msg
-
-
 
     chatMessage.appendChild(msg);
     chatMessageWrapper.appendChild(connectedUser);
@@ -111,6 +125,34 @@ function renderNewChatMsg(data) {
     chatBody.appendChild(chatMessageWrapper);
 
     chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+function renderMsgTemplate(msg) {
+    console.log("renderMsgTemplate", msg);
+    var chatBody = document.getElementsByClassName('chat-body')[0];
+    var msgElement = document.getElementById('chatMsgTemplate').cloneNode(true).content.children[0];
+    //msgElement.name = 'msg_' + msg.fromIdentity.id;
+    msgElement.setAttribute("name", 'msg_' + msg.fromIdentity.id)
+
+    msgElement.querySelector('.connected-user').querySelector('.chat-message-username').innerText = msg.fromIdentity.username;
+    msgElement.querySelector('.connected-user').querySelector('img').src = msg.fromIdentity.avatar;
+    var today = new Date();
+    var msgDate = new Date(msg.time);
+    // if today is the same as the day of the message, then show the time
+    if (today.getDay() == msgDate.getDay() && today.getMonth() == msgDate.getMonth() && today.getFullYear() == msgDate.getFullYear()) {
+        //msgElement.querySelector('.chat-message-date').innerText = msgDate.toLocaleTimeString();
+        msgElement.querySelector('.connected-user').querySelector('.chat-message-time').innerText = 'heute um ' + new Date(msg.time).toLocaleTimeString();
+    } else if (today.getDay() == msgDate.getDay() - 1 && today.getMonth() == msgDate.getMonth() && today.getFullYear() == msgDate.getFullYear()) {
+        msgElement.querySelector('.connected-user').querySelector('.chat-message-time').innerText = 'gestern um ' + new Date(msg.time).toLocaleTimeString();
+    } else {
+        msgElement.querySelector('.connected-user').querySelector('.chat-message-time').innerText = new Date(msg.time).toLocaleDateString();
+    }
+
+    msgElement.querySelector('.chat-message').querySelector('span').innerText = msg.msg;
+
+    chatBody.appendChild(msgElement);
+    chatBody.scrollTop = chatBody.scrollHeight;
+    //userImg.src = data.fromIdentity.avatar;
 }
 
 
@@ -286,6 +328,18 @@ function toggleChat() {
     isChatOpen = !isChatOpen
 }
 
+function setLiveBTN() {
+    console.log("setLiveBTN");
+
+    if (localStream && localStream.getTracks().length > 0) {
+        document.getElementById('startStreamBTN').querySelector('span').innerHTML = 'Change Stream';
+        document.getElementById('stopStreamBTN').style.display = 'flex';
+    } else {
+        document.getElementById('startStreamBTN').querySelector('span').innerHTML = 'Start Stream';
+        document.getElementById('stopStreamBTN').style.display = 'none';
+    }
+}
+setLiveBTN()
 
 var ro = new ResizeObserver(entries => {
     for (let entry of entries) {

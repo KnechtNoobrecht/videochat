@@ -3,13 +3,16 @@ const path = require("path");
 const app = express();
 const server = require("http").createServer(app);
 const io = require("socket.io")(server);
-const { v4: uuidv4 } = require("uuid");
+const {
+	v4: uuidv4
+} = require("uuid");
 var sass = require('node-sass');
 fs = require('fs');
 
 const PORT = 80;
 
 var identitys = {};
+var roomChatMsgs = {};
 
 io.on("connection", (socket) => {
 	socket.emit("ID", socket.id);
@@ -22,6 +25,7 @@ io.on("connection", (socket) => {
 		console.log(identity.username + " joined room ", roomID);
 		var sockets = await getSocketsOfRoom(roomID);
 		socket.emit("membersLoaded", sockets);
+		socket.emit("loadChatMsgs", roomChatMsgs[roomID]);
 	});
 
 	socket.on("getRoomMember", async (roomID, cb) => {
@@ -69,12 +73,22 @@ io.on("connection", (socket) => {
 		console.log("getStream made by", data.fromSocket, " -> ", data.toSocket);
 		io.to(data.toSocket).emit("getStream", data);
 	});
+
+
 	socket.on("chatMSG", async (data) => {
 		// data = { room: this.id, msg: msg }
 		console.log("chatMSG made by", data);
 		data.fromSocket = socket.id;
 		data.fromIdentity = identitys[socket.id];
+		data.time = new Date().getTime();
 		data.msg = await parseText(data.msg)
+		if (roomChatMsgs[data.room]) {
+			roomChatMsgs[data.room].push(data);
+		} else {
+			roomChatMsgs[data.room] = [data];
+		}
+
+		console.log(roomChatMsgs);
 		io.to(data.room).emit("chatMSG", data);
 	});
 
@@ -83,6 +97,22 @@ io.on("connection", (socket) => {
 		console.log("To Room = ", data);
 		identitys[socket.id].isStreaming = true;
 		io.sockets.in(data).emit("memberStreamingState", socket.id, identitys[socket.id]);
+	});
+
+	socket.on("memberChangeIdentity", (data) => {
+		// data = { offer: offer, initiatorsid: this.sid, connectionID: this.id }
+		console.log("To Room memberChangeIdentity = ", data);
+		identitys[socket.id].username = data.username;
+		identitys[socket.id].avatar = data.avatar;
+		if (roomChatMsgs[data.room]) {
+			for (let index = 0; index < roomChatMsgs[data.room].length; index++) {
+				if (roomChatMsgs[data.room][index].fromSocket == socket.id) {
+					roomChatMsgs[data.room][index].fromIdentity = identitys[socket.id];
+				}
+			}
+		}
+
+		io.sockets.in(data.room).emit("memberStreamingState", socket.id, identitys[socket.id]);
 	});
 
 	socket.on("memberStopStreaming", (data) => {
@@ -155,7 +185,10 @@ function getSocketsOfRoom(roomID) {
 		var sockets = await io.in(roomID).fetchSockets();
 		var socketids = [];
 		for (let index = 0; index < sockets.length; index++) {
-			socketids.push({ socket: sockets[index].id, identity: identitys[sockets[index].id] });
+			socketids.push({
+				socket: sockets[index].id,
+				identity: identitys[sockets[index].id]
+			});
 		}
 		resolve(socketids);
 	});
@@ -232,9 +265,15 @@ function youtubeUrlParser(url) {
 
 	var timeToSec = function (str) {
 		var sec = 0;
-		if (/h/.test(str)) { sec += parseInt(str.match(/(\d+)h/, '$1')[0], 10) * 60 * 60; }
-		if (/m/.test(str)) { sec += parseInt(str.match(/(\d+)m/, '$1')[0], 10) * 60; }
-		if (/s/.test(str)) { sec += parseInt(str.match(/(\d+)s/, '$1')[0], 10); }
+		if (/h/.test(str)) {
+			sec += parseInt(str.match(/(\d+)h/, '$1')[0], 10) * 60 * 60;
+		}
+		if (/m/.test(str)) {
+			sec += parseInt(str.match(/(\d+)m/, '$1')[0], 10) * 60;
+		}
+		if (/s/.test(str)) {
+			sec += parseInt(str.match(/(\d+)s/, '$1')[0], 10);
+		}
 		return sec;
 	};
 
@@ -265,7 +304,9 @@ async function getContentType(url) {
 
 		var res;
 		try {
-			res = await fetch(url, { method: 'HEAD' });
+			res = await fetch(url, {
+				method: 'HEAD'
+			});
 			if (res.ok) {
 				var ct = res.headers.get("content-type");
 				var index = ct.indexOf(";");
@@ -277,7 +318,14 @@ async function getContentType(url) {
 				}
 				var splittedType = contentType.split('/');
 				let charset = ct.substring(index + 1, ct.length).split("=")[1];
-				var d = { url: url, content: { type: splittedType[0], format: splittedType[1] }, charset: charset };
+				var d = {
+					url: url,
+					content: {
+						type: splittedType[0],
+						format: splittedType[1]
+					},
+					charset: charset
+				};
 				resolve(d);
 			} else {
 				reject(res.status);
@@ -335,6 +383,7 @@ async function renderSCSS(reloadClients) {
 renderSCSS()
 
 var sassWatcherFiles = ['vars', 'main'];
+
 function watchSCSS() {
 	for (const key in sassWatcherFiles) {
 		const element = path.join(__dirname, 'public', 'css', sassWatcherFiles[key] + '.scss');

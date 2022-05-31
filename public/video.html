@@ -19,12 +19,13 @@
 
         <div class="center-videos">
             <div class="videowrapper" id="videowrapper"></div>
-            <span onclick="pm.changeStream()" class="startStream">Start Stream</span>
+            <!-- <span onclick="pm.changeStream()" class="startStream">Start Stream</span> -->
         </div>
+
         <div id="rs" class="right-sidebar">
             <div class="chat-wrapper">
                 <div onclick="toggleChat()" class="chat-open-close-btn">
-                    <img src="/svg/test.svg">
+                    <img src="/svg/chevron-left.svg">
                 </div>
                 <div class="chat-body">
                     <!-- <div class="chat-message-wrapper">
@@ -48,6 +49,26 @@
             </div>
         </div>
     </div>
+    <div class="bot_bar_hover">
+        <div class="bot_bar">
+            <div id="stopStreamBTN" onclick="stopStream()" class="bot_bar_item">
+                Stop Stream
+            </div>
+            <div id="startStreamBTN" onclick="pm.changeStream()" class="bot_bar_item">
+                <img src="/svg/desktop.svg" />
+                <span>Start Stream</span>
+            </div>
+            <div id="" onclick="startCamStreaming() " class="bot_bar_item">
+                <img src="/svg/camera.svg" />
+                <span>Start Cam Streaming</span>
+            </div>
+            <div id="" onclick="openProfileModal() " class="bot_bar_item">
+                <img src="/svg/desktop.svg" />
+                <span>Change Profile</span>
+            </div>
+        </div>
+    </div>
+
     <modal id="testmodal" class="hide">
         <div class="modal-content">
             <div class="modal-header">
@@ -60,6 +81,22 @@
             </div>
             <div class="modal-footer">
                 <h3>Modal Footer</h3>
+            </div>
+        </div>
+    </modal>
+
+    <modal id="setIdent" class="hide">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Set your Username</h2>
+                <button class="btn-secondary" onclick="modals.setIdent.close()">X</button>
+            </div>
+            <div class="modal-body">
+                <input id="username">
+                <input id="avatar">
+            </div>
+            <div class="modal-footer">
+                <button onclick="saveProfile()">Speichern</button>
             </div>
         </div>
     </modal>
@@ -89,6 +126,21 @@
             </div>
             <div class="button-watch" style="display: none">
                 <span>Watch</span>
+            </div>
+        </div>
+    </template>
+
+    <template id="chatMsgTemplate">
+        <div class="chat-message-wrapper" name="" id="">
+
+            <div class="connected-user">
+                <img src="">
+                <span class="chat-message-username">placeholder</span>
+                <span class="chat-message-time">placeholder</span>
+            </div>
+
+            <div class="chat-message">
+                <span></span>
             </div>
         </div>
     </template>

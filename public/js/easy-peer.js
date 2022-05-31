@@ -8,7 +8,7 @@ const roomID = window.location.pathname.split('/').pop()
 
 // We now have a merged MediaStream!
 var localStream = null
-
+var localAudioStream = null
 
 
 /**
@@ -123,6 +123,7 @@ class Peer extends EventTarget {
             }, 100);
 
             this.peer.addEventListener('connectionstatechange', (event) => { // console.log(event);
+                console.log('--- connectionstatechange = ', this.peer.connectionState);
                 if (this.peer.connectionState === 'connected') {
                     console.log('P2P connection established! ', this.connectionID)
                     this.connected = true
@@ -133,6 +134,11 @@ class Peer extends EventTarget {
                     this.remove();
                     //var remoteVideo = document.getElementById("remoteVideo-" + this.connectionID)
                     //remoteVideo.remove()
+                }
+                if (this.peer.connectionState === 'failed') {
+                    console.log('P2P connection failed!', this.peer)
+                    this.connected = false
+                    this.remove();
                 }
             })
             // this.peer.addEventListener('icecandidate', (event) => {});
@@ -435,6 +441,7 @@ class Identity {
             username: this.username,
             avatar: this.avatar
         })
+
         return {
             id: this.id,
             username: this.username,
@@ -556,6 +563,11 @@ class Room extends EventTarget {
             }
         });
         this.dispatchEvent(this.#event);
+        this.members[sid] = {
+            sid: sid,
+            identity: identity
+        }
+        console.log('Member changed');
     }
     sendMsg(msg) {
         var data = {
@@ -723,9 +735,15 @@ function startStreaming() {
                 },
                 video: {
                     chromeMediaSource: 'desktop',
-                    width: localStreamOptions.resolution.width,
-                    height: localStreamOptions.resolution.height,
-                    frameRate: localStreamOptions.resolution.framerate
+                    width: {
+                        ideal: localStreamOptions.resolution.width.ideal
+                    },
+                    height: {
+                        ideal: localStreamOptions.resolution.height.ideal
+                    },
+                    frameRate: {
+                        ideal: localStreamOptions.resolution.frameRate.ideal
+                    }
                 }
             })
             .then(async (stream) => {
@@ -733,11 +751,18 @@ function startStreaming() {
                 //console.log('streaming started', stream);
 
                 if (getBrowser() === 'Firefox') {
-                    var mediaRecorder = new MediaRecorder(stream, localStreamOptions.mediaRecorderOptions);
-                    stream = mediaRecorder.stream;
+
                 }
 
+                var mediaRecorder = new MediaRecorder(stream, localStreamOptions.mediaRecorderOptions);
+                mediaRecorder.start();
+                stream = mediaRecorder.stream;
                 localStream = stream;
+                console.log("localStream.getVideoTracks()[0].contentHint = ", localStream.getVideoTracks()[0].contentHint);
+
+                mediaRecorder.onwarning = function (e) {
+                    console.log("A warning has been raised: " + e.message);
+                }
 
                 if (localStream.getAudioTracks().length == 0) {
                     var AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -745,6 +770,8 @@ function startStreaming() {
                     var dest = audioCtx.createMediaStreamDestination();
                     localStream.addTrack(dest.stream.getAudioTracks()[0]);
                 }
+                localStream.getVideoTracks()[0].contentHint = 'motion';
+                //contentHint 
 
                 var videoWrapper = document.getElementById('videoElement_' + socket.id)
                 var localVideo = videoWrapper.getElementsByTagName('video')[0]
@@ -772,28 +799,36 @@ function startCamStreaming() {
             navigator.mediaDevices
                 .getUserMedia({
                     video: {
-                        width: {
-                            min: 1280,
-                            ideal: localStreamOptions.resolution.width,
-                            max: 2560,
-                        },
-                        height: {
-                            min: 720,
-                            ideal: localStreamOptions.resolution.height,
-                            max: 1440,
-                        },
-                        frameRate: {
-                            min: 5,
-                            ideal: localStreamOptions.resolution.framerate,
-                            max: 60,
-                        }
+                        min: 1280,
+                        ideal: localStreamOptions.resolution.width.ideal,
+                        max: 2560,
+                    },
+                    height: {
+                        min: 720,
+                        ideal: localStreamOptions.resolution.height.ideal,
+                        max: 1440,
+                    },
+                    frameRate: {
+                        min: 5,
+                        ideal: localStreamOptions.resolution.frameRate.ideal,
+                        max: 60,
                     }
+
                 })
                 .then(async (stream) => {
                     stopStream()
                     var mediaRecorder = new MediaRecorder(stream, localStreamOptions.mediaRecorderOptions);
                     stream = mediaRecorder.stream;
                     localStream = stream;
+
+                    if (localStream.getAudioTracks().length == 0) {
+                        var AudioContext = window.AudioContext || window.webkitAudioContext;
+                        var audioCtx = new AudioContext();
+                        var dest = audioCtx.createMediaStreamDestination();
+                        localStream.addTrack(dest.stream.getAudioTracks()[0]);
+                    }
+                    localStream.getVideoTracks()[0].contentHint = 'motion';
+
                     // localVideo.srcObject = localStream;
                     socket.emit('memberStartStreaming', room.id);
                     resolve(localStream);
@@ -817,7 +852,7 @@ function stopStream() {
     try {
         let tracks = localStream.getTracks();
         tracks.forEach(track => track.stop());
-        localVideo.srcObject = null;
+        document.getElementById('videoElement_' + socket.id).getElementsByTagName('video')[0].srcObject = null;
         localStream = null;
     } catch (error) {
         console.log(error);
@@ -861,7 +896,8 @@ async function readFile(input, toSocketID) {
 
 function handleIncommingChatMSG(data) {
     console.log('handleIncommingChatMSG', data);
-    renderNewChatMsg(data)
+    // renderNewChatMsg(data)
+
 }
 
 
@@ -999,7 +1035,16 @@ socket.on('getStream', async (indata) => {
 
 socket.on('chatMSG', async (data) => {
     console.log('chatMSG = ', data);
-    handleIncommingChatMSG(data);
+    //handleIncommingChatMSG(data);
+    renderMsgTemplate(data)
+})
+
+socket.on('loadChatMsgs', async (data) => {
+    console.log('loadChatMsgs = ', data);
+    for (const key in data) {
+        //handleIncommingChatMSG(data[key]);
+        renderMsgTemplate(data[key])
+    }
 })
 
 socket.on('reloadCSS', async () => {
@@ -1020,11 +1065,12 @@ var localStreamOptions = {
     resolution: {
         width: 1920,
         height: 1080,
-        framerate: 30
+        frameRate: 30
     },
     mediaRecorderOptions: {
         mimeType: 'video/webm;codecs=opus,vp8',
-        videoBitsPerSecond: 2500000,
+        videoMaximizeFrameRate: true,
+        videoBitsPerSecond: 20000000,
         audioBitsPerSecond: 128000
     }
 }

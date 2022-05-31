@@ -1,0 +1,23 @@
+@media only screen and (max-width:1600px) {
+    .right-sidebar {
+      //display: none;
+    }
+  
+    .grid-container {
+      grid-template-columns: 1fr 4fr 0fr;
+    }
+  
+    .videowrapper {
+      grid-template-columns: 1fr 1fr;
+    }
+  
+    .bot_bar_hover {
+      width: 80% !important;
+    }
+}
+  
+@media only screen and (max-width:900px) {
+    .bot_bar_hover {
+      width: 95% !important;
+    }
+}
