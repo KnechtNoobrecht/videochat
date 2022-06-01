@@ -6,6 +6,9 @@
 //    //console.log(idd);
 //});
 
+window.onload = function () {
+    console.log("window.onload");
+}
 
 function renderButtons(sioids) {
     var html = "";
@@ -39,7 +42,7 @@ room.addEventListener("memberAdded", function (e) {
 room.addEventListener("memberRemoved", function (e) {
     var identity = e.detail.identity;
     var socketid = e.detail.sid;
-    console.log("removeMember event ", identity, socketid);
+    //console.log("removeMember event ", identity, socketid);
     var videowrapper = document.getElementById('videowrapper');
     videowrapper.removeChild(document.getElementById('videoElement_' + socketid));
 
@@ -51,7 +54,7 @@ room.addEventListener("memberRemoved", function (e) {
 room.addEventListener("memberChanged", function (e) {
     var identity = e.detail.identity;
     var socketid = e.detail.sid;
-    console.log("memberChanged ", identity, socketid);
+    //console.log("memberChanged ", identity, socketid);
     //var videowrapper = document.getElementById('videowrapper');
 
     var userElement = document.getElementById('userElement_' + socketid);
@@ -79,7 +82,7 @@ room.addEventListener("memberChanged", function (e) {
 });
 
 function setStreamToWindow(peer) {
-    console.log("setStreamToWindow", peer);
+    //console.log("setStreamToWindow", peer);
     var videoWrapper = document.getElementById('videoElement_' + peer.remotesid)
     var remoteVideo = videoWrapper.getElementsByTagName('video')[0]
     //var icon = videoWrapper.getElementsByTagName('img')[0]
@@ -128,8 +131,8 @@ function renderNewChatMsg(data) {
 }
 
 function renderMsgTemplate(msg) {
-    console.log("renderMsgTemplate", msg);
-    var chatBody = document.getElementsByClassName('chat-body')[0];
+    //console.log("renderMsgTemplate", msg);
+    var chatBody = document.querySelector('.chat-body');
     var msgElement = document.getElementById('chatMsgTemplate').cloneNode(true).content.children[0];
     //msgElement.name = 'msg_' + msg.fromIdentity.id;
     msgElement.setAttribute("name", 'msg_' + msg.fromIdentity.id)
@@ -141,14 +144,23 @@ function renderMsgTemplate(msg) {
     // if today is the same as the day of the message, then show the time
     if (today.getDay() == msgDate.getDay() && today.getMonth() == msgDate.getMonth() && today.getFullYear() == msgDate.getFullYear()) {
         //msgElement.querySelector('.chat-message-date').innerText = msgDate.toLocaleTimeString();
-        msgElement.querySelector('.connected-user').querySelector('.chat-message-time').innerText = 'heute um ' + new Date(msg.time).toLocaleTimeString();
-    } else if (today.getDay() == msgDate.getDay() - 1 && today.getMonth() == msgDate.getMonth() && today.getFullYear() == msgDate.getFullYear()) {
-        msgElement.querySelector('.connected-user').querySelector('.chat-message-time').innerText = 'gestern um ' + new Date(msg.time).toLocaleTimeString();
+        msgElement.querySelector('.connected-user').querySelector('.chat-message-time').innerText = 'heute um ' + new Date(msg.time).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } else if (today.getDay() == msgDate.getDay() + 1 && today.getMonth() == msgDate.getMonth() && today.getFullYear() == msgDate.getFullYear()) {
+        msgElement.querySelector('.connected-user').querySelector('.chat-message-time').innerText = 'gestern um ' + new Date(msg.time).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     } else {
-        msgElement.querySelector('.connected-user').querySelector('.chat-message-time').innerText = new Date(msg.time).toLocaleDateString();
+        msgElement.querySelector('.connected-user').querySelector('.chat-message-time').innerText = new Date(msg.time).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     }
 
-    msgElement.querySelector('.chat-message').querySelector('span').innerText = msg.msg;
+    msgElement.querySelector('.chat-message').querySelector('span').innerHTML = msg.msg;
 
     chatBody.appendChild(msgElement);
     chatBody.scrollTop = chatBody.scrollHeight;
@@ -246,26 +258,22 @@ function youtubeUrlParser(url) {
 }; // youtubeParser();
 
 
-
-function sendMessage() {
-
-    var msg = document.getElementById('inputMsg').value;
-    console.log("sendMessage", msg);
-
-}
-
 document.getElementById('inputMsg').addEventListener('keydown', function (e) {
-    console.log("keydown", e);
+    //console.log("keydown", e);
     var rows = e.srcElement.value.split("\n").length + 1;
 
 
     if (e.keyCode == 13 && !e.shiftKey) {
         //sendMessage();
         var msg = e.srcElement.value
-        msg = msg.replace(/\n\r?/g, ' <br />')
-        room.sendMsg(msg);
+        if (msg.trim() != "") {
+            e.preventDefault();
+            msg = msg.replace(/\n\r?/g, ' <br />')
+            room.sendMsg(msg);
+
+            rows = 0
+        }
         resetTextarea()
-        rows = 0
     } else if (e.keyCode == 13) {
         rows++;
     }
@@ -273,7 +281,7 @@ document.getElementById('inputMsg').addEventListener('keydown', function (e) {
         rows = 0
     }
     e.srcElement.style.height = (rows * 15) + "px";
-    document.getElementsByClassName('chat-body')[0].style.bottom = (70 + (rows * 15)) + "px";
+    document.getElementsByClassName('chat-body')[0].style.bottom = (110 + (rows * 15)) + "px";
     document.getElementsByClassName('chat-body')[0].scrollBy(0, 180);
 });
 
@@ -304,32 +312,68 @@ document.getElementById('rs').addEventListener("dragleave", function (e) {
 
 
 resetTextarea = function () {
-    console.log("resetTextarea");
-    var elem = document.getElementById('inputMsg')
-    elem.value = elem.value.replace(/\n\r?/g, '')
-    elem.value = ''
+    // console.log("resetTextarea");
+    //var elem = document.getElementById('inputMsg')
+    //elem.value = elem.value.replace(/\n\r?/g, '')
+    //elem.value = ''
+    document.getElementById('chatInput').reset();
 }
 
-var isChatOpen = true;
+var isChatOpen = false;
 var chatbtn = document.getElementsByClassName('chat-open-close-btn')[0];
 
 function toggleChat() {
+    toggleSideBar('side')
+    return
     var str = document.getElementById('grid-container').style
-    console.log("toggleChat", str.gridTemplateColumns);
+    // console.log("toggleChat", str.gridTemplateColumns);
     if (isChatOpen) {
-
         document.getElementById('grid-container').style.gridTemplateColumns = "1fr 4fr 0fr";
-        chatbtn.style.transform = "rotate(0deg)";
+        document.getElementById('rs').style.width = "0%";
+        document.getElementById('rs').style.right = "-100%";
+        //chatbtn.style.transform = "rotate(0deg)";
     } else {
-
         document.getElementById('grid-container').style.gridTemplateColumns = "1fr 3fr 1fr";
-        chatbtn.style.transform = "rotate(180deg)";
+        document.getElementById('rs').style.width = "100%";
+        document.getElementById('rs').style.right = "0px";
+        //chatbtn.style.transform = "rotate(180deg)";
     }
     isChatOpen = !isChatOpen
 }
 
+function toggleSideBar(side) {
+    if (side == "left") {
+        var barisOpen = (document.getElementById('ls').style.width === '100%') ? true : false;
+        if (barisOpen) {
+            document.getElementById('grid-container').style.gridTemplateColumns = "1fr 4fr 0fr";
+            document.getElementById('ls').style.width = "0%";
+            document.getElementById('ls').style.left = "-100%";
+            //chatbtn.style.transform = "rotate(0deg)";
+        } else {
+            document.getElementById('grid-container').style.gridTemplateColumns = "1fr 3fr 1fr";
+            document.getElementById('ls').style.width = "100%";
+            document.getElementById('ls').style.left = "0px";
+            //chatbtn.style.transform = "rotate(180deg)";
+        }
+
+    } else {
+        var barisOpen = (document.getElementById('rs').style.width === '100%') ? true : false;
+        if (barisOpen) {
+            document.getElementById('grid-container').style.gridTemplateColumns = "1fr 4fr 0fr";
+            document.getElementById('rs').style.width = "0%";
+            document.getElementById('rs').style.right = "-100%";
+            //chatbtn.style.transform = "rotate(0deg)";
+        } else {
+            document.getElementById('grid-container').style.gridTemplateColumns = "1fr 3fr 1fr";
+            document.getElementById('rs').style.width = "100%";
+            document.getElementById('rs').style.right = "0px";
+            //chatbtn.style.transform = "rotate(180deg)";
+        }
+    }
+}
+
 function setLiveBTN() {
-    console.log("setLiveBTN");
+    //console.log("setLiveBTN");
 
     if (localStream && localStream.getTracks().length > 0) {
         document.getElementById('startStreamBTN').querySelector('span').innerHTML = 'Change Stream';
@@ -344,9 +388,9 @@ setLiveBTN()
 var ro = new ResizeObserver(entries => {
     for (let entry of entries) {
         const cr = entry.contentRect;
-        console.log('Element:', entry.target);
-        console.log(`Element size: ${cr.width}px x ${cr.height}px`);
-        console.log(`Element padding: ${cr.top}px ; ${cr.left}px`);
+        //console.log('Element:', entry.target);
+        //console.log(`Element size: ${cr.width}px x ${cr.height}px`);
+        //console.log(`Element padding: ${cr.top}px ; ${cr.left}px`);
     }
 });
 

@@ -77,7 +77,7 @@ io.on("connection", (socket) => {
 
 	socket.on("chatMSG", async (data) => {
 		// data = { room: this.id, msg: msg }
-		console.log("chatMSG made by", data);
+		//console.log("chatMSG made by", data);
 		data.fromSocket = socket.id;
 		data.fromIdentity = identitys[socket.id];
 		data.time = new Date().getTime();
@@ -88,13 +88,13 @@ io.on("connection", (socket) => {
 			roomChatMsgs[data.room] = [data];
 		}
 
-		console.log(roomChatMsgs);
+		//console.log(roomChatMsgs);
 		io.to(data.room).emit("chatMSG", data);
 	});
 
 	socket.on("memberStartStreaming", (data) => {
 		// data = { offer: offer, initiatorsid: this.sid, connectionID: this.id }
-		console.log("To Room = ", data);
+		//console.log("To Room = ", data);
 		identitys[socket.id].isStreaming = true;
 		io.sockets.in(data).emit("memberStreamingState", socket.id, identitys[socket.id]);
 	});
@@ -382,7 +382,7 @@ async function renderSCSS(reloadClients) {
 
 renderSCSS()
 
-var sassWatcherFiles = ['vars', 'main'];
+var sassWatcherFiles = ['vars', 'main', 'mediaqueries'];
 
 function watchSCSS() {
 	for (const key in sassWatcherFiles) {

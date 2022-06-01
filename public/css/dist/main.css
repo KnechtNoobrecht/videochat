@@ -1,18 +1,54 @@
 @import url(https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap);
 :root {
-  --primary_color_bg: #2f3136; }
+  --primary_bg: #202225;
+  --secondary_bg: #2f3136;
+  --tertiary_bg: #36393F;
+  --red: #f92c47; }
 
 @media only screen and (max-width: 1600px) {
   .grid-container {
-    grid-template-columns: 1fr 4fr 0fr; }
+    grid-template-columns: 1fr 3fr 1fr; }
   .videowrapper {
     grid-template-columns: 1fr 1fr; }
   .bot_bar_hover {
     width: 80% !important; } }
 
+@media only screen and (min-width: 901px) {
+  .mobile-top-navbar {
+    display: none; }
+  .right-sidebar {
+    box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.25), 0 3px 15px 8px rgba(0, 0, 0, 0.08); } }
+
 @media only screen and (max-width: 900px) {
+  .right-sidebar {
+    box-shadow: none; }
   .bot_bar_hover {
-    width: 95% !important; } }
+    width: 95% !important; }
+  .mobile-top-navbar {
+    display: block;
+    position: fixed;
+    top: 0;
+    background-color: var(--tertiary_bg);
+    width: 100%;
+    display: flex;
+    justify-content: space-between; }
+    .mobile-top-navbar img {
+      margin: 5px; }
+  .right-sidebar {
+    position: fixed;
+    right: -100%;
+    background-color: var(--primary_bg);
+    z-index: 999;
+    transition: all 0.3s cubic-bezier(0.2, 0.4, 0.8, 1); }
+  .left-sidebar {
+    position: fixed;
+    left: -100%;
+    background-color: var(--primary_bg);
+    z-index: 999;
+    transition: all 0.3s cubic-bezier(0.2, 0.4, 0.8, 1); }
+  .grid-container {
+    grid-template-columns: 5fr !important;
+    margin-top: 46px; } }
 
 *,
 ::before,
@@ -24,7 +60,7 @@
   /* width of the entire scrollbar */ }
 
 ::-webkit-scrollbar-track {
-  background: var(--primary_color_bg);
+  background: var(--secondary_bg);
   /* color of the tracking area */ }
 
 ::-webkit-scrollbar-thumb {
@@ -39,7 +75,7 @@ body,
 html {
   margin: 0;
   padding: 0;
-  background-color: #202225;
+  background-color: var(--primary_bg);
   font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
   overflow: hidden; }
   body :focus,
@@ -123,7 +159,7 @@ iframe {
   position: relative;
   z-index: 0;
   border-radius: 10px;
-  background-color: var(--primary_color_bg); }
+  background-color: var(--secondary_bg); }
 
 .avatar {
   position: absolute;
@@ -162,7 +198,7 @@ iframe {
   z-index: 99;
   right: 12px;
   bottom: 10px;
-  background-color: var(--primary_color_bg);
+  background-color: var(--secondary_bg);
   color: white;
   font-size: 18px;
   font-weight: 600;
@@ -175,7 +211,7 @@ iframe {
   z-index: 99;
   bottom: 10px;
   right: 40px;
-  background-color: var(--primary_color_bg);
+  background-color: var(--secondary_bg);
   color: white;
   font-size: 18px;
   font-weight: 600;
@@ -183,10 +219,9 @@ iframe {
   padding: 5px; }
 
 .list-connected-users {
-  max-width: 392px;
   margin: 25px 0 0 25px;
   border-radius: 15px;
-  background-color: var(--primary_color_bg);
+  background-color: var(--secondary_bg);
   justify-content: space-between;
   padding: 9px 10px 9px 10px;
   cursor: default;
@@ -218,18 +253,22 @@ iframe {
   padding-left: 15px; }
 
 .right-sidebar {
-  box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.25), 0 3px 15px 8px rgba(0, 0, 0, 0.08);
   height: 100%;
   border-radius: 5px 0 0 5px; }
+
+.left-sidebar {
+  height: 100%;
+  border-radius: 0px 5px 5px 0px; }
 
 .chat-body {
   position: absolute;
   overflow-y: scroll;
   overflow-x: hidden;
   top: 0px;
-  bottom: 70px;
+  bottom: 110px;
   right: 0px;
-  width: 100%; }
+  width: 100%;
+  border-radius: 15px; }
 
 .chat-wrapper {
   position: relative;
@@ -238,7 +277,7 @@ iframe {
 .chat-message {
   position: relative;
   left: 55px;
-  color: #d1d1d1;
+  color: #d7d7d7;
   font-size: 1rem;
   font-weight: 400; }
 
@@ -249,7 +288,7 @@ iframe {
   margin: 15px 0px 15px 0px;
   width: 100%;
   border-radius: 15px;
-  background-color: var(--primary_color_bg);
+  background-color: var(--secondary_bg);
   padding: 9px 10px 9px 10px;
   cursor: default; }
 
@@ -257,7 +296,7 @@ iframe {
   position: absolute;
   left: 0px;
   right: 0px;
-  bottom: 0px;
+  bottom: 40px;
   color: white;
   font-size: 12px;
   font-weight: 600;
@@ -275,7 +314,7 @@ textarea {
   color: white;
   font-size: 12px;
   font-weight: 600;
-  background-color: var(--primary_color_bg);
+  background-color: var(--secondary_bg);
   resize: none;
   font-family: Inter, -apple-system, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
   overflow: hidden; }
@@ -283,10 +322,20 @@ textarea {
 .connected-user-wrapper {
   display: flex;
   justify-content: space-between; }
-  .connected-user-wrapper .connected-user span {
-    font-weight: 500;
-    color: #fff;
-    font-size: 1rem; }
+  .connected-user-wrapper span {
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    padding-left: 15px; }
+
+.connected-user > .chat-message-username {
+  font-weight: 500;
+  color: #fff;
+  font-size: 1rem; }
+
+.connected-user > .chat-message-time {
+  font-size: 12px;
+  font-weight: 250; }
 
 .button, .button-startStreaming, .button-watch {
   padding: 5px 10px 5px 10px;
@@ -353,7 +402,7 @@ modal {
   justify-content: center;
   align-items: center;
   padding: 10px;
-  background-color: var(--primary_color_bg);
+  background-color: var(--secondary_bg);
   border-radius: 0 0 0px 0px; }
 
 .modal-footer {
@@ -380,10 +429,10 @@ modal {
   cursor: pointer;
   border: 1; }
   .btn-primary {
-    background-color: var(--primary_color_bg);
+    background-color: var(--secondary_bg);
     font-size: 28px; }
   .btn-secondary {
-    background-color: var(--primary_color_bg);
+    background-color: var(--secondary_bg);
     font-size: 20px; }
 
 .chat-open-close-btn {
@@ -412,7 +461,7 @@ modal {
   width: 100%; }
 
 .bot_bar_hover {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 50%;
   width: 50%;
@@ -455,7 +504,3 @@ modal {
   width: 30px;
   height: 30px;
   margin-right: 0px; }
-
-.chat-message-time {
-  font-size: 12px !important;
-  font-weight: 250 !important; }

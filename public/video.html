@@ -4,15 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/css/dist/main.css">
     <title>WebRTC video stream</title>
 </head>
 
 <body>
-
+    <div class="mobile-top-navbar">
+        <img src="/svg/user-group.svg" onclick="toggleSideBar('left')" alt="Users">
+        <img src="/svg/chat.svg" onclick="toggleChat()" alt="Chat">
+    </div>
     <div id="grid-container" class="grid-container">
-        <div class="left-sidebar">
+        <div id="ls" class="left-sidebar">
             <div class="list-connected-users" id="connected-users-list">
             </div>
         </div>
@@ -40,8 +44,9 @@
                 </div>
 
                 <div class="chat-input">
-
-                    <textarea type="text" id="inputMsg" autocomplete="off" placeholder="Nachricht"></textarea>
+                    <form id="chatInput">
+                        <textarea type="text" id="inputMsg" autocomplete="off" placeholder="Nachricht"></textarea>
+                    </form>
                     <!-- <button onclick="sendMessage()" class="chat-send-button">
                         <img src="/svg/send.svg" />
                     </button> -->

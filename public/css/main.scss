@@ -14,7 +14,7 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--primary_color_bg);
+  background: var(--secondary_bg);
   /* color of the tracking area */
 }
 
@@ -31,7 +31,7 @@ body,
 html {
   margin: 0;
   padding: 0;
-  background-color: #202225;
+  background-color: var(--primary_bg);
   font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
   overflow: hidden;
 
@@ -132,7 +132,7 @@ iframe {
   position: relative;
   z-index: 0;
   border-radius: 10px;
-  background-color: var(--primary_color_bg);
+  background-color: var(--secondary_bg);
 }
 
 .avatar {
@@ -175,7 +175,7 @@ iframe {
   z-index: 99;
   right: 12px;
   bottom: 10px;
-  background-color: var(--primary_color_bg);
+  background-color: var(--secondary_bg);
   color: white;
   font-size: 18px;
   font-weight: 600;
@@ -189,7 +189,7 @@ iframe {
   z-index: 99;
   bottom: 10px;
   right: 40px;
-  background-color: var(--primary_color_bg);
+  background-color: var(--secondary_bg);
   color: white;
   font-size: 18px;
   font-weight: 600;
@@ -198,10 +198,10 @@ iframe {
 }
 
 .list-connected-users {
-  max-width: 392px;
+  //max-width: 392px;
   margin: 25px 0 0 25px;
   border-radius: 15px;
-  background-color: var(--primary_color_bg);
+  background-color: var(--secondary_bg);
   justify-content: space-between;
   padding: 9px 10px 9px 10px;
   cursor: default;
@@ -238,10 +238,13 @@ iframe {
 }
 
 .right-sidebar {
-  //background-color: #6a6d70;
-  box-shadow: 0 2px 16px 0 rgba(0, 0, 0, .25), 0 3px 15px 8px rgba(0, 0, 0, 0.08);
   height: 100%;
   border-radius: 5px 0 0 5px;
+}
+
+.left-sidebar {
+  height: 100%;
+  border-radius: 0px 5px 5px 0px;
 }
 
 .chat-body {
@@ -249,20 +252,22 @@ iframe {
   overflow-y: scroll;
   overflow-x: hidden;
   top: 0px;
-  bottom: 70px;
+  bottom: 110px;
   right: 0px;
   width: 100%;
+  border-radius: 15px;
 }
 
 .chat-wrapper {
   position: relative;
   height: 100%;
+  //bottom: 0px;
 }
 
 .chat-message {
   position: relative;
   left: 55px;
-  color: #d1d1d1;
+  color: #d7d7d7;
   font-size: 1rem;
   font-weight: 400;
 }
@@ -274,7 +279,7 @@ iframe {
   margin: 15px 0px 15px 0px;
   width: 100%;
   border-radius: 15px;
-  background-color: var(--primary_color_bg);
+  background-color: var(--secondary_bg);
   padding: 9px 10px 9px 10px;
   cursor: default;
 }
@@ -284,7 +289,7 @@ iframe {
   position: absolute;
   left: 0px;
   right: 0px;
-  bottom: 0px;
+  bottom: 40px;
   color: white;
   font-size: 12px;
   font-weight: 600;
@@ -303,7 +308,7 @@ textarea {
   color: white;
   font-size: 12px;
   font-weight: 600;
-  background-color: var(--primary_color_bg);
+  background-color: var(--secondary_bg);
   resize: none;
   font-family: Inter, -apple-system, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
   overflow: hidden;
@@ -313,11 +318,23 @@ textarea {
   display: flex;
   justify-content: space-between;
 
-  .connected-user span {
-    font-weight: 500;
-    color: #fff;
+  span {
+    color: white;
     font-size: 1rem;
+    font-weight: 600;
+    padding-left: 15px;
   }
+}
+
+.connected-user>.chat-message-username {
+  font-weight: 500;
+  color: #fff;
+  font-size: 1rem;
+}
+
+.connected-user>.chat-message-time {
+  font-size: 12px;
+  font-weight: 250;
 }
 
 
@@ -357,10 +374,6 @@ video::-webkit-media-controls-play-button {
   display: none;
 }
 
-//video::-webkit-media-controls-volume-slider {}
-
-//video::-webkit-media-controls-mute-button {}
-
 video::-webkit-media-controls-timeline {
   display: none;
 }
@@ -368,6 +381,10 @@ video::-webkit-media-controls-timeline {
 video::-webkit-media-controls-current-time-display {
   display: none;
 }
+
+//video::-webkit-media-controls-volume-slider {}
+
+//video::-webkit-media-controls-mute-button {}
 
 .testButtons {
   display: none;
@@ -404,7 +421,7 @@ modal {
   justify-content: center;
   align-items: center;
   padding: 10px;
-  background-color: var(--primary_color_bg);
+  background-color: var(--secondary_bg);
   border-radius: 0 0 0px 0px;
 }
 
@@ -437,13 +454,13 @@ modal {
 
   &-primary {
     @extend .btn;
-    background-color: var(--primary_color_bg);
+    background-color: var(--secondary_bg);
     font-size: 28px;
   }
 
   &-secondary {
     @extend .btn;
-    background-color: var(--primary_color_bg);
+    background-color: var(--secondary_bg);
     font-size: 20px;
   }
 }
@@ -476,7 +493,7 @@ modal {
 }
 
 .bot_bar_hover {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 50%;
   width: 50%;
@@ -527,9 +544,4 @@ modal {
   width: 30px;
   height: 30px;
   margin-right: 0px;
-}
-
-.chat-message-time {
-  font-size: 12px !important;
-  font-weight: 250 !important;
 }

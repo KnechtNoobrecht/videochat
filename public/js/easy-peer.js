@@ -995,12 +995,12 @@ socket.on('memberAdded', (sockets, sid, identity) => {
 })
 
 socket.on('memberRemoved', (sockets, sid, identity) => {
-    console.log('memberRemoved = ', sid, identity)
+    //console.log('memberRemoved = ', sid, identity)
     room.removeMember(sid, identity)
 })
 
 socket.on('memberStreamingState', (sid, identity) => {
-    console.log('memberStreamingState = ', identity)
+    //console.log('memberStreamingState = ', identity)
     room.changeMember(sid, identity)
 })
 
@@ -1034,13 +1034,13 @@ socket.on('getStream', async (indata) => {
 })
 
 socket.on('chatMSG', async (data) => {
-    console.log('chatMSG = ', data);
+    //console.log('chatMSG = ', data);
     //handleIncommingChatMSG(data);
     renderMsgTemplate(data)
 })
 
 socket.on('loadChatMsgs', async (data) => {
-    console.log('loadChatMsgs = ', data);
+    //console.log('loadChatMsgs = ', data);
     for (const key in data) {
         //handleIncommingChatMSG(data[key]);
         renderMsgTemplate(data[key])

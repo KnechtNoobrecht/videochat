@@ -73,10 +73,10 @@ var modals = {}
 
 function initModals() {
     var mods = Array.from(document.getElementsByTagName('modal'));
-    console.log(mods);
+    //console.log(mods);
 
     for (var i = 0; i < mods.length; i++) {
-        console.log('mods[', i, '] ', mods[i]);
+        // console.log('mods[', i, '] ', mods[i]);
         // console.log('i ', i);
         var m = new Modal(mods[i]);
         modals[m.id] = m;
