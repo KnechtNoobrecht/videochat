@@ -32,6 +32,8 @@
 ### ⚒️ Voice Chat
 ### ⚒️ Hotkeys
 ### ⚒️ Animationen
+### ⚒️ Verschwommenes Vorschaubild machen und in Raum senden, wenn Stream gestartet wird
+### ⚒️ Touch Gesten
 
 # Links 
 

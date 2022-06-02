@@ -750,19 +750,18 @@ function startStreaming() {
                 stopStream()
                 //console.log('streaming started', stream);
 
-                if (getBrowser() === 'Firefox') {
+                if (getBrowser() != 'Safari') {
+                    var mediaRecorder = new MediaRecorder(stream, localStreamOptions.mediaRecorderOptions);
+                    mediaRecorder.start();
+                    stream = mediaRecorder.stream;
 
+                    mediaRecorder.onwarning = function (e) {
+                        console.log("A warning has been raised: " + e.message);
+                    }
                 }
-
-                var mediaRecorder = new MediaRecorder(stream, localStreamOptions.mediaRecorderOptions);
-                mediaRecorder.start();
-                stream = mediaRecorder.stream;
                 localStream = stream;
                 console.log("localStream.getVideoTracks()[0].contentHint = ", localStream.getVideoTracks()[0].contentHint);
 
-                mediaRecorder.onwarning = function (e) {
-                    console.log("A warning has been raised: " + e.message);
-                }
 
                 if (localStream.getAudioTracks().length == 0) {
                     var AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -817,8 +816,15 @@ function startCamStreaming() {
                 })
                 .then(async (stream) => {
                     stopStream()
-                    var mediaRecorder = new MediaRecorder(stream, localStreamOptions.mediaRecorderOptions);
-                    stream = mediaRecorder.stream;
+                    if (getBrowser() != 'Safari') {
+                        var mediaRecorder = new MediaRecorder(stream, localStreamOptions.mediaRecorderOptions);
+                        mediaRecorder.start();
+                        stream = mediaRecorder.stream;
+    
+                        mediaRecorder.onwarning = function (e) {
+                            console.log("A warning has been raised: " + e.message);
+                        }
+                    }
                     localStream = stream;
 
                     if (localStream.getAudioTracks().length == 0) {
