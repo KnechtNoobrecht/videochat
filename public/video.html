@@ -13,8 +13,9 @@
 <body>
     <div class="mobile-top-navbar">
         <img src="/svg/user-group.svg" onclick="toggleSideBar('left')" alt="Users">
-        <img src="/svg/chat.svg" onclick="toggleChat()" alt="Chat">
+        <img src="/svg/chat.svg" onclick="toggleSideBar('right')" alt="Chat">
     </div>
+
     <div id="grid-container" class="grid-container">
         <div id="ls" class="left-sidebar">
             <div class="list-connected-users" id="connected-users-list">
@@ -28,7 +29,7 @@
 
         <div id="rs" class="right-sidebar">
             <div class="chat-wrapper">
-                <div onclick="toggleChat()" class="chat-open-close-btn">
+                <div onclick="toggleSideBar('right')" class="chat-open-close-btn">
                     <img src="/svg/chevron-left.svg">
                 </div>
                 <div class="chat-body">
@@ -45,7 +46,7 @@
 
                 <div class="chat-input">
                     <form id="chatInput">
-                        <textarea type="text" id="inputMsg" autocomplete="off" placeholder="Nachricht"></textarea>
+                        <textarea type="text" id="inputMsg" autocomplete="off" placeholder="Nachricht" rows="1"></textarea>
                     </form>
                     <!-- <button onclick="sendMessage()" class="chat-send-button">
                         <img src="/svg/send.svg" />
@@ -54,6 +55,7 @@
             </div>
         </div>
     </div>
+
     <div class="bot_bar_hover">
         <div class="bot_bar">
             <div id="stopStreamBTN" onclick="stopStream()" class="bot_bar_item">
@@ -71,6 +73,10 @@
             <div id="" onclick="openProfileModal() " class="bot_bar_item">
                 <img src="/svg/cog.svg" />
                 <span>Change Profile</span>
+            </div>
+            <div id="" onclick="rcss()" class="bot_bar_item">
+                <img src="/svg/cog.svg" />
+                <span>Reload CSS</span>
             </div>
         </div>
     </div>
@@ -93,15 +99,23 @@
 
     <modal id="setIdent" class="hide">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header col-6">
                 <h2>Set your Username</h2>
-                <button class="btn-secondary" onclick="modals.setIdent.close()">X</button>
+                <button class="btn" onclick="modals.setIdent.close()">X</button>
             </div>
-            <div class="modal-body">
-                <input id="username">
-                <input id="avatar">
+            <div class="modal-body col-6">
+                <div class="row ">
+                    <div class="col-6">Username</div>
+
+                    <input class="col-6" id="username">
+                </div>
+                <div class="row">
+                    <div class="col-6">Avatar URL</div>
+
+                    <input class="col-6" id="avatar">
+                </div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer col-6">
                 <button onclick="saveProfile()">Speichern</button>
             </div>
         </div>
@@ -138,6 +152,23 @@
 
     <template id="chatMsgTemplate">
         <div class="chat-message-wrapper" name="" id="">
+            <div class="chat-message-avatar">
+                <img src="">
+            </div>
+            <div class="chat-message-container">
+                <div class="chat-message-info">
+                    <span class="chat-message-username">placeholder</span>
+                    <span class="chat-message-time">placeholder</span>
+                </div>
+                <div class="chat-message-content">
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="chatMsgTemplate-old">
+        <div class="chat-message-wrapper" name="" id="">
 
             <div class="connected-user">
                 <img src="">
@@ -153,9 +184,10 @@
 
 </body>
 <script src="/socket.io/socket.io.js"></script>
-
+<script src="/js/global_vars.js"></script>
 <script src="/js/easy-peer.js"></script>
-<script src="/js/main2.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/js/main.js"></script>
 <script src="/js/uifw.js"></script>
 
 </html>

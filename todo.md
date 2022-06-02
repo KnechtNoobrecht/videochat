@@ -34,6 +34,8 @@
 ### ⚒️ Animationen
 ### ⚒️ Verschwommenes Vorschaubild machen und in Raum senden, wenn Stream gestartet wird
 ### ⚒️ Touch Gesten
+### ⚒️ Bilder uploaden in Chat (Bilder im Chat verschicken)
+### ⚒️ Senden Button für Chat für Mobile
 
 # Links 
 

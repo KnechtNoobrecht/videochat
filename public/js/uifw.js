@@ -1,13 +1,3 @@
-const localVideo = document.getElementById('localVideo');
-const videoWrapper = document.getElementById('videowrapper')
-const framerateSlider = document.getElementById('slider-fr')
-const resolutionSlider = document.getElementById('slider-rs')
-const framerateDiv = document.getElementById('framerateDiv');
-const resolutionDiv = document.getElementById('resolutionDiv');
-
-
-
-
 /* framerateDiv.onclick = function () {
     toggleSlider(this)
 }
@@ -69,8 +59,6 @@ class Modal {
     }
 }
 
-var modals = {}
-
 function initModals() {
     var mods = Array.from(document.getElementsByTagName('modal'));
     //console.log(mods);
@@ -90,29 +78,6 @@ function initModals() {
     }
 }
 initModals();
-
-function setCssVar(variable, value) {
-    document.documentElement.style.setProperty('--' + variable, value);
-}
-
-var firstTime = true;
-if (document.addEventListener) {
-    document.addEventListener('contextmenu', function (e) {
-        if (firstTime) {
-            firstTime = false;
-            console.log("You've tried to open context menu", e); //here you draw your own menu
-            // e.preventDefault();
-        } else {
-            firstTime = true;
-        }
-
-    }, false);
-} else {
-    document.attachEvent('oncontextmenu', function () {
-        alert("You've tried to open context menu");
-        window.event.returnValue = false;
-    });
-}
 
 function openProfileModal() {
     modals.setIdent.open()

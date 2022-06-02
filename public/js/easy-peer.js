@@ -735,15 +735,10 @@ function startStreaming() {
                 },
                 video: {
                     chromeMediaSource: 'desktop',
-                    width: {
-                        ideal: localStreamOptions.resolution.width.ideal
-                    },
-                    height: {
-                        ideal: localStreamOptions.resolution.height.ideal
-                    },
-                    frameRate: {
-                        ideal: localStreamOptions.resolution.frameRate.ideal
-                    }
+                    width: localStreamOptions.resolution.width,
+                    height: localStreamOptions.resolution.height,
+                    frameRate: localStreamOptions.resolution.frameRate
+
                 }
             })
             .then(async (stream) => {
@@ -769,7 +764,8 @@ function startStreaming() {
                     var dest = audioCtx.createMediaStreamDestination();
                     localStream.addTrack(dest.stream.getAudioTracks()[0]);
                 }
-                localStream.getVideoTracks()[0].contentHint = 'motion';
+
+                localStream.getVideoTracks()[0].contentHint = 'detail';
                 //contentHint 
 
                 var videoWrapper = document.getElementById('videoElement_' + socket.id)
@@ -799,17 +795,17 @@ function startCamStreaming() {
                 .getUserMedia({
                     video: {
                         min: 1280,
-                        ideal: localStreamOptions.resolution.width.ideal,
+                        ideal: localStreamOptions.resolution.width,
                         max: 2560,
                     },
                     height: {
                         min: 720,
-                        ideal: localStreamOptions.resolution.height.ideal,
+                        ideal: localStreamOptions.resolution.height,
                         max: 1440,
                     },
                     frameRate: {
                         min: 5,
-                        ideal: localStreamOptions.resolution.frameRate.ideal,
+                        ideal: localStreamOptions.resolution.frameRate,
                         max: 60,
                     }
 
@@ -820,7 +816,7 @@ function startCamStreaming() {
                         var mediaRecorder = new MediaRecorder(stream, localStreamOptions.mediaRecorderOptions);
                         mediaRecorder.start();
                         stream = mediaRecorder.stream;
-    
+
                         mediaRecorder.onwarning = function (e) {
                             console.log("A warning has been raised: " + e.message);
                         }
@@ -833,6 +829,7 @@ function startCamStreaming() {
                         var dest = audioCtx.createMediaStreamDestination();
                         localStream.addTrack(dest.stream.getAudioTracks()[0]);
                     }
+
                     localStream.getVideoTracks()[0].contentHint = 'motion';
 
                     // localVideo.srcObject = localStream;
@@ -1052,17 +1049,13 @@ socket.on('loadChatMsgs', async (data) => {
         renderMsgTemplate(data[key])
     }
 })
-
+var reloadCSS = false
 socket.on('reloadCSS', async () => {
-    console.log('CSS Reloaded!');
-    var links = document.getElementsByTagName("link");
-    for (var cl in links) {
-        var link = links[cl];
-        if (link.rel === "stylesheet") {
-            link.href += "";
-        }
+    if (reloadCSS) {
+        rcss()
     }
 })
+
 
 var pm = new PeersManager()
 

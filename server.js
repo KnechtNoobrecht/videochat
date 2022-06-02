@@ -82,6 +82,7 @@ io.on("connection", (socket) => {
 		data.fromIdentity = identitys[socket.id];
 		data.time = new Date().getTime();
 		data.msg = await parseText(data.msg)
+		console.log("chatMSG made by", data);
 		if (roomChatMsgs[data.room]) {
 			roomChatMsgs[data.room].push(data);
 		} else {

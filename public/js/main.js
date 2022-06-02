@@ -1,169 +1,202 @@
-const socket = io();
-const localVideo = document.getElementById('localVideo');
-const remoteVideo = document.getElementById('remoteVideo');
-const roomID = window.location.pathname.split('/').pop(); //last element of window.location.pathname.split('/')
-const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
-const peerConnection = new RTCPeerConnection(configuration);
-let dataChannel;
-let myDataChannel;
-var localStream;
-var selfID = '';
-var resolution = { width: 1920, height: 1080, framerate: 30 };
+//import { Peer, PeersManager } from 'easy-peer';
 
-socket.on('ID', (data) => {
-	console.log('My ID is', data);
-	selfID = data;
-	socket.emit('joinRoom', roomID);
-});
 
-function initiateStream() {
-	navigator.mediaDevices
-		.getDisplayMedia({
-			audio: false,
-			video: {
-				chromeMediaSource: 'desktop',
-				width: resolution.width,
-				height: resolution.height,
-				frameRate: resolution.framerate
-			}
-		})
-		.then((stream) => {
-			//var mediaRecorder = new MediaRecorder(stream);
-			//var myStream = mediaRecorder.stream;
-			//makeCall(stream)
-			localVideo.srcObject = stream;
-			makeCall(stream);
-		})
-		.catch((err) => {
-			console.log('nay', err);
-		});
+//socket.on("connect", async () => {
+//    //var idd = new Identity();
+//    //console.log(idd);
+//});
+
+window.onload = function () {
+    console.log("window.onload");
 }
 
-async function makeCall(stream) {
-	console.log('Initiating Peer connection');
-
-	//socket listen for accepted offers / answers
-	socket.on('incomingPeerAnswer', async (answer) => {
-		console.log('incomingPeerAnswer');
-		console.log(answer);
-		const remoteDesc = new RTCSessionDescription(answer);
-		await peerConnection.setRemoteDescription(remoteDesc);
-		console.log('remote description set:');
-		console.log(peerConnection.currentRemoteDescription);
-	});
-
-	if (stream) {
-		for (const track of stream.getTracks()) {
-			peerConnection.addTrack(track, stream);
-		}
-	} else {
-		dataChannel = peerConnection.createDataChannel('foo'); // dummy channel to trigger ICE
-	}
-
-	const offer = await peerConnection.createOffer();
-	//console.log('made offer:');
-	//console.log(offer);
-	await peerConnection.setLocalDescription(offer);
-	//console.log('local description set:');
-	//console.log(peerConnection.currentLocalDescription);
-
-	//socket send offer
-	socket.emit('makePeerOffer', { offer: offer, roomID: roomID });
-
-	//signalingChannel.send({'offer': offer})
-}
-
-//listen for incoming peer offers
-socket.on('incomingPeerOffer', async (data) => {
-	console.log('incoming Peer offer');
-	console.log(data.offer);
-	peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
-	console.log('remote description set:');
-	console.log(peerConnection.currentRemoteDescription);
-	const answer = await peerConnection.createAnswer();
-	await peerConnection.setLocalDescription(answer);
-	console.log('local description set:');
-	console.log(peerConnection.currentLocalDescription);
-	console.log('created answer:');
-	console.log(answer);
-	socket.emit('makePeerAnswer', { answer: answer, offerer: data.offerer });
+room.addEventListener("memberAdded", function (e) {
+    cloneVideoElement(e.detail.identity, e.detail.sid)
+    cloneUserElement(e.detail.identity, e.detail.sid)
 });
 
-//              ICE CANDIDATES
+room.addEventListener("memberRemoved", function (e) {
+    var identity = e.detail.identity;
+    var socketid = e.detail.sid;
+    //console.log("removeMember event ", identity, socketid);
+    var videowrapper = document.getElementById('videowrapper');
+    videowrapper.removeChild(document.getElementById('videoElement_' + socketid));
 
-// Listen for local ICE candidates on the local RTCPeerConnection
-//peerConnection.addEventListener('icecandidate', event => {
-//    if (event.candidate) {
-//        socket.emit('new-ice-candidate', {candidate: event.candidate})
-//    }
-//})
-peerConnection.onicecandidate = function (event) {
-	//console.log('new ice candidate:')
-	//console.log(event)
-	if (event.candidate) {
-		socket.emit('new-ice-candidate', { candidate: event.candidate, roomID: roomID });
-	}
-};
+    var connectedUsersList = document.getElementById('connected-users-list');
+    connectedUsersList.removeChild(document.getElementById('userElement_' + socketid));
 
-// Listen for remote ICE candidates and add them to the local RTCPeerConnection
-socket.on('incomingICEcandidate', async (candidate) => {
-	//console.log('incoming ice candidate:')
-	//console.log(candidate)
-
-	try {
-		await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-	} catch (e) {
-		console.error('Error adding received ice candidate', e);
-	}
 });
 
-peerConnection.addEventListener('connectionstatechange', (event) => {
-	console.log('CONNECTION STATE CHANGE:', peerConnection.connectionState);
+room.addEventListener("memberChanged", function (e) {
+    var identity = e.detail.identity;
+    var socketid = e.detail.sid;
+    //console.log("memberChanged ", identity, socketid);
+    //var videowrapper = document.getElementById('videowrapper');
 
-	if (peerConnection.connectionState === 'connected') {
-		console.log('P2P connection established!');
-	}
+    var userElement = document.getElementById('userElement_' + socketid);
+    var videoElement = document.getElementById('videoElement_' + socketid);
+
+    videoElement.querySelector('.namePlaceholder').innerText = identity.username;
+    videoElement.querySelector('.avatar').src = identity.avatar
+
+    userElement.getElementsByTagName('span')[0].innerHTML = identity.username;
+    userElement.getElementsByTagName('img')[0].src = identity.avatar;
+
+    if (identity.isStreaming) {
+        userElement.getElementsByClassName('button-watch')[0].style = "display:flex !important";
+    } else {
+        userElement.getElementsByClassName('button-watch')[0].style = "display:none !important";
+    }
+
+    var userMsgs = Array.from(document.getElementsByName('msg_' + identity.id));
+    console.log("userMsgs", userMsgs);
+
+    for (var i = 0; i < userMsgs.length; i++) {
+        userMsgs[i].querySelector('.connected-user').querySelector('.chat-message-username').innerText = identity.username;
+        userMsgs[i].querySelector('.connected-user').querySelector('img').src = identity.avatar
+    }
 });
 
-//peerConnection.oniceconnectionstatechange = event => {
-//	console.log('ice connection state change:', event);
-//}
-//
-//peerConnection.addEventListener('icegatheringstatechange', (ev) => {
-//	console.log(peerConnection.iceGatheringState, ' || ', ev)
-//})
-//
-//peerConnection.addEventListener('iceccandidate', (ev) => {
-//	console.log('iceccandidate', ev)
-//})
-//
-//peerConnection.onnegotiationneeded = event => {
-//	console.log('negotiationneeded:',event);
-//}
+document.getElementById('inputMsg').addEventListener('keyup', function (e) {
+    //console.log("keydown", e);
+    console.log(e.srcElement.value.match(/\n\r?/g));
 
-peerConnection.ontrack = async (event) => {
-	console.log('INCOMING TRACK', event);
-	const [remoteStream] = event.streams;
-	console.log('remoteStream:', remoteStream);
-	remoteVideo.srcObject = remoteStream;
-	remoteVideo.onloadedmetadata = (e) => remoteVideo.play();
-};
 
-function sendData() {
-	dataChannel.send(document.getElementById('testinput').value);
-	console.log('msg sent:');
-	console.log(document.getElementById('testinput').value);
+    if (e.srcElement.value.match(/\n\r?/g) != null) {
+        rows = e.srcElement.value.match(/\n\r?/g).length + 1
+    } else {
+        rows = 1
+    }
+
+    e.srcElement.rows = rows
+
+    if (e.keyCode == 13 && !e.shiftKey) {
+        //sendMessage();
+        var msg = e.srcElement.value
+        if (msg.trim() != "") {
+            e.preventDefault();
+            msg = msg.trimStart().trim()
+            msg = msg.replace(/\n\r?/g, ' <br />')
+
+            room.sendMsg(msg);
+        }
+        document.getElementById('chatInput').reset();
+        e.srcElement.rows = 1
+
+    } else if (e.keyCode == 13) {
+        //e.srcElement.rows++
+        chatBody.scrollBy(0, 20)
+    }
+});
+
+
+document.querySelector('#grid-container').ontouchstart = function (eve) {
+    let touchobj = eve.changedTouches[0]; // erster Finger
+    startx = parseInt(touchobj.clientX); // X/Y-Koordinaten relativ zum Viewport
+    starty = parseInt(touchobj.clientY);
+    //this.innerHTML = 'Touch Down!';
+    // setCssVar('primary_bg', '#f92c47')
 }
 
-peerConnection.ondatachannel = (event) => {
-	console.log('ondatachannel event triggered:', event);
-	dataChannel = event.channel;
-	dataChannel.onmessage = logData;
-};
-
-function logData(event) {
-	console.log('datachannel onmessage event fired:', event);
-	console.log('datachannel msg received:', event.data);
+document.querySelector('#grid-container').ontouchend = function (eve) {
+    //this.innerHTML = 'Touch Down!';
+    //  setCssVar('primary_bg', '#202225')
+    slideing = false;
 }
 
-//window.onload = makeCall;
+document.querySelector('#grid-container').ontouchmove = function (eve) {
+    //this.innerHTML = 'Touch Down!';
+    let touchobj = eve.changedTouches[0]; // erster Finger
+    let distx = parseInt(touchobj.clientX) - startx;
+    let disty = parseInt(touchobj.clientY) - starty;
+    var isLeftOpen = sidebarL.offsetWidth > '0' ? true : false;
+    var isRightOpen = sidebarR.offsetWidth > '0' ? true : false;
+    // moves.innerHTML = "touchmove horizontal: " + distx + "px vertikal: " + disty + "px";
+    //console.log('sidebarL.offsetWidth = ', sidebarL.offsetWidth);
+    //console.log('sidebarR.offsetWidth = ', sidebarR.offsetWidth);
+    //console.log('distx = ', distx);
+    //console.log('disty = ', disty);
+    //console.log('isLeftOpen = ', isLeftOpen);
+    //console.log('isRightOpen = ', isRightOpen);
+    console.log('touch move event = ', eve);
+    if (!slideing && !isLeftOpen) {
+        if (isRightOpen) {
+            if (distx > 200) {
+                setSideBar('side', false)
+                slideing = true;
+            }
+
+        } else {
+            if (distx < -200) {
+                setSideBar('side', true)
+                slideing = true;
+            }
+        }
+    }
+    if (!slideing && !isRightOpen) {
+        if (isLeftOpen) {
+            if (distx < -200) {
+                setSideBar('left', false)
+                slideing = true;
+            }
+        } else {
+            if (distx > 200) {
+                setSideBar('left', true)
+                slideing = true;
+            }
+        }
+    }
+
+    /*     if (getCssVar('grid_left') === '1fr') {
+            if (distx > -200) {
+                setSideBar('left', false)
+            }
+
+        } else {
+            if (distx > 200) {
+                setSideBar('left', true)
+            }
+        } */
+
+    //   setCssVar('primary_bg', '#234421')
+}
+
+document.querySelector('.bot_bar').addEventListener('touchstart', function (e) {
+    //e.preventDefault()
+    // e.stopPropagation();
+})
+
+
+var width_size_before = 0;
+var ro = new ResizeObserver(entries => {
+    var isLeftOpen = sidebarL.offsetWidth > '0' ? true : false;
+    var isRightOpen = sidebarR.offsetWidth > '0' ? true : false;
+    for (let entry of entries) {
+        const cr = entry.contentRect;
+        //console.log('Element:', entry.target);
+        console.log(`Element size: ${cr.width}px x ${cr.height}px`);
+        //console.log(`Element padding: ${cr.top}px ; ${cr.left}px`);
+
+
+        if (width_size_before != cr.width) {
+            if (cr.width <= 900) {
+                if (!isLeftOpen) {
+                    setSideBar('left', false)
+                }
+                if (!isRightOpen) {
+                    setSideBar('right', false)
+                }
+            } else if (cr.width > 900) {
+                setSideBar('left', true)
+                setSideBar('right', true)
+            }
+        }
+        width_size_before = cr.width;
+    }
+    //sizebefore = cr.width;
+});
+
+// Observe one or multiple elements
+ro.observe(document.body);
+
+console.log('chrome://webrtc-internals/');
