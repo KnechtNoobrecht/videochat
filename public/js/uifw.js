@@ -34,9 +34,6 @@ function toggleSlider(ctx) {
     }
 }
 
-
-
-
 class Modal {
     constructor(wrapper) {
         this.wrapper = wrapper
@@ -77,7 +74,6 @@ function initModals() {
         openProfileModal()
     }
 }
-initModals();
 
 function openProfileModal() {
     modals.setIdent.open()

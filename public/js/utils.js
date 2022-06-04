@@ -201,7 +201,6 @@ function toggleSideBar(side) {
     }
 }
 
-
 // show hide sidebar
 function setSideBar(side, open) {
 
@@ -247,4 +246,376 @@ function setSideBar(side, open) {
     var left = Number(getCssVar('grid_left').substring(0, getCssVar('grid_left').length - 2));
     var right = Number(getCssVar('grid_right').substring(0, getCssVar('grid_right').length - 2));
     setCssVar('grid_mid', (5 - left - right) + 'fr')
+}
+
+// Helper Functions
+
+function uuid() {
+    function ff(s) {
+        var pt = (Math.random().toString(16) + '000000000').substr(2, 8)
+        return s ? '-' + pt.substr(0, 4) + '-' + pt.substr(4, 4) : pt
+    }
+    return ff() + ff(true) + ff(true) + ff()
+}
+
+// { id: this.id, username: this.username, avatar: this.avatar }
+function addCookieObjectElement(params) {
+    //console.log('addCookieObjectElement', params);
+    var iCookie = getCookie('ep_Identitys')
+    if (iCookie == '') {
+        iCookie = JSON.stringify({})
+    }
+
+    var iCookieObj = JSON.parse(iCookie)
+    iCookieObj[params.id] = params
+    setCookie('ep_Identitys', JSON.stringify(iCookieObj), 365)
+    return getCookieObject('ep_Identitys')
+}
+
+function removeCookieObjectElement(id) {
+    var iCookie = getCookie('ep_Identitys')
+    if (iCookie == '') {
+        var iCookie = JSON.stringify({})
+    }
+
+    var iCookieObj = JSON.parse(iCookie)
+    delete iCookieObj[id]
+    setCookie('ep_Identitys', JSON.stringify(iCookieObj), 365)
+    return getCookieObject(id)
+}
+
+function getIdentityByUsernameInCookie(username) {
+    var coo = getCookieObject('ep_Identitys')
+    for (var i in coo) {
+        if (coo[i].username === username) {
+            return coo[i]
+        }
+    }
+    return null
+}
+
+function getIdentityByUsernameInIdentityObject(username) {
+    for (var i in identitys) {
+        if (identitys[i].username === username) {
+            return identitys[i]
+        }
+    }
+    return null
+}
+async function checkUsernameTaken(username) {
+    var a = await getIdentityByUsernameInCookie(username)
+    var b = await getIdentityByUsernameInIdentityObject(username)
+    if (a === null && b === null) {
+        return false
+    } else {
+        return true
+    }
+}
+async function addIdentityToObjects(data) {
+    var a = await getIdentityByUsernameInCookie(data.username)
+    if (a === null) {
+        addCookieObjectElement({
+            id: data.id,
+            username: data.username,
+            avatar: data.avatar
+        })
+    }
+
+    var b = await getIdentityByUsernameInIdentityObject(data.username)
+    if (b === null) {
+        identitys.push({
+            id: data.id,
+            username: data.username,
+            avatar: data.avatar
+        })
+    }
+}
+
+function setCookie(cname, cvalue, exdays) {
+    const d = new Date()
+    d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000)
+    let expires = 'expires=' + d.toUTCString()
+    document.cookie = cname + '=' + cvalue + ';' + expires + ';path=/'
+}
+
+function getCookie(cname) {
+    let name = cname + '='
+    let decodedCookie = decodeURIComponent(document.cookie)
+    let ca = decodedCookie.split(';')
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i]
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1)
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length)
+        }
+    }
+    return ''
+}
+
+function getCookieObject(cname) {
+    try {
+        return JSON.parse(getCookie(cname))
+    } catch (error) {
+        return null
+    }
+}
+
+function whatIsIt(object) {
+    if (object === null) {
+        return "null";
+    }
+    if (object === undefined) {
+        return "undefined";
+    }
+    if (object.constructor === ''.constructor) {
+        return "String";
+    }
+    if (object.constructor === [].constructor) {
+        return "Array";
+    }
+    if (object.constructor === {}.constructor) {
+        return "Object";
+    } {
+        return "don't know";
+    }
+}
+
+function startStreaming() {
+    return new Promise((resolve, reject) => {
+
+
+        navigator.mediaDevices
+            .getDisplayMedia({
+                audio: {
+                    autoGainControl: false,
+                    channelCount: 2,
+                    echoCancellation: false,
+                    latency: 0,
+                    noiseSuppression: false,
+                    sampleRate: 48000,
+                    sampleSize: 16,
+                    volume: 1.0
+                },
+                video: {
+                    chromeMediaSource: 'desktop',
+                    width: localStreamOptions.resolution.width,
+                    height: localStreamOptions.resolution.height,
+                    frameRate: localStreamOptions.resolution.frameRate
+
+                }
+            })
+            .then(async (stream) => {
+                stopStream()
+                //console.log('streaming started', stream);
+
+                if (getBrowser() != 'Safari') {
+                    var mediaRecorder = new MediaRecorder(stream, localStreamOptions.mediaRecorderOptions);
+                    mediaRecorder.start();
+                    stream = mediaRecorder.stream;
+
+                    mediaRecorder.onwarning = function (e) {
+                        console.log("A warning has been raised: " + e.message);
+                    }
+                }
+                localStream = stream;
+                console.log("localStream.getVideoTracks()[0].contentHint = ", localStream.getVideoTracks()[0].contentHint);
+
+
+                if (localStream.getAudioTracks().length == 0) {
+                    var AudioContext = window.AudioContext || window.webkitAudioContext;
+                    var audioCtx = new AudioContext();
+                    var dest = audioCtx.createMediaStreamDestination();
+                    localStream.addTrack(dest.stream.getAudioTracks()[0]);
+                }
+
+                localStream.getVideoTracks()[0].contentHint = 'detail';
+                //contentHint 
+
+                var videoWrapper = document.getElementById('videoElement_' + socket.id)
+                var localVideo = videoWrapper.getElementsByTagName('video')[0]
+                var icon = videoWrapper.getElementsByTagName('img')[0]
+                localVideo.srcObject = localStream;
+
+                localVideo.onloadedmetadata = (e) => {
+                    localVideo.play()
+                    socket.emit('memberStartStreaming', room.id);
+                    icon.style = "display:none"
+                    resolve(localStream);
+                };
+            })
+            .catch((err) => {
+                console.log('nay', err);
+                reject(err);
+            });
+    })
+}
+
+function startCamStreaming() {
+    return new Promise((resolve, reject) => {
+
+        if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
+            navigator.mediaDevices
+                .getUserMedia({
+                    video: {
+                        min: 1280,
+                        ideal: localStreamOptions.resolution.width,
+                        max: 2560,
+                    },
+                    height: {
+                        min: 720,
+                        ideal: localStreamOptions.resolution.height,
+                        max: 1440,
+                    },
+                    frameRate: {
+                        min: 5,
+                        ideal: localStreamOptions.resolution.frameRate,
+                        max: 60,
+                    }
+
+                })
+                .then(async (stream) => {
+                    stopStream()
+                    if (getBrowser() != 'Safari') {
+                        var mediaRecorder = new MediaRecorder(stream, localStreamOptions.mediaRecorderOptions);
+                        mediaRecorder.start();
+                        stream = mediaRecorder.stream;
+
+                        mediaRecorder.onwarning = function (e) {
+                            console.log("A warning has been raised: " + e.message);
+                        }
+                    }
+                    localStream = stream;
+
+                    if (localStream.getAudioTracks().length == 0) {
+                        var AudioContext = window.AudioContext || window.webkitAudioContext;
+                        var audioCtx = new AudioContext();
+                        var dest = audioCtx.createMediaStreamDestination();
+                        localStream.addTrack(dest.stream.getAudioTracks()[0]);
+                    }
+
+                    localStream.getVideoTracks()[0].contentHint = 'motion';
+
+                    // localVideo.srcObject = localStream;
+                    socket.emit('memberStartStreaming', room.id);
+                    resolve(localStream);
+                })
+                .catch((err) => {
+                    console.log('nay', err);
+                    reject(err);
+                });
+        }
+    })
+}
+
+function getStream(remotesid) {
+    socket.emit('getStream', {
+        fromSocket: socket.id,
+        toSocket: remotesid
+    });
+}
+
+function stopStream() {
+    try {
+        let tracks = localStream.getTracks();
+        tracks.forEach(track => track.stop());
+        document.getElementById('videoElement_' + socket.id).getElementsByTagName('video')[0].srcObject = null;
+        localStream = null;
+    } catch (error) {
+        console.log(error);
+    }
+    socket.emit('memberStopStreaming', room.id);
+}
+
+async function readFile(input, toSocketID) {
+
+    let options = {
+        initiator: true,
+        remotesid: toSocketID
+    }
+    let peer = new Peer(options)
+    var outdata = await peer.init(null);
+    pm.addPeer(peer)
+
+    var reciver = await pm.getPeerBySocketID(toSocketID)
+    console.log('readFile', input, toSocketID, reciver);
+
+    peer.peer.addEventListener('datachannel', (event) => {
+        //this.dataChannel = event.channel
+        console.log('readyState ', event.channel.readyState);
+        if (event.channel.readyState) {
+            let file = input.files[0];
+            let fileReader = new FileReader();
+            fileReader.readAsArrayBuffer(file);
+            //fileReader.readAsDataURL(file);
+            fileReader.onload = function () {
+                // alert(fileReader.result);
+                //console.log(fileReader.result);
+                peer.send('fileReader.result');
+                peer.send(arrayBufferToString(fileReader.result));
+            };
+            fileReader.onerror = function () {
+                alert(fileReader.error);
+            };
+        }
+    })
+}
+
+function handleIncommingChatMSG(data) {
+    console.log('handleIncommingChatMSG', data);
+    // renderNewChatMsg(data)
+
+}
+
+function initIdentity() {
+    var ido = getCookieObject('ep_Identitys')
+    //console.log('ido ', ido);
+    if (ido) {
+        Object.keys(ido).forEach((id) => {
+            //console.log('Identity = ', id, ido[id])
+            //identitys.push(new Identity(ido[id].id, ido[id].username, ido[id].avatar))
+            identitys.push(new Identity({
+                id: ido[id].id,
+                username: ido[id].username,
+                avatar: ido[id].avatar
+            }))
+        })
+    } else {
+        identitys.push(new Identity({}))
+    }
+
+}
+
+
+
+function getBrowser() {
+    var ua = navigator["userAgent"]
+
+    if (ua.indexOf("Chrome") > -1) {
+        return "Chrome"
+    } else if (ua.indexOf("Firefox") > -1) {
+        return "Firefox"
+    } else if (ua.indexOf("Safari") > -1) {
+        return "Safari"
+    } else if (ua.indexOf("Opera") > -1) {
+        return "Opera"
+    } else if (ua.indexOf("MSIE") > -1) {
+        return "IE"
+    } else {
+        return "Unknown"
+    }
+}
+
+function initSound() {
+    soundsPlayer = new SoundsPlayer({
+        incomming_Msg: {
+            volume: 0.5,
+            path: '/audio/msg_01.mp3'
+        },
+        newMember: {
+            volume: 0.5,
+            path: '/audio/memberJoin_01.mp3'
+        },
+    });
 }
