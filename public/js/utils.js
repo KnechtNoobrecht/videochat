@@ -16,17 +16,57 @@ function setCssVar(variable, value) {
 function getCssVar(variable) {
     return getComputedStyle(document.documentElement).getPropertyValue('--' + variable).trim();
 }
+var testvw
 
 function setStreamToWindow(peer) {
     //console.log("setStreamToWindow", peer);
     var videoWrapper = document.getElementById('videoElement_' + peer.remotesid)
     var remoteVideo = videoWrapper.getElementsByTagName('video')[0]
+    testvw = videoWrapper
+
+    document.getElementById('testtemp').appendChild(testvw);
+    document.getElementById('videowrapper').appendChild(testvw);
+
+    console.log("videowrapper ", document.getElementById('videowrapper'));
+    console.log("video ", videoWrapper);
+    /* 
+        var s = document.getElementById("TOMOVE");
+        var t = document.getElementById("TARGET");
+        t.appendChild(s); */
+
     //var icon = videoWrapper.getElementsByTagName('img')[0]
     remoteVideo.srcObject = peer.remoteStream;
     remoteVideo.onloadedmetadata = (e) => {
         remoteVideo.play()
         //icon.style = "display:none"
     };
+}
+
+function sortStreams() {
+    var videoelemente = document.getElementsByClassName('videoElement');
+    var videoelementeArray = Array.from(videoelemente);
+
+    //console.log('videoelementeArray = ', videoelementeArray);
+    videoelementeArray.sort(function (a, b) {
+        var aStream = a.querySelector('video').srcObject;
+        var bStream = b.querySelector('video').srcObject;
+        var aVal = 0
+        var bVal = 0
+        aVal = aStream ? 1 : aVal
+        bVal = bStream ? 1 : bVal
+        return bVal - aVal;
+    });
+
+    for (var i = 0; i < videoelementeArray.length; i++) {
+        var video = videoelementeArray[i]
+        var vStreamObj = video.querySelector('video').srcObject
+        if (vStreamObj || showVideoWithoutStream) {
+            document.getElementById('videowrapper').appendChild(video);
+            video.style = "display:flex"
+        } else {
+            video.style = "display:none"
+        }
+    }
 }
 
 function renderNewChatMsg(data) {
@@ -228,7 +268,7 @@ function setSideBar(side, open) {
     } else {
         if (!open) {
             setCssVar('grid_right', '0fr')
-            document.getElementById('rs').style.width = "0%";
+            document.getElementById('rs').style.width = "0";
             document.getElementById('rs').style.right = "-100%";
         } else {
             setCssVar('grid_right', '1fr')

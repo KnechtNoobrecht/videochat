@@ -552,3 +552,21 @@ class SoundsPlayer {
     }
 
 }
+
+class Once {
+    constructor(cb) {
+        this.isDone = false;
+        this.cb = cb;
+    }
+    exec() {
+        if (!this.isDone) {
+            this.cb();
+            this.isDone = true;
+            return true;
+        }
+        return false;
+    }
+    reset() {
+        this.isDone = false;
+    }
+}

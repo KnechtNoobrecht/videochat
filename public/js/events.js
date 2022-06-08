@@ -167,28 +167,50 @@ function initEvents() {
         for (let entry of entries) {
             const cr = entry.contentRect;
             //console.log('Element:', entry.target);
-            console.log(`Element size: ${cr.width}px x ${cr.height}px`);
+            //console.log(`Element size: ${cr.width}px x ${cr.height}px`);
             //console.log(`Element padding: ${cr.top}px ; ${cr.left}px`);
 
 
             if (width_size_before != cr.width) {
                 if (cr.width <= 900) {
-                    if (!isLeftOpen) {
-                        setSideBar('left', false)
-                    }
-                    if (!isRightOpen) {
-                        setSideBar('right', false)
-                    }
+                    rezizeToMobile.exec();
+                    rezizeToDesktop.reset();
                 } else if (cr.width > 900) {
-                    setSideBar('left', true)
-                    setSideBar('right', true)
+                    rezizeToDesktop.exec()
+                    rezizeToMobile.reset();
                 }
             }
             width_size_before = cr.width;
         }
+
+        //var videoelemente = document.querySelector('.videoElement')
+        var videoelemente = document.getElementsByClassName('videoElement');
+        // console.log('videoelemente = ', videoelemente);
+
+        /*  for (var i = 0; i < videoelemente.length; i++) {
+             var video = videoelemente[i]
+             var targetHeight = video.offsetWidth * 0.5625
+             //     console.log('targetHeight = ', targetHeight);
+             //console.log('video = ', video);
+
+             //video.offsetWidth
+             if (targetHeight > 100) {
+                 //    video.style.height = targetHeight + 'px'
+             }
+         } */
+
         //sizebefore = cr.width;
     });
 
     // Observe one or multiple elements
     ro.observe(document.body);
+
+    rezizeToMobile = new Once(() => {
+        setSideBar('left', false)
+        setSideBar('right', false)
+    });
+    rezizeToDesktop = new Once(() => {
+        setSideBar('left', true)
+        setSideBar('right', true)
+    });
 }

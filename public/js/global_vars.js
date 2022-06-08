@@ -138,3 +138,8 @@ const sidebarL = document.getElementById('ls');
 
 
 var soundsPlayer
+
+var rezizeToMobile
+var rezizeToDesktop
+
+var showVideoWithoutStream = true

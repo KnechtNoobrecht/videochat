@@ -34,9 +34,30 @@
   .chat-wrapper {
     height: 100vh;
   }
+
+  .videowrapper {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "video video";
+  }
+
+  .videowrapper .videoElement:nth-child(odd):last-child {
+    transform: translateX(50%);
+    margin-left: 12px;
+  }
 }
 
 @media only screen and (max-width:900px) {
+
+  .videowrapper {
+    grid-template-columns: 1fr;
+    grid-template-areas: "video";
+  }
+
+  .videowrapper .videoElement:nth-child(odd):last-child {
+    transform: translateX(0%);
+    margin-left: 0px;
+  }
+
   .right-sidebar {
     box-shadow: none;
   }
@@ -104,5 +125,7 @@
   .chat-wrapper {
     height: calc(100% - 46px);
   }
+
+
 
 }

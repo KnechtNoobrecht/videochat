@@ -32,9 +32,21 @@
   .left-sidebar {
     width: 100%; }
   .chat-wrapper {
-    height: 100vh; } }
+    height: 100vh; }
+  .videowrapper {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "video video"; }
+  .videowrapper .videoElement:nth-child(odd):last-child {
+    transform: translateX(50%);
+    margin-left: 12px; } }
 
 @media only screen and (max-width: 900px) {
+  .videowrapper {
+    grid-template-columns: 1fr;
+    grid-template-areas: "video"; }
+  .videowrapper .videoElement:nth-child(odd):last-child {
+    transform: translateX(0%);
+    margin-left: 0px; }
   .right-sidebar {
     box-shadow: none; }
   .bot_bar_hover {
@@ -157,10 +169,7 @@ iframe {
 .videowrapper {
   display: grid;
   place-content: center;
-  grid-template-columns: 1fr 1fr;
-  grid-template-areas: "video video";
   width: 100%;
-  height: 100%;
   grid-row-gap: 1vw;
   grid-column-gap: 1vw;
   padding: 0 1vw 0 1vw;
@@ -169,8 +178,6 @@ iframe {
 .videowrapper-2 {
   display: grid;
   place-content: center;
-  grid-template-columns: 1fr 1fr;
-  grid-template-areas: "video video";
   width: 100%;
   grid-row-gap: 1vw;
   grid-column-gap: 1vw;
@@ -179,15 +186,14 @@ iframe {
   .videowrapper-2 video {
     position: relative; }
 
-.videowrapper .videoElement:nth-child(odd):last-child {
-  transform: translateX(50%);
-  margin-left: 12px; }
-
 .videoElement {
   position: relative;
   z-index: 0;
   border-radius: 10px;
-  background-color: var(--secondary_bg); }
+  background-color: var(--secondary_bg);
+  padding-top: 56.25%;
+  min-width: 100px;
+  min-height: 100px; }
 
 .videoElement:hover > .streamVolumeSlider,
 .videoElement:hover > .fullscreenBTN {
@@ -398,9 +404,10 @@ textarea {
 
 video {
   position: absolute;
-  object-fit: contain;
   width: 100%;
-  height: 100%; }
+  height: 100%;
+  top: 0;
+  left: 0; }
 
 /* Could Use thise as well for Individual Controls */
 video::-webkit-media-controls-timeline {
