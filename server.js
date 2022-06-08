@@ -19,10 +19,10 @@ io.on("connection", (socket) => {
 
 	socket.on("joinRoom", async (roomID, identity) => {
 		//identity.sid = socket.id;
+		console.log("joinRoom", roomID, identity);
 		identity.isStreaming = false;
 		identitys[socket.id] = identity;
 		socket.join(roomID);
-		console.log(identity.username + " joined room ", roomID);
 		var sockets = await getSocketsOfRoom(roomID);
 		socket.emit("membersLoaded", sockets);
 		socket.emit("loadChatMsgs", roomChatMsgs[roomID]);
