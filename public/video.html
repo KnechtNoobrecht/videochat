@@ -62,13 +62,9 @@
                 <img src="/svg/stop.svg" />
                 <span>Stop</span>
             </div>
-            <div id="startStreamBTN" onclick="pm.changeStream()" class="bot_bar_item">
+            <div id="startStreamBTN" onclick="modals.chooseStream.open()" class="bot_bar_item">
                 <img src="/svg/desktop.svg" />
                 <span>Start Stream</span>
-            </div>
-            <div id="" onclick="startCamStreaming() " class="bot_bar_item">
-                <img src="/svg/camera.svg" />
-                <span>Start Cam Streaming</span>
             </div>
             <div id="" onclick="openProfileModal() " class="bot_bar_item">
                 <img src="/svg/cog.svg" />
@@ -121,8 +117,47 @@
         </div>
     </modal>
 
-    <div id="testtemp"></div>
-    <div id="testtemp"></div>
+    <modal id="chooseStream" class="hide">
+        <div class="modal-content">
+            <div class="modal-header col-11">
+                <h2>Choose Stream Type</h2>
+                <button class="btn" onclick="modals.chooseStream.close()">X</button>
+            </div>
+            <div class="modal-body col-11">
+                <div class="row">
+                    <select name="streamType">
+                        <option value="dt">Stream Desktop</option>
+                        <option value="cam">Stream Kamera</option>
+                        <!-- <option value="yt">Stream Youtube </option> -->
+                    </select>
+
+                    <select name="streamRes">
+                        <option value="0x0">Auto</option>
+                        <option value="1280x720">1280 x 720</option>
+                        <option value="1920x1080">1920 x 1080</option>
+                        <option value="2560x1440">2560 x 1440</option>
+                    </select>
+
+                    <select name="streamFPS">
+                        <option value="10">10 FPS</option>
+                        <option value="20">20 FPS</option>
+                        <option value="30">30 FPS</option>
+                        <option value="60">60 FPS</option>
+                    </select>
+
+                    <select name="streamHint">
+                        <option value="">Auto</option>
+                        <option value="motion">Motion</option>
+                        <option value="detail">Detail</option>
+                        <option value="text">Text</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer col-11">
+                <button class="btn" onclick="chooseStream()">Stream</button>
+            </div>
+        </div>
+    </modal>
 
     <template id="videoElementTemplate">
         <div id="" class="videoElement">

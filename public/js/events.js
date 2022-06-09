@@ -213,4 +213,34 @@ function initEvents() {
         setSideBar('left', true)
         setSideBar('right', true)
     });
+
+
+    var sel = document.querySelectorAll('select')
+    
+    for (var i = 0; i < sel.length; i++) {
+        sel[i].addEventListener('change', function (e) {
+            var select = e.target;
+            var value = select.value;
+            var name = select.name;
+            switch (name) {
+                case 'streamRes':
+                    //console.log('streamRes = ', value);
+                    value = value.split('x')
+                    localStreamOptions.resolution.width = value[0];
+                    localStreamOptions.resolution.height = value[1];
+                    break;
+                case 'streamFPS':
+                    //console.log('streamFPS = ', value);
+                    localStreamOptions.resolution.frameRate = value;
+                    break;
+                case 'streamHint':
+                    //console.log('streamHint = ', value);
+                    localStreamOptions.resolution.hint = value;
+                    break;
+                default:
+                    break;
+            }
+            console.log('New localStreamOptions = ', localStreamOptions);
+        })
+    }
 }

@@ -115,7 +115,7 @@ class Peer extends EventTarget {
                 if (this.peer.connectionState === 'disconnected') {
                     console.log('P2P connection closed!')
                     this.connected = false
-                    this.remove();
+                    ythis.remove();
                     //var remoteVideo = document.getElementById("remoteVideo-" + this.connectionID)
                     //remoteVideo.remove()
                 }
@@ -348,20 +348,10 @@ class PeersManager {
         return peers
     }
 
-    reconnectAllPeers() {
-        for (const peer in peers) {
-            peers[peer.connectionID].close()
-            peers[peer.connectionID].connect()
-        }
-        return peers
-    }
-
-    async changeStream() {
-
-        await startStreaming()
-
+    async reconnectAllPeers() {
+        console.log('reconnectAllPeers = ', this.peers);
         for (const peer in this.peers) {
-            console.log('changeStream', this.peers[peer]);
+            console.log('reconnectAllPeers', this.peers[peer]);
             var element = this.peers[peer]
             //this.peers[peer.id].init();
             if (element.initiator) {
@@ -376,6 +366,7 @@ class PeersManager {
                 //element.remove()
             }
         }
+        return peers
     }
 }
 

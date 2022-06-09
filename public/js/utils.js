@@ -22,19 +22,7 @@ function setStreamToWindow(peer) {
     //console.log("setStreamToWindow", peer);
     var videoWrapper = document.getElementById('videoElement_' + peer.remotesid)
     var remoteVideo = videoWrapper.getElementsByTagName('video')[0]
-    testvw = videoWrapper
-
-    document.getElementById('testtemp').appendChild(testvw);
-    document.getElementById('videowrapper').appendChild(testvw);
-
-    console.log("videowrapper ", document.getElementById('videowrapper'));
-    console.log("video ", videoWrapper);
-    /* 
-        var s = document.getElementById("TOMOVE");
-        var t = document.getElementById("TARGET");
-        t.appendChild(s); */
-
-    //var icon = videoWrapper.getElementsByTagName('img')[0]
+    sortStreams()
     remoteVideo.srcObject = peer.remoteStream;
     remoteVideo.onloadedmetadata = (e) => {
         remoteVideo.play()
@@ -422,6 +410,20 @@ function whatIsIt(object) {
     }
 }
 
+async function chooseStream() {
+    console.log('chooseStream');
+    //var val = document.getElementById('streamType').value
+    //get element by name streamType
+    var val = document.getElementsByName('streamType')[0].value
+    // console.log(document.getElementById('streamType'));
+    if (val == 'dt') {
+        await startStreaming()
+    } else if ('cam') {
+        await startCamStreaming()
+    }
+    pm.reconnectAllPeers()
+}
+
 function startStreaming() {
     return new Promise((resolve, reject) => {
 
@@ -460,8 +462,8 @@ function startStreaming() {
                     }
                 }
                 localStream = stream;
-                console.log("localStream.getVideoTracks()[0].contentHint = ", localStream.getVideoTracks()[0].contentHint);
 
+                // console.log("localStream.getVideoTracks()[0].contentHint = ", localStream.getVideoTracks()[0].contentHint);
 
                 if (localStream.getAudioTracks().length == 0) {
                     var AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -470,7 +472,7 @@ function startStreaming() {
                     localStream.addTrack(dest.stream.getAudioTracks()[0]);
                 }
 
-                localStream.getVideoTracks()[0].contentHint = 'detail';
+                localStream.getVideoTracks()[0].contentHint = localStreamOptions.resolution.hint;
                 //contentHint 
 
                 var videoWrapper = document.getElementById('videoElement_' + socket.id)
@@ -482,10 +484,12 @@ function startStreaming() {
                     localVideo.play()
                     socket.emit('memberStartStreaming', room.id);
                     icon.style = "display:none"
+                    modals.chooseStream.close()
                     resolve(localStream);
                 };
             })
             .catch((err) => {
+
                 console.log('nay', err);
                 reject(err);
             });
@@ -563,7 +567,7 @@ function stopStream() {
         document.getElementById('videoElement_' + socket.id).getElementsByTagName('video')[0].srcObject = null;
         localStream = null;
     } catch (error) {
-        console.log(error);
+        //console.log(error);
     }
     socket.emit('memberStopStreaming', room.id);
 }

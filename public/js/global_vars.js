@@ -77,7 +77,8 @@ var localStreamOptions = {
     resolution: {
         width: 1920,
         height: 1080,
-        frameRate: 30
+        frameRate: 30,
+        hint: 'motion'
     },
     mediaRecorderOptions: {
         mimeType: 'video/webm;codecs=opus,vp8',
