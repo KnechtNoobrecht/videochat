@@ -69,6 +69,10 @@ class Peer extends EventTarget {
                 that.peer.getStats(null).then(reporter => {
                     reporter.forEach(report => {
                         if (report.type === 'inbound-rtp' && report.mediaType === 'video') {
+                            if (report.framesPerSecond == undefined) {
+                                return;
+                            }
+
                             if (!prevReport) {
                                 prevReport = report;
                             } else {
@@ -115,7 +119,7 @@ class Peer extends EventTarget {
                 if (this.peer.connectionState === 'disconnected') {
                     console.log('P2P connection closed!')
                     this.connected = false
-                    ythis.remove();
+                    this.remove();
                     //var remoteVideo = document.getElementById("remoteVideo-" + this.connectionID)
                     //remoteVideo.remove()
                 }
@@ -297,6 +301,9 @@ class Peer extends EventTarget {
     }
     remove() {
         //this.removeTracks()
+
+        console.log('remove peer');
+        document.getElementById('videoElement_' + this.remotesid).getElementsByTagName('video')[0].srcObject = null;
         this.peer.close()
         delete peers[this.connectionID]
         delete pm.peers[this.connectionID]
@@ -342,8 +349,10 @@ class PeersManager {
     }
 
     closeAllPeers() {
+        console.log('closeAllPeers');
         for (const peer in peers) {
-            peers[peer.connectionID].remove()
+            this.peers[peer].remove()
+            // peers[peer.connectionID].remove()
         }
         return peers
     }
@@ -352,18 +361,18 @@ class PeersManager {
         console.log('reconnectAllPeers = ', this.peers);
         for (const peer in this.peers) {
             console.log('reconnectAllPeers', this.peers[peer]);
-            var element = this.peers[peer]
+            var oldpeer = this.peers[peer]
             //this.peers[peer.id].init();
-            if (element.initiator) {
-                clearInterval(element.timer)
+            if (oldpeer.initiator) {
+                clearInterval(oldpeer.timer)
                 let options = {
                     initiator: true,
-                    remotesid: element.remotesid,
-                    connectionID: element.connectionID
+                    remotesid: oldpeer.remotesid
                 }
                 let peer = new Peer(options)
                 var outdata = await peer.init(null, localStream);
-                //element.remove()
+                pm.addPeer(peer)
+                oldpeer.remove()
             }
         }
         return peers

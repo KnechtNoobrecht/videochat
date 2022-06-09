@@ -565,6 +565,7 @@ function stopStream() {
         let tracks = localStream.getTracks();
         tracks.forEach(track => track.stop());
         document.getElementById('videoElement_' + socket.id).getElementsByTagName('video')[0].srcObject = null;
+        pm.closeAllPeers()
         localStream = null;
     } catch (error) {
         //console.log(error);
