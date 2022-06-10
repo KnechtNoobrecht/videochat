@@ -19,13 +19,18 @@ io.on("connection", (socket) => {
 
 	socket.on("joinRoom", async (roomID, identity) => {
 		//identity.sid = socket.id;
-		console.log("joinRoom", roomID, identity);
-		identity.isStreaming = false;
-		identitys[socket.id] = identity;
-		socket.join(roomID);
-		var sockets = await getSocketsOfRoom(roomID);
-		socket.emit("membersLoaded", sockets);
-		socket.emit("loadChatMsgs", roomChatMsgs[roomID]);
+		try {
+			console.log("joinRoom", roomID, identity);
+			identity.isStreaming = false;
+			identitys[socket.id] = identity;
+			socket.join(roomID);
+			var sockets = await getSocketsOfRoom(roomID);
+			socket.emit("membersLoaded", sockets);
+			socket.emit("loadChatMsgs", roomChatMsgs[roomID]);
+		} catch (error) {
+			console.log("JOIN ROOM error = ", error);
+		}
+
 	});
 
 	socket.on("getRoomMember", async (roomID, cb) => {

@@ -43,6 +43,7 @@ class Peer extends EventTarget {
         this.identity = identity || new Identity({})
         this.type = type || 'video'
         this.tracks = []
+        console.log('Peer Constructor = ', this);
     }
 
     /**
@@ -54,7 +55,7 @@ class Peer extends EventTarget {
     async init(offer, stream) {
         return new Promise(async (resolve, reject) => {
             peers[this.connectionID] = this
-
+            console.log('init peer start');
             var prevReport = null;
             var that = this;
             var infoDataIn = document.getElementById('videoElement_' + this.remotesid).querySelector('#infoData_In')
@@ -276,6 +277,7 @@ class Peer extends EventTarget {
                 //await this.peer.setLocalDescription(answer)
                 //resolve(answer)
             }
+            console.log('init peer finished');
         })
     }
 
@@ -372,7 +374,7 @@ class PeersManager {
                 let peer = new Peer(options)
                 var outdata = await peer.init(null, localStream);
                 pm.addPeer(peer)
-                oldpeer.remove()
+                //oldpeer.remove()
             }
         }
         return peers
