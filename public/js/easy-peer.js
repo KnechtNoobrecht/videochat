@@ -60,7 +60,8 @@ class Peer extends EventTarget {
             var that = this;
             var infoDataIn = document.getElementById('videoElement_' + this.remotesid).querySelector('#infoData_In')
             var infoDataOut = document.getElementById('videoElement_' + this.localsid).querySelector('#infoData_Out')
-
+            var infoElement = renderDataInfo(this.connectionID)
+            infoElement.querySelector('.infoDataHeader').innerHTML = this.connectionID
             this.timer = setInterval(function () {
                 // console.log('jo hi');
                 if (!that.peer) {
@@ -82,14 +83,15 @@ class Peer extends EventTarget {
                                 var bitrateReceived = Math.round((report.bytesReceived * 8 - prevReport.bytesReceived * 8) / (report.timestamp - prevReport.timestamp));
 
                                 //infoData.innerHTML = '<p>' + (report.bytesReceived * 8 - prevReport.bytesReceived * 8) / (report.timestamp - prevReport.timestamp) + 'Bit</p>'
-                                infoDataIn.innerHTML = `<p>Received <br>
+
+
+                                infoElement.querySelector('.infoDataBody').innerHTML = `<p>Received <br>
                                 Bitrate = ${bitrateReceived} kBit <br> 
                                 Frames Dropped = ${report.framesDropped} <br>
                                 FPS = ${report.framesPerSecond} <br>
                                 packets Lost = ${report.packetsLost} <br>
                                 Res = ${report.frameHeight} x ${report.frameWidth} <br>
                                 </p>`
-
                                 //console.log((report.bytesReceived * 8 - prevReport.bytesReceived * 8) / (report.timestamp - prevReport.timestamp));
 
                             }
@@ -100,7 +102,7 @@ class Peer extends EventTarget {
                                 //console.log('report outbound-rtp = ', report);
                                 var bitrateSent = Math.round((report.bytesSent * 8 - prevReport.bytesSent * 8) / (report.timestamp - prevReport.timestamp));
 
-                                infoDataOut.innerHTML = `<p>Sent <br> 
+                                infoElement.querySelector('.infoDataBody').innerHTML = `<p>Sent <br> 
                                 Bitrate = ${bitrateSent} kBit <br> 
                                 FPS = ${report.framesPerSecond} <br>
                                 Res = ${report.frameHeight} x ${report.frameWidth} <br>
@@ -120,6 +122,7 @@ class Peer extends EventTarget {
                 if (this.peer.connectionState === 'disconnected') {
                     console.log('P2P connection closed!')
                     this.connected = false
+                    infoElement.parentNode.removeChild(infoElement);
                     this.remove();
                     //var remoteVideo = document.getElementById("remoteVideo-" + this.connectionID)
                     //remoteVideo.remove()

@@ -77,6 +77,10 @@
         </div>
     </div>
 
+    <div id="infoDataWrapper" class="infoDataWrapper">
+        <div class="header"></div>
+    </div>
+
     <modal id="testmodal" class="hide">
         <div class="modal-content">
             <div class="modal-header">
@@ -220,7 +224,12 @@
         </div>
     </template>
 
-
+    <template id="dataInfo">
+        <div class="infoData">
+            <div class="infoDataHeader"></div>
+            <div class="infoDataBody"></div>
+        </div>
+    </template>
 
 </body>
 <script src="/socket.io/socket.io.js"></script>
@@ -230,6 +239,7 @@
 <script src="/js/events.js"></script>
 <script src="/js/uifw.js"></script>
 <script src="/js/socket.js"></script>
+<script src="/js/debug.js"></script>
 <script src="/js/init.js"></script>
 
 </html>

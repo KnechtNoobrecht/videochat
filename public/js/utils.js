@@ -170,6 +170,18 @@ function cloneUserElement(identity, socketid) {
     }
 }
 
+function renderDataInfo(connectionID) {
+    var element = cloneTemplate('dataInfo')
+    var wrapper = document.getElementById('infoDataWrapper')
+    element.id = connectionID + '_dataInfo';
+    wrapper.appendChild(element)
+    return element
+}
+
+function cloneTemplate(id) {
+    return document.getElementById(id).cloneNode(true).content.children[0];
+}
+
 function isValidURL(str) {
     console.log("isValidURL", str);
     var pattern = new RegExp('^(https?:\\/\\/)?' + // protocol

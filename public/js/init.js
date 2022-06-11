@@ -3,6 +3,7 @@ window.onload = function () {
     room = new Room();
     console.log("Room Created");
     pm = new PeersManager()
+    pma = new PeersManager()
     console.log("PeersManager Created");
     initIdentity();
     console.log("Identity initalisiert");
@@ -13,4 +14,9 @@ window.onload = function () {
     initSound();
     console.log("Sounds initalisiert");
     console.log('chrome://webrtc-internals/');
+    initDebug()
+    console.log("Debug initalisiert");
+
+    socket.emit('joinRoom', roomID, identitys[0])
+    console.log("Room joined");
 }

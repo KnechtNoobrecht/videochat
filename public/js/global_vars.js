@@ -55,6 +55,13 @@ var identitys = []
 var pm
 
 /**
+ * @var pma
+ * @type PeersManager
+ * @description Holds the default PeersManagerAudio
+ */
+var pma
+
+/**
  * @var modals
  * @type {Object}
  * @description Holds all modals that on this site

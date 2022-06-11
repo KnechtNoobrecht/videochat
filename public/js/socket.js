@@ -45,7 +45,7 @@ socket.on('peerAnswer', (indata) => {
 })
 
 socket.on('connect', () => { // console.log('connected to server');
-    socket.emit('joinRoom', roomID, identitys[0])
+    
 })
 
 socket.on('membersLoaded', (sockets) => {
