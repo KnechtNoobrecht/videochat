@@ -172,7 +172,7 @@ function cloneUserElement(identity, socketid) {
 
 function renderDataInfo(connectionID) {
     var element = cloneTemplate('dataInfo')
-    var wrapper = document.getElementById('infoDataWrapper')
+    var wrapper = document.getElementById('peerStreamStats')
     element.id = connectionID + '_dataInfo';
     wrapper.appendChild(element)
     return element

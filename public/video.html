@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/css/dist/main.css">
-    <title>WebRTC video stream</title>
+    <title>BetterStreamer</title>
 </head>
 
 <body>
@@ -78,7 +78,18 @@
     </div>
 
     <div id="infoDataWrapper" class="infoDataWrapper">
-        <div class="header"></div>
+        <div id="infoDataTabs" class="tabsWrapper">
+            <div class="tabsHeader row">
+                <div class="tabsHeaderItem" onclick="handleTabClick(this, 'tabbody1')">Peer Connections</div>
+                <div class="tabsHeaderItem" onclick="handleTabClick(this, 'tabbody2')">Peer Stream Stats</div>
+            </div>
+            <div id="tabbody1" class="tabBody active">
+                <div id="peerConnections"></div>
+            </div>
+            <div id="tabbody2" class="tabBody ">
+                <div id="peerStreamStats"></div>
+            </div>
+        </div>
     </div>
 
     <modal id="testmodal" class="hide">

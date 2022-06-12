@@ -68,6 +68,8 @@ var pma
  */
 var modals = {}
 
+var tabs = {}
+
 /**
  * @var reloadCSS
  * @type {Boolean}

@@ -56,6 +56,21 @@ class Modal {
     }
 }
 
+class Tab {
+    constructor(tab) {
+        this.tab = tab;
+        this.bodys = {}
+    }
+    show(index) {
+        var keys = Object.keys(this.bodys)
+        for (let y = 0; y < keys.length; y++) {
+            const element = this.bodys[keys[y]];
+            element.classList.remove('active');
+        }
+        this.bodys[index].classList.add('active');
+    }
+}
+
 function initModals() {
     var mods = Array.from(document.getElementsByTagName('modal'));
     //console.log(mods);
@@ -73,6 +88,34 @@ function initModals() {
     if (identitys[0].username == 'Anonymous') {
         openProfileModal()
     }
+}
+
+function initTabs() {
+    var tabsElements = document.querySelectorAll('.tabsWrapper')
+
+    for (var i = 0; i < tabsElements.length; i++) {
+        var tabWapper = tabsElements[i];
+        var tabsHeader = tabWapper.querySelectorAll('.tabsHeader');
+        var tabsBodys = tabWapper.querySelectorAll('.tabBody');
+
+        tabs[infoDataTabs.id] = new Tab(tabWapper)
+
+        for (let y = 0; y < tabsBodys.length; y++) {
+            const element = tabsBodys[y];
+            tabs[infoDataTabs.id].bodys[element.id] = element
+        }
+
+        console.log('tabs[', infoDataTabs.id, '] ', tabs[infoDataTabs.id]);
+    }
+}
+
+function handleTabClick(elem, target) {
+    // console.log('handleTabClick ', elem, target);
+    // console.log('elem.parentElement.parentElement.id = ', elem.parentElement.parentElement.id);
+    var tab = tabs[elem.parentElement.parentElement.id]
+    // console.log('tab = ', tab);
+    //tabs[elem.parentElement.parentElement.id].show(target)
+    tab.show(target)
 }
 
 function openProfileModal() {

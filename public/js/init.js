@@ -9,6 +9,9 @@ window.onload = function () {
     console.log("Identity initalisiert");
     initModals();
     console.log("Modals initalisiert");
+    initTabs()
+    console.log("Tabs initalisiert");
+
     initEvents()
     console.log("Events initalisiert");
     initSound();

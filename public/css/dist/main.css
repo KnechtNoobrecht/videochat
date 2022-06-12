@@ -254,13 +254,12 @@ option {
   z-index: 9999;
   top: 0px;
   left: 0px;
-  width: 100%;
-  height: min-content;
-  background-color: rgba(10, 10, 10, 0.11);
+  width: 300px;
+  height: 100px;
+  background-color: rgba(10, 10, 10, 0.15);
   font-size: 10px;
   resize: both;
-  overflow: auto;
-  padding-top: 20px; }
+  overflow: auto; }
 
 .infoDataWrapper .header {
   position: absolute;
@@ -272,8 +271,7 @@ option {
 
 .infoData {
   background-color: #0f151ad3;
-  color: white;
-  margin: 5px; }
+  color: white; }
 
 .infoDataHeader {
   padding-left: 5px;
@@ -281,6 +279,41 @@ option {
 
 .infoDataBody {
   padding-left: 5px; }
+
+.tabsWrapper {
+  position: relative;
+  z-index: 9999;
+  width: 100%;
+  height: 100%; }
+
+.tabBody {
+  display: none;
+  position: absolute;
+  top: 25px;
+  margin-top: 5px; }
+
+.tabsHeader {
+  width: 100%;
+  left: 0px;
+  top: 0px;
+  background-color: #151515;
+  height: min-content;
+  cursor: grab;
+  position: sticky;
+  z-index: 99; }
+
+.tabsHeaderItem {
+  padding: 5px;
+  background-color: #1928465c;
+  color: white;
+  font-size: 12px;
+  cursor: pointer; }
+
+.tabsHeaderItem:hover {
+  background-color: #1b387283; }
+
+.active {
+  display: block; }
 
 .fullscreenBTN {
   position: absolute;

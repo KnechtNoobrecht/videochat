@@ -243,4 +243,6 @@ function initEvents() {
             console.log('New localStreamOptions = ', localStreamOptions);
         })
     }
+
+
 }
