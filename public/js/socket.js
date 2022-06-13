@@ -45,7 +45,7 @@ socket.on('peerAnswer', (indata) => {
 })
 
 socket.on('connect', () => { // console.log('connected to server');
-    
+
 })
 
 socket.on('membersLoaded', (sockets) => {
@@ -80,7 +80,7 @@ socket.on('getStream', async (indata) => {
 
     var availablePeer = await pm.getPeerBySocketID(indata.fromSocket)
     console.log('Available Peer = ', availablePeer)
-    if (availablePeer) {
+    if (availablePeer && availablePeer.initiator) {
         console.log('remove Available Peer = ')
         availablePeer.remove()
     }

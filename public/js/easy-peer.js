@@ -1,3 +1,31 @@
+class BitrateObject {
+    constructor() {
+        this.bitrate = 0
+        this.totalBytes = 0
+    }
+    getFormattedBitrate() {
+        var ret = {
+            value: 0,
+            unit: 'bps'
+        }
+        if (this.bitrate > 1000000) {
+            ret.value = (this.bitrate / 1000000).toFixed(2)
+            ret.unit = 'gbps'
+            return ret
+        } else if (this.bitrate > 1000) {
+            ret.value = (this.bitrate / 1000).toFixed(2)
+            ret.unit = 'mbps'
+            return ret
+        } else {
+            ret.value = this.bitrate.toFixed(2)
+            ret.unit = 'kbps'
+            return ret
+        }
+    }
+}
+
+
+
 /*
 Steffen Reimann
 07.05.2022
@@ -23,7 +51,9 @@ class Peer extends EventTarget {
         super();
         if (initiator) {
             this.connectionID = connectionID || uuid()
+            //this.connectionID = uuid()
         } else {
+            //this.connectionID = uuid()
             this.connectionID = connectionID
         }
 
@@ -40,9 +70,11 @@ class Peer extends EventTarget {
         this.remotesid = remotesid
         this.localsid = socket.id
         this.connected = false
-        this.identity = identity || new Identity({})
         this.type = type || 'video'
         this.tracks = []
+        this.sended = new BitrateObject()
+        this.received = new BitrateObject()
+
         console.log('Peer Constructor = ', this);
     }
 
@@ -62,8 +94,10 @@ class Peer extends EventTarget {
             var infoDataOut = document.getElementById('videoElement_' + this.localsid).querySelector('#infoData_Out')
             var infoElement = renderDataInfo(this.connectionID)
             infoElement.querySelector('.infoDataHeader').innerHTML = this.connectionID
+
+
             this.timer = setInterval(function () {
-                // console.log('jo hi');
+
                 if (!that.peer) {
                     prevReport = null;
                     return;
@@ -81,6 +115,9 @@ class Peer extends EventTarget {
                                 //console.log(report);
                                 //console.log('infoData', infoData);
                                 var bitrateReceived = Math.round((report.bytesReceived * 8 - prevReport.bytesReceived * 8) / (report.timestamp - prevReport.timestamp));
+
+                                that.received.bitrate = bitrateReceived;
+                                that.received.totalBytes = report.bytesReceived
 
                                 //infoData.innerHTML = '<p>' + (report.bytesReceived * 8 - prevReport.bytesReceived * 8) / (report.timestamp - prevReport.timestamp) + 'Bit</p>'
 
@@ -102,6 +139,10 @@ class Peer extends EventTarget {
                                 //console.log('report outbound-rtp = ', report);
                                 var bitrateSent = Math.round((report.bytesSent * 8 - prevReport.bytesSent * 8) / (report.timestamp - prevReport.timestamp));
 
+
+                                that.sended.bitrate = bitrateSent;
+                                that.sended.totalBytes = report.bytesSent
+
                                 infoElement.querySelector('.infoDataBody').innerHTML = `<p>Sent <br> 
                                 Bitrate = ${bitrateSent} kBit <br> 
                                 FPS = ${report.framesPerSecond} <br>
@@ -111,18 +152,20 @@ class Peer extends EventTarget {
                         }
                     });
                 });
-            }, 100);
+            }, 500);
 
             this.peer.addEventListener('connectionstatechange', (event) => { // console.log(event);
-                console.log('--- connectionstatechange = ', this.peer.connectionState);
+                //console.log('--- connectionstatechange = ', this.peer.connectionState);
                 if (this.peer.connectionState === 'connected') {
                     console.log('P2P connection established! ', this.connectionID)
                     this.connected = true
+                    this.#event = new CustomEvent("connected");
+                    this.dispatchEvent(this.#event);
                 }
                 if (this.peer.connectionState === 'disconnected') {
                     console.log('P2P connection closed!')
                     this.connected = false
-                    infoElement.parentNode.removeChild(infoElement);
+                    //infoElement.parentNode.removeChild(infoElement);
                     this.remove();
                     //var remoteVideo = document.getElementById("remoteVideo-" + this.connectionID)
                     //remoteVideo.remove()
@@ -137,13 +180,13 @@ class Peer extends EventTarget {
             this.peer.addEventListener('icecandidateerror', (event) => {
                 // console.log('onicecandidateerror')
                 // console.log(event)
-            })
+            });
             this.peer.addEventListener('negotiationneeded', (event) => {
                 console.log('negotiation needed')
                 console.log(event)
-            })
+            });
             this.peer.addEventListener('icecandidate', (event) => {
-                console.log('icecandidate')
+                //console.log('icecandidate')
                 if (event.candidate) {
                     socket.emit('newIceCandidate', {
                         fromSocket: this.localsid,
@@ -154,9 +197,9 @@ class Peer extends EventTarget {
                         }
                     })
                 }
-            })
+            });
             this.peer.addEventListener('track', (event) => {
-                console.log('ontrack', event);
+                //console.log('ontrack', event);
                 this.remoteStream = event.streams[0]
                 setStreamToWindow(this)
                 /*                this.remoteStream = event.streams[0]
@@ -173,7 +216,7 @@ class Peer extends EventTarget {
                                    videoWrapper.appendChild(remoteVideo)
                                }
                                remoteVideo.onloadedmetadata = (e) => remoteVideo.play(); */
-            })
+            });
             this.peer.addEventListener('datachannel', (event) => {
                 //this.dataChannel = event.channel
                 //console.log('datachannel', event.channel);
@@ -189,8 +232,15 @@ class Peer extends EventTarget {
                     }
                     console.log('this.dataChannel DATA CHANNEL MESSAGE:', incommingdata)
                     console.log('typeof incommingdata:', typeof incommingdata)
+
+                    this.#event = new CustomEvent("message", {
+                        detail: {
+                            data: incommingdata
+                        }
+                    });
+                    this.dispatchEvent(this.#event);
                 }
-            })
+            });
 
             if (stream) {
                 //console.log(stream)
@@ -219,10 +269,10 @@ class Peer extends EventTarget {
                         sdp: arr.join('\r\n'),
                     })
 
-                    console.log('setLocalDescription', sdp);
+                    //console.log('setLocalDescription', sdp);
 
                     this.peer.setLocalDescription(sdp);
-                    console.log('setLocalDescription remotesid = ', this.remotesid);
+                    //console.log('setLocalDescription remotesid = ', this.remotesid);
                     socket.emit('peerOffer', {
                         fromSocket: this.localsid,
                         toSocket: this.remotesid,
@@ -268,8 +318,8 @@ class Peer extends EventTarget {
                         sdp: arr.join('\r\n'),
                     })
                     sdp.sdp = sdp.sdp.replace('useinbandfec=1', 'useinbandfec=1; stereo=1; maxaveragebitrate=510000')
-                    console.log('setRemoteDescription', offer);
-                    console.log('setLocalDescription', sdp);
+                    //console.log('setRemoteDescription', offer);
+                    //console.log('setLocalDescription', sdp);
                     this.peer.setLocalDescription(sdp);
                     resolve(sdp)
                 });
@@ -300,21 +350,36 @@ class Peer extends EventTarget {
         })
         for (const key in this.tracks) {
             const element = this.tracks[key];
-            console.log('removeTrack', element);
+            //console.log('removeTrack', element);
             this.peer.removeTrack(element);
         }
     }
     remove() {
         //this.removeTracks()
 
-        console.log('remove peer');
-        document.getElementById('videoElement_' + this.remotesid).getElementsByTagName('video')[0].srcObject = null;
+        console.log('remove peer start');
+
+
+
+        var debugNode = document.getElementById(this.connectionID + '_dataInfo')
+        debugNode.parentNode.removeChild(debugNode);
+
+        //document.getElementById('videoElement_' + this.remotesid).getElementsByTagName('video')[0].srcObject = null;
         this.peer.close()
         delete peers[this.connectionID]
         delete pm.peers[this.connectionID]
         delete this
-        console.log('remove peer', peers);
+        console.log('remove peer end ', peers);
+
+        this.#event = new CustomEvent("removed", {
+            detail: {
+                sid: sid,
+                identity: identity
+            }
+        });
+        this.dispatchEvent(this.#event);
     }
+
 }
 
 class PeersManager {
@@ -327,7 +392,6 @@ class PeersManager {
     getPeers() {
         return peers
     }
-
     async getPeerBySocketID(socketID) {
         return new Promise((resolve, reject) => {
 
@@ -340,7 +404,6 @@ class PeersManager {
             //return null
         })
     }
-
     getPeerByConnectionID(connectionID) {
         try {
             return peers[connectionID]
@@ -348,11 +411,9 @@ class PeersManager {
             return null
         }
     }
-
     getPeerByIndex(index) {
         return peers[Object.keys(peers)[index]]
     }
-
     closeAllPeers() {
         console.log('closeAllPeers');
         for (const peer in peers) {
@@ -361,7 +422,15 @@ class PeersManager {
         }
         return peers
     }
-
+    closeAllInitializedPeers() {
+        console.log('closeAllInitializedPeers');
+        for (const peer in peers) {
+            if (peers[peer].initiator) {
+                this.peers[peer].remove()
+            }
+        }
+        return peers
+    }
     async reconnectAllPeers() {
         console.log('reconnectAllPeers = ', this.peers);
         for (const peer in this.peers) {
@@ -377,10 +446,31 @@ class PeersManager {
                 let peer = new Peer(options)
                 var outdata = await peer.init(null, localStream);
                 pm.addPeer(peer)
-                //oldpeer.remove()
+                oldpeer.remove()
             }
         }
         return peers
+    }
+    getBitrateStats() {
+        var stats = {
+            sended: {
+                currentBitrate: 0,
+                totalBytes: 0
+            },
+            received: {
+                currentBitrate: 0,
+                totalBytes: 0
+            }
+        }
+        for (const peer in peers) {
+            var peerA = peers[peer]
+            console.log('getBitrateStats', peerA);
+            stats.sended.currentBitrate += peerA.sended.currentBitrate
+            stats.sended.totalBytes += peerA.sended.totalBytes
+            stats.received.currentBitrate += peerA.received.currentBitrate
+            stats.received.totalBytes += peerA.received.totalBytes
+        }
+        return stats
     }
 }
 
@@ -549,8 +639,8 @@ class SoundsPlayer {
         this.sounds = options
     }
     play(key) {
-        console.log('play', key);
-        console.log('this.sounds', this.sounds);
+        // console.log('play', key);
+        // console.log('this.sounds', this.sounds);
         var audio = new Audio(this.sounds[key].path);
         audio.volume = this.sounds[key].volume;
         audio.play();

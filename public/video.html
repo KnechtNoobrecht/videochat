@@ -82,12 +82,24 @@
             <div class="tabsHeader row">
                 <div class="tabsHeaderItem" onclick="handleTabClick(this, 'tabbody1')">Peer Connections</div>
                 <div class="tabsHeaderItem" onclick="handleTabClick(this, 'tabbody2')">Peer Stream Stats</div>
+                <div class="tabsHeaderItem" onclick="handleTabClick(this, 'settings')">Settings</div>
+
             </div>
             <div id="tabbody1" class="tabBody active">
                 <div id="peerConnections"></div>
             </div>
             <div id="tabbody2" class="tabBody ">
                 <div id="peerStreamStats"></div>
+            </div>
+            <div id="settings" class="tabBody ">
+                <div class="text-light">
+                    <input id="debugVisable" type="checkbox">
+                    <label class="text-light" for="debugVisable">Debug Visable</label><br>
+                    <input id="debugBGColor" type="text"><label class="text-light" for="debugBGColor">debug BG Color</label><br>
+                    <p>Strg + D Toggels Visibility</p>
+                    <p>Strg + Y Resets Window Size and Position</p>
+                    <button onclick="saveDebugSettings()">Save</button>
+                </div>
             </div>
         </div>
     </div>
@@ -239,6 +251,29 @@
         <div class="infoData">
             <div class="infoDataHeader"></div>
             <div class="infoDataBody"></div>
+        </div>
+    </template>
+
+    <template id="streamInfo">
+        <div class="infoData">
+            <div id="connectionID" class="infoDataHeader text-light"></div>
+            <div id="initiator" class="infoDataHeader text-light"></div>
+            <div id="remotesid" class="infoDataHeader text-light"></div>
+            <div id="localsid" class="infoDataHeader text-light"></div>
+            <div id="connected" class="infoDataHeader text-light"></div>
+            <div id="identity" class="infoDataHeader text-light">
+                <div class="username"></div>
+                <div class="id"></div>
+            </div>
+
+            <div id="sended" class="infoDataHeader text-light">
+                <div class="current"></div>
+                <div class="total"></div>
+            </div>
+            <div id="received" class="infoDataHeader text-light">
+                <div class="current"></div>
+                <div class="total"></div>
+            </div>
         </div>
     </template>
 

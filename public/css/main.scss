@@ -27,6 +27,8 @@
   /* creates padding around scroll thumb */
 }
 
+
+
 body,
 html {
   margin: 0;
@@ -211,6 +213,27 @@ option {
   overflow: auto;
 }
 
+.infoDataWrapper::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.infoDataWrapper::-webkit-scrollbar-track {
+  background: var(--tertiary_bg);
+  /* color of the tracking area */
+}
+
+.infoDataWrapper::-webkit-scrollbar-thumb {
+  background-color: rgb(151, 151, 151);
+  /* color of the scroll thumb */
+  border-radius: 20px;
+  /* roundness of the scroll thumb */
+  border: 10px solid rgb(151, 151, 151);
+  /* creates padding around scroll thumb */
+}
+
+
+
 .infoDataWrapper .header {
   position: absolute;
   top: 0px;
@@ -218,7 +241,6 @@ option {
   width: 100%;
   height: 15px;
   background-color: rgb(21, 21, 21);
-
 }
 
 .infoData {
@@ -425,6 +447,22 @@ option {
   margin: 10px 9px 10px 5px;
 }
 
+.text {
+  &-light {
+    color: #e9e9e9;
+  }
+
+  &-dark {
+    color: #1b1b1b;
+  }
+}
+
+.highlight {
+  color: #ffffff;
+  border: 3px solid #ff0000;
+  background-color: #00af5d;
+}
+
 textarea {
   width: 100%;
   padding: 12px 20px;
@@ -490,6 +528,8 @@ textarea {
     font-size: 1.1rem;
   }
 }
+
+
 
 video {
   position: absolute;

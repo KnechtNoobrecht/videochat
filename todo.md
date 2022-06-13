@@ -28,7 +28,7 @@
 ### ⚒️ Chat Text Input Fixen es bleibt beim abschicken eine zeile bestehen
 ### ⚒️ Dateien verschicken 
 ### ⚒️ Auf Chat msg reagieren und antworten können.
-### ⚒️ Wechsel zwischen Kamera und Stream
+### ✔️ Wechsel zwischen Kamera und Stream
 ### ⚒️ Voice Chat
 ### ⚒️ Hotkeys
 ### ⚒️ Animationen
@@ -36,6 +36,10 @@
 ### ⚒️ Touch Gesten
 ### ⚒️ Bilder uploaden in Chat (Bilder im Chat verschicken)
 ### ⚒️ Senden Button für Chat für Mobile
+
+## Fehler:
+### ⚒️ Wenn der Initiator vom anderen Client keine SocketIO ID hat kommt es zu extrem hohen CPU-Lasten
+
 
 # Links 
 
