@@ -200,6 +200,19 @@ option {
   padding: 5px;
 }
 
+
+::-webkit-resizer {
+  border: 4px solid rgb(209, 209, 209);
+  background: blue;
+  //box-shadow: 0 0 2px 5px rgba(212, 212, 212, 0);
+  //outline: 2px dashed green;
+
+  /*size does not work*/
+  display: block;
+  width: 150px !important;
+  height: 150px !important;
+}
+
 .infoDataWrapper {
   position: fixed;
   z-index: 9999;

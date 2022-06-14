@@ -56,12 +56,8 @@ class Peer extends EventTarget {
             //this.connectionID = uuid()
             this.connectionID = connectionID
         }
-
-        this.peer = new RTCPeerConnection({
-            iceServers: [{
-                urls: 'stun:stun.l.google.com:19302'
-            }]
-        })
+        console.log('peerServerOptions ', peerServerOptions);
+        this.peer = new RTCPeerConnection(peerServerOptions)
 
         this.stream
         this.remoteStream

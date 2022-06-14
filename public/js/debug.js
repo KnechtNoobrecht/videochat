@@ -7,6 +7,14 @@ function initDebug() {
     var y;
     head.addEventListener("mousedown", mouseDown, false);
     window.addEventListener("mouseup", mouseUp, false);
+
+
+    head.addEventListener("touchstart", touchStart, false);
+    head.addEventListener("touchend", () => {
+        console.log('touch end');
+        window.removeEventListener("touchmove", touchMove, true);
+    }, false);
+
     var debugSettings = {}
     debugSettings = getCookieObject('debugSettings')
 
@@ -34,7 +42,6 @@ function initDebug() {
 
     function mouseUp() {
         window.removeEventListener("mousemove", move, true);
-
     }
 
     function mouseDown(e) {
@@ -44,6 +51,30 @@ function initDebug() {
             top: e.pageY - realOffset(head).top
         };
         window.addEventListener("mousemove", move, true);
+    }
+
+    function touchStart(e) {
+        console.log(e);
+        console.log(e.targetTouches[0]);
+        console.log(e.targetTouches[0].pageX);
+        console.log(e.targetTouches[0].pageY);
+        offset = {
+            left: e.targetTouches[0].pageX - realOffset(head).left,
+            top: e.targetTouches[0].pageY - realOffset(head).top
+        };
+
+        window.addEventListener("touchmove", touchMove, true);
+    }
+
+    function touchMove(e) {
+        console.log('touchmove');
+        x = (e.targetTouches[0].pageX - offset.left) / window.innerWidth * 100;
+        y = (e.targetTouches[0].pageY - offset.top) / window.innerHeight * 100;
+        m.style.left = x + "%";
+        m.style.top = y + "%";
+        debugSettings.x = x;
+        debugSettings.y = y;
+        setCookie('debugSettings', JSON.stringify(debugSettings), 365)
     }
 
     function move(e) {
