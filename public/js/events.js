@@ -2,7 +2,7 @@ function initEvents() {
 
 
     room.addEventListener("memberAdded", function (e) {
-        cloneVideoElement(e.detail.identity, e.detail.sid)
+        videoElemente[e.detail.sid] = cloneVideoElement(e.detail.identity, e.detail.sid)
         cloneUserElement(e.detail.identity, e.detail.sid)
 
         soundsPlayer.play('newMember')
@@ -12,11 +12,10 @@ function initEvents() {
         var identity = e.detail.identity;
         var socketid = e.detail.sid;
         //console.log("removeMember event ", identity, socketid);
-        var videowrapper = document.getElementById('videowrapper');
-        videowrapper.removeChild(document.getElementById('videoElement_' + socketid));
 
-        var connectedUsersList = document.getElementById('connected-users-list');
-        connectedUsersList.removeChild(document.getElementById('userElement_' + socketid));
+        document.getElementById('videoElement_' + socketid).remove();
+        document.getElementById('userElement_' + socketid).remove();
+        delete videoElemente[socketid];
 
     });
 
@@ -243,6 +242,7 @@ function initEvents() {
             console.log('New localStreamOptions = ', localStreamOptions);
         })
     }
+
 
 
 }

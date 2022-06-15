@@ -1,3 +1,9 @@
+/*
+Steffen Reimann
+07.05.2022
+*/
+
+
 class BitrateObject {
     constructor() {
         this.bitrate = 0
@@ -24,12 +30,6 @@ class BitrateObject {
     }
 }
 
-
-
-/*
-Steffen Reimann
-07.05.2022
-*/
 
 class Peer extends EventTarget {
     #event;

@@ -93,7 +93,7 @@ option {
 
 .center-videos {
   height: 100vh;
-  display: grid;
+  //display: grid;
   padding: 25px 0 97px 0;
   place-items: center;
   overflow-y: auto;
@@ -199,6 +199,20 @@ option {
   border-radius: 10px;
   padding: 5px;
 }
+
+.botStage {
+  display: flex;
+  flex-direction: column;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.stage {
+  height: 100%;
+  width: 100%;
+}
+
+
 
 
 ::-webkit-resizer {

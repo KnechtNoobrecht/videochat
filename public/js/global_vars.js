@@ -17,7 +17,8 @@ const roomID = window.location.pathname.split('/').pop()
  * @type MediaStream Object
  * @description Holds the local Media Stream that you are publishing to the room.
  */
-var localStream = null
+//ar localStream = null
+var localStream = new MediaStream();
 
 /**
  * @var localAudioStream
@@ -153,6 +154,10 @@ var rezizeToMobile
 var rezizeToDesktop
 
 var showVideoWithoutStream = true
+
+var inStageMode = false;
+
+var videoElemente = {}
 
 var peerServerOptions = {
     iceServers: [{

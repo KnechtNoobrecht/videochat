@@ -30,32 +30,7 @@ function setStreamToWindow(peer) {
     };
 }
 
-function sortStreams() {
-    var videoelemente = document.getElementsByClassName('videoElement');
-    var videoelementeArray = Array.from(videoelemente);
 
-    //console.log('videoelementeArray = ', videoelementeArray);
-    videoelementeArray.sort(function (a, b) {
-        var aStream = a.querySelector('video').srcObject;
-        var bStream = b.querySelector('video').srcObject;
-        var aVal = 0
-        var bVal = 0
-        aVal = aStream ? 1 : aVal
-        bVal = bStream ? 1 : bVal
-        return bVal - aVal;
-    });
-
-    for (var i = 0; i < videoelementeArray.length; i++) {
-        var video = videoelementeArray[i]
-        var vStreamObj = video.querySelector('video').srcObject
-        if (vStreamObj || showVideoWithoutStream) {
-            document.getElementById('videowrapper').appendChild(video);
-            video.style = "display:flex"
-        } else {
-            video.style = "display:none"
-        }
-    }
-}
 
 function renderNewChatMsg(data) {
     console.log("renderNewChatMsg", data);
@@ -145,6 +120,8 @@ function cloneVideoElement(identity, socketid) {
     //clone.querySelector('.videoElement').id = socketid + 'video';
     clone.onclick = function () {
         console.log("videoElement_" + socketid + " clicked");
+        toggleStageMode(clone.id)
+
     }
     clone.querySelector('.fullscreenBTN').onclick = function () {
         clone.querySelector('video').requestFullscreen();
@@ -152,7 +129,13 @@ function cloneVideoElement(identity, socketid) {
     clone.querySelector('.streamVolumeSlider').oninput = function () {
         clone.querySelector('video').volume = clone.querySelector('.streamVolumeSlider').value / 100;
     }
-    document.getElementById('videowrapper').appendChild(clone);
+    if (inStageMode) {
+        document.querySelector('#stageWrapper').querySelector('#botStage').appendChild(clone);
+    } else {
+        document.getElementById('videowrapper').appendChild(clone);
+    }
+
+    return clone;
 }
 
 function cloneUserElement(identity, socketid) {
@@ -168,6 +151,101 @@ function cloneUserElement(identity, socketid) {
     } else {
         clone.querySelector('.button-watch').style = "display:none !important";
     }
+}
+
+function moveElement(target, destination) {
+    console.log("moveElement", target, destination);
+    destination.appendChild(target);
+}
+
+
+
+function sortStreams() {
+    var videoelemente = document.getElementsByClassName('videoElement');
+    var videoelementeArray = Array.from(videoelemente);
+
+    //console.log('videoelementeArray = ', videoelementeArray);
+    videoelementeArray.sort(function (a, b) {
+        var aStream = a.querySelector('video').srcObject;
+        var bStream = b.querySelector('video').srcObject;
+        var aVal = 0
+        var bVal = 0
+        aVal = aStream ? 1 : aVal
+        bVal = bStream ? 1 : bVal
+        return bVal - aVal;
+    });
+
+    for (var i = 0; i < videoelementeArray.length; i++) {
+        var video = videoelementeArray[i]
+        var vStreamObj = video.querySelector('video').srcObject
+        if (vStreamObj || showVideoWithoutStream) {
+            document.getElementById('videowrapper').appendChild(video);
+            video.style = "display:flex"
+        } else {
+            video.style = "display:none"
+        }
+    }
+}
+
+function toggleStageMode(id) {
+    var parent = document.getElementById(id).parentElement
+    var stage = document.querySelector('#stageWrapper').querySelector('#stage');
+    var botStage = document.querySelector('#stageWrapper').querySelector('#botStage');
+    console.log("toggleStageMode", id);
+    //document.getElementById('stageWrapper')
+    console.log(" document.getElementById(id).parentElement() = ", );
+    console.log('parent = ', parent.id);
+
+    if (parent.id == 'videoWrapper' && inStageMode) {
+
+    }
+
+    //Wechsele zu Stage Mode
+    if (!inStageMode && parent.id == 'videowrapper') {
+        for (const key in videoElemente) {
+            if (Object.hasOwnProperty.call(videoElemente, key)) {
+                const element = videoElemente[key];
+                console.log(element);
+                if (element.id == id) {
+                    moveElement(element, stage)
+                } else {
+                    moveElement(element, botStage)
+                }
+            }
+        }
+        inStageMode = true;
+    }
+
+    //Wenn im stage Mode und Drück auf das Video was gestaged ist, wird zum normalen modus gewechselt
+    if (inStageMode && parent.id == 'stage') {
+        for (const key in videoElemente) {
+            if (Object.hasOwnProperty.call(videoElemente, key)) {
+                const element = videoElemente[key];
+                console.log(element);
+
+                moveElement(element, document.getElementById('videowrapper'))
+
+            }
+        }
+        inStageMode = false;
+    }
+
+    // Wenn im stage Mode und clickst auf ein video was in der bot bar ist. werden die videos getauscht 
+    if (inStageMode && parent.id == 'botStage') {
+        for (const key in videoElemente) {
+            if (Object.hasOwnProperty.call(videoElemente, key)) {
+                const element = videoElemente[key];
+                console.log(element);
+
+                if (element.id == id) {
+                    moveElement(element, stage)
+                } else {
+                    moveElement(element, botStage)
+                }
+            }
+        }
+    }
+    //inStageMode = !inStageMode;
 }
 
 function renderDataInfo(connectionID) {
@@ -505,6 +583,12 @@ function startStreaming() {
                     icon.style = "display:none"
                     modals.chooseStream.close()
                     resolve(localStream);
+
+                    localStream.getVideoTracks()[0].onended = function (e) {
+                        // doWhatYouNeedToDo();
+                        console.log('localStream.getVideoTracks()[0].onended', e);
+                        stopStream();
+                    };
                 };
             })
             .catch((err) => {
