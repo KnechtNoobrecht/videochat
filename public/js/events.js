@@ -30,9 +30,12 @@ function initEvents() {
 
         videoElement.querySelector('.namePlaceholder').innerText = identity.username;
         videoElement.querySelector('.avatar').src = identity.avatar
+        videoElement.querySelector('.thumbnail').src = identity.thumbnail;
+
 
         userElement.getElementsByTagName('span')[0].innerHTML = identity.username;
         userElement.getElementsByTagName('img')[0].src = identity.avatar;
+
 
         if (identity.isStreaming) {
             userElement.getElementsByClassName('button-watch')[0].style = "display:flex !important";
@@ -47,6 +50,8 @@ function initEvents() {
             userMsgs[i].querySelector('.connected-user').querySelector('.chat-message-username').innerText = identity.username;
             userMsgs[i].querySelector('.connected-user').querySelector('img').src = identity.avatar
         }
+
+
     });
 
 
@@ -243,6 +248,12 @@ function initEvents() {
         })
     }
 
-
+    document.addEventListener('visibilitychange', function (event) {
+        if (document.hidden) {
+            console.log('not visible');
+        } else {
+            console.log('is visible');
+        }
+    });
 
 }

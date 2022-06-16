@@ -88,6 +88,7 @@
             <div class="tabsHeader row">
                 <div class="tabsHeaderItem" onclick="handleTabClick(this, 'tabbody1')">Peer Connections</div>
                 <div class="tabsHeaderItem" onclick="handleTabClick(this, 'tabbody2')">Peer Stream Stats</div>
+                <div class="tabsHeaderItem" onclick="handleTabClick(this, 'thumbnail')">Thumbnail</div>
                 <div class="tabsHeaderItem" onclick="handleTabClick(this, 'settings')">Settings</div>
 
             </div>
@@ -106,6 +107,9 @@
                     <p>Strg + Y Resets Window Size and Position</p>
                     <button onclick="saveDebugSettings()">Save</button>
                 </div>
+            </div>
+            <div id="thumbnail" class="tabBody ">
+                <img id="thumbnail_prev">
             </div>
         </div>
     </div>
@@ -206,6 +210,7 @@
 
             <img src="" class="avatar">
             <video></video>
+            <img id="" class="thumbnail">
         </div>
     </template>
 

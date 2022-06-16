@@ -128,6 +128,11 @@ io.on("connection", (socket) => {
 		io.sockets.in(data).emit("memberStreamingState", socket.id, identitys[socket.id]);
 	});
 
+	socket.on("streamThumbnail", (data) => {
+		console.log("streamThumbnail = ", data);
+		identitys[socket.id].thumbnail = data.data
+		io.sockets.in(data.room).emit("memberStreamingState", socket.id, identitys[socket.id]);
+	});
 });
 
 io.of("/").adapter.on("create-room", (room) => {

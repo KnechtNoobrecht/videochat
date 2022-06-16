@@ -148,6 +148,8 @@ function initDebug() {
                                 tempElement.querySelector('#identity').querySelector('.id').innerHTML = 'Identity ID = ' + peer.identity.id */
             }
         }
+
+        document.getElementById('thumbnail_prev').src = streamThumbnail
     }, 1000);
 
 

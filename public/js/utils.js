@@ -22,12 +22,23 @@ function setStreamToWindow(peer) {
     //console.log("setStreamToWindow", peer);
     var videoWrapper = document.getElementById('videoElement_' + peer.remotesid)
     var remoteVideo = videoWrapper.getElementsByTagName('video')[0]
+    remoteVideo.style.zIndex = "3";
+    remoteVideo.style.opacity = "1";
+
+
     sortStreams()
     remoteVideo.srcObject = peer.remoteStream;
     remoteVideo.onloadedmetadata = (e) => {
         remoteVideo.play()
         //icon.style = "display:none"
     };
+}
+
+function resetVideoWrapperElement(remotesid) {
+    var videoWrapper = document.getElementById('videoElement_' + remotesid)
+    var remoteVideo = videoWrapper.getElementsByTagName('video')[0]
+    remoteVideo.style.zIndex = "0";
+    remoteVideo.style.opacity = "0";
 }
 
 
@@ -117,11 +128,11 @@ function cloneVideoElement(identity, socketid) {
     clone.id = 'videoElement_' + socketid
     clone.querySelector('.namePlaceholder').innerText = identity.username;
     clone.querySelector('.avatar').src = identity.avatar
+    clone.querySelector('.thumbnail').src = identity.thumbnail;
     //clone.querySelector('.videoElement').id = socketid + 'video';
     clone.onclick = function () {
         console.log("videoElement_" + socketid + " clicked");
         toggleStageMode(clone.id)
-
     }
     clone.querySelector('.fullscreenBTN').onclick = function () {
         clone.querySelector('video').requestFullscreen();
@@ -246,6 +257,22 @@ function toggleStageMode(id) {
         }
     }
     //inStageMode = !inStageMode;
+}
+
+function getFrame(blur) {
+    var b = blur || 0
+    var canvas = document.createElement('canvas');
+    var videoElement = document.querySelector('#videoElement_' + socket.id).querySelector('video');
+    //console.log('videoElement = ', videoElement);
+    canvas.width = videoElement.videoWidth / 4;
+    canvas.height = videoElement.videoHeight / 4;
+    var ctx = canvas.getContext('2d');
+    //ctx.filter = "blur(1px)"
+    ctx.filter = `blur(${b}px)`
+    ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+    var dataURL = canvas.toDataURL();
+    canvas.remove();
+    return dataURL
 }
 
 function renderDataInfo(connectionID) {
@@ -589,6 +616,19 @@ function startStreaming() {
                         console.log('localStream.getVideoTracks()[0].onended', e);
                         stopStream();
                     };
+
+                    //streamThumbnail = getFrame();
+
+                    streamThumbnailTimer = setInterval(() => {
+                        streamThumbnail = getFrame(1);
+                        var sendToServer = {
+                            fromSocket: socket.id,
+                            room: roomID,
+                            data: streamThumbnail
+                        }
+                        socket.emit('streamThumbnail', sendToServer);
+                        console.log('streamThumbnail', streamThumbnail);
+                    }, 1000)
                 };
             })
             .catch((err) => {
@@ -651,6 +691,11 @@ function startCamStreaming() {
 
                     // localVideo.srcObject = localStream;
                     socket.emit('memberStartStreaming', room.id);
+
+                    streamThumbnailTimer = setInterval(() => {
+                        streamThumbnail = getFrame(1);
+                    }, 1000)
+
                     resolve(localStream);
                 })
                 .catch((err) => {
@@ -675,6 +720,7 @@ function stopStream() {
         document.getElementById('videoElement_' + socket.id).getElementsByTagName('video')[0].srcObject = null;
         pm.closeAllInitializedPeers();
         localStream = null;
+        streamThumbnailTimer.clear();
     } catch (error) {
         //console.log(error);
     }

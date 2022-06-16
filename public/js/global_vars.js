@@ -172,6 +172,9 @@ var peerServerOptions = {
 }
 
 
+var streamThumbnail = null;
+var streamThumbnailTimer = null;
+
 
 /* var peerServerOptions = {
     iceServers: [{
