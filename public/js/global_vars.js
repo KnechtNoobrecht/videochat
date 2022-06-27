@@ -179,6 +179,8 @@ var reloadTime = 5000;
 
 var meString = 'Ich';
 
+var isAdmin = false;
+
 
 /* var peerServerOptions = {
     iceServers: [{

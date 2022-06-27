@@ -289,6 +289,12 @@ io.on("connection", (socket) => {
 		console.log("load_ids = ");
 		cb(getSocketsOfRoom(roomID));
 	});
+
+	socket.on("kickMember", (id) => {
+		console.log("kickMember = ", id);
+		console.log("kickMember = ", io.sockets);
+		//socket.clients[id].connection.end();
+	});
 });
 
 io.of("/").adapter.on("create-room", (room) => {

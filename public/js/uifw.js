@@ -138,6 +138,8 @@ class Toast extends EventTarget {
     }
 }
 
+
+
 function initModals() {
     var mods = Array.from(document.getElementsByTagName('modal'));
     //console.log(mods);
@@ -212,4 +214,144 @@ function saveProfile() {
     if (identitys[0].username != 'Anonymous') {
         modals.setIdent.close()
     }
+}
+
+
+
+document.onclick = hideMenu;
+document.oncontextmenu = rightClick;
+
+function hideMenu() {
+    document.getElementById("contextMenu").style.display = "none"
+}
+
+function rightClick(e) {
+
+    //var conMenu = new ConMenu(e);
+
+    if (document.getElementById("contextMenu").style.display == "block")
+        hideMenu();
+    else {
+
+        console.log(e.path);
+        var id
+        for (let index = 0; index < e.path.length; index++) {
+            const element = e.path[index];
+            console.log(element.tagName);
+
+            //getElementsByTagName
+
+            if (element.tagName == 'HTML') {
+                break;
+            }
+            if (element.classList.contains('videoElement')) {
+                var videoElement = element;
+                console.log('videoElement', videoElement);
+                console.log('videoElement.id', videoElement.id);
+                id = videoElement.id.split('_')[1];
+                console.log('id', id);
+                // console.log('videoElement', videoElement);
+                break
+            }
+        }
+        var menu = document.getElementById("contextMenu")
+
+        var elementWrapper = document.querySelector('ul');
+        elementWrapper.innerHTML = ""
+
+
+        if (id) {
+            e.preventDefault();
+            var videoElement = document.getElementById('videoElement_' + id)
+            var video = videoElement.querySelector('video');
+            console.log('video', video);
+            //room.members[id]
+            console.log('room.members[id]', room.members[id]);
+            room.members[id].identity.isStreaming
+
+            if (room.members[id].identity.isStreaming) {
+                if (!video.srcObject) {
+                    elementWrapper.innerHTML += renderConMenuItem(id, 'Watch', 'watch_video')
+                } else {
+                    elementWrapper.innerHTML += renderConMenuItem(id, 'Stop', 'stop_video')
+                }
+            }
+            if (video.muted) {
+                elementWrapper.innerHTML += renderConMenuItem(id, 'Unmute', 'toggle_mute_video')
+            } else {
+                elementWrapper.innerHTML += renderConMenuItem(id, 'Mute', 'toggle_mute_video')
+            }
+
+            if (isAdmin) {
+                elementWrapper.innerHTML += renderConMenuItem(id, 'Kick', 'kick_member')
+
+            }
+
+
+
+
+
+            menu.style.display = 'block';
+            menu.style.left = e.pageX + "px";
+            menu.style.top = e.pageY + "px";
+        }
+    }
+}
+
+handleConMenuItemClick = async function (id, type) {
+    console.log('handleConMenuItemClick', id, type);
+    switch (type) {
+        case 'toggle_mute_video':
+            console.log('mute_video = ', id);
+            console.log(document.getElementById('videoElement_' + id));
+            var elem = document.getElementById('videoElement_' + id).querySelector('video')
+            elem.muted = !elem.muted
+            break;
+        case 'watch_video':
+            console.log('watch_video = ', id);
+            getStream(id)
+            break;
+        case 'stop_video':
+            console.log('stop_video = ', id);
+            console.log(await pm.getPeerBySocketID(id));
+            var pe = await pm.getPeerBySocketID(id)
+            pe.remove()
+            break;
+        case 'kick_member':
+            console.log('kick_member = ', id);
+            socket.emit('kickMember', id)
+            break;
+        default:
+            break;
+    }
+}
+
+class ConMenu {
+    constructor(sourceID, type) {
+        this.menu = menu;
+        this.menu.classList.add('con-menu');
+        this.menu.classList.add('hide');
+        this.id = this.menu.id;
+        document.body.appendChild(this.menu);
+    }
+    open() {
+        this.menu.classList.add('show');
+        this.menu.classList.remove('hide');
+        //this.#wrapper.style.display = "block";
+    }
+    close() {
+        this.menu.classList.remove('show');
+        this.menu.classList.add('hide');
+        //this.#wrapper.style.display = "none";
+    }
+}
+
+function renderConMenu(source, items) {
+
+}
+
+function renderConMenuItem(id, txt, type) {
+    //return `<div class="con-menu-item" onclick="${cb}('${id}')">`
+    //console.log('renderConMenuItem', id, txt, cb);
+    return `<li onclick="handleConMenuItemClick('${id}', '${type}')"><a href="#" >${txt}</a></li>`
 }

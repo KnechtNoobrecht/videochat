@@ -998,6 +998,7 @@ function handleJoinRoomCB(params) {
             modals.joinRoom.close();
             modals.createRoom.close();
             if (params.isAdmin) {
+                isAdmin = params.isAdmin;
                 addAdminUI();
             }
             new Toast({
@@ -1040,53 +1041,6 @@ function handleJoinRoomCB(params) {
 }
 
 
-document.onclick = hideMenu;
-document.oncontextmenu = rightClick;
 
-function hideMenu() {
-    document.getElementById("contextMenu").style.display = "none"
-}
-
-function rightClick(e) {
-    e.preventDefault();
-
-
-    if (document.getElementById("contextMenu").style.display == "block")
-        hideMenu();
-    else {
-        console.log(e.path);
-        var id
-        for (let index = 0; index < e.path.length; index++) {
-            const element = e.path[index];
-            console.log(element.tagName);
-
-            //getElementsByTagName
-
-            if (element.tagName == 'HTML') {
-                break;
-            }
-            if (element.classList.contains('videoElement')) {
-                var videoElement = element;
-                console.log('videoElement', videoElement);
-                console.log('videoElement.id', videoElement.id);
-                id = videoElement.id.split('_')[1];
-                console.log('id', id);
-                // console.log('videoElement', videoElement);
-                break
-            }
-        }
-        var menu = document.getElementById("contextMenu")
-
-        var elementWrapper = document.querySelector('ul');
-
-        var al = `<li><a href="#">${id}</a></li>`
-
-        elementWrapper.innerHTML += al;
-
-        menu.style.display = 'block';
-        menu.style.left = e.pageX + "px";
-        menu.style.top = e.pageY + "px";
-    }
-}
 
 //document.body.addEventListener

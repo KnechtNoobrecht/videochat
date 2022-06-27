@@ -355,25 +355,23 @@ class Peer extends EventTarget {
 
         console.log('remove peer start');
 
-
-
         var debugNode = document.getElementById(this.connectionID + '_dataInfo')
         debugNode.parentNode.removeChild(debugNode);
 
         //document.getElementById('videoElement_' + this.remotesid).getElementsByTagName('video')[0].srcObject = null;
+        document.getElementById('videoElement_' + this.remotesid).querySelector('video').srcObject = null;
         this.peer.close()
         delete peers[this.connectionID]
         delete pm.peers[this.connectionID]
-        delete this
-        console.log('remove peer end ', peers);
-
         this.#event = new CustomEvent("removed", {
             detail: {
-                sid: sid,
-                identity: identity
+                sid: this.remotesid,
+                identity: this.identity
             }
         });
         this.dispatchEvent(this.#event);
+        delete this
+        console.log('remove peer end ', peers);
     }
 
 }
