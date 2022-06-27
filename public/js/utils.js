@@ -85,8 +85,14 @@ function renderMsgTemplate(msg) {
     var chatBody = document.querySelector('.chat-body');
     var msgElement = document.getElementById('chatMsgTemplate').cloneNode(true).content.children[0];
     msgElement.setAttribute("name", 'msg_' + msg.fromIdentity.id)
+    console.log("msgElement", msg);
+    if (!isMe(msg.fromSocket)) {
 
-    msgElement.querySelector('.chat-message-username').innerText = msg.fromIdentity.username;
+        msgElement.querySelector('.chat-message-username').innerText = msg.fromIdentity.username;
+    } else {
+        msgElement.querySelector('.chat-message-username').innerText = meString;
+    }
+    //msgElement.querySelector('.chat-message-username').innerText = msg.fromIdentity.username;
     msgElement.querySelector('.chat-message-avatar').querySelector('img').src = msg.fromIdentity.avatar;
 
     //msgElement.querySelector('.connected-user').querySelector('.chat-message-username').innerText = msg.fromIdentity.username;
@@ -126,7 +132,15 @@ function renderMsgTemplate(msg) {
 function cloneVideoElement(identity, socketid) {
     var clone = document.getElementById('videoElementTemplate').cloneNode(true).content.children[0];
     clone.id = 'videoElement_' + socketid
-    clone.querySelector('.namePlaceholder').innerText = identity.username;
+
+
+
+    if (!isMe(socketid)) {
+        clone.querySelector('.namePlaceholder').innerText = identity.username;
+    } else {
+        clone.querySelector('.namePlaceholder').innerText = meString;
+    }
+
     clone.querySelector('.avatar').src = identity.avatar
     clone.querySelector('.thumbnail').src = identity.thumbnail;
     //clone.querySelector('.videoElement').id = socketid + 'video';
@@ -153,15 +167,33 @@ function cloneUserElement(identity, socketid) {
     var clone = document.getElementById('connectedUserTemplate').cloneNode(true).content.children[0];
 
     clone.id = 'userElement_' + socketid
-    clone.querySelector('.connected-user').querySelector('span').innerText = identity.username;
+
     clone.querySelector('.connected-user').querySelector('img').src = identity.avatar;
-    clone.querySelector('.button-watch').onclick = () => getStream(socketid)
+    //clone.querySelector('.button-watch').onclick = () => getStream(socketid)
+    if (!isMe(socketid)) {
+        //clone.querySelector('.button-watch').style.display = 'none';
+        clone.onclick = () => getStream(socketid)
+        clone.querySelector('.connected-user').querySelector('span').innerText = identity.username;
+    } else {
+        clone.querySelector('.connected-user').querySelector('span').innerText = meString;
+    }
+
     document.getElementById('connected-users-list').appendChild(clone);
     if (identity.isStreaming) {
         clone.querySelector('.button-watch').style = "display:flex !important";
     } else {
         clone.querySelector('.button-watch').style = "display:none !important";
     }
+    if (!isMe(socketid)) {
+        clone.querySelector('.button-watch').innerText = 'Watch'
+    } else {
+        clone.querySelector('.button-watch').innerText = 'Stop'
+    }
+}
+
+function isMe(socketid) {
+    //console.log("isMe: " + socketid + " == " + socket.id);
+    return socketid == socket.id;
 }
 
 function moveElement(target, destination) {
@@ -543,7 +575,7 @@ async function chooseStream() {
 
 function startStreaming() {
     return new Promise((resolve, reject) => {
-
+        console.log('startStreaming', localStreamOptions);
 
         navigator.mediaDevices
             .getDisplayMedia({
@@ -618,17 +650,10 @@ function startStreaming() {
                     };
 
                     //streamThumbnail = getFrame();
-
+                    sendThumbnail()
                     streamThumbnailTimer = setInterval(() => {
-                        streamThumbnail = getFrame(1);
-                        var sendToServer = {
-                            fromSocket: socket.id,
-                            room: roomID,
-                            data: streamThumbnail
-                        }
-                        socket.emit('streamThumbnail', sendToServer);
-                        console.log('streamThumbnail', streamThumbnail);
-                    }, 1000)
+                        sendThumbnail()
+                    }, reloadTime)
                 };
             })
             .catch((err) => {
@@ -638,6 +663,7 @@ function startStreaming() {
             });
     })
 }
+
 
 function startCamStreaming() {
     return new Promise((resolve, reject) => {
@@ -809,26 +835,29 @@ function handleIncommingChatMSG(data) {
 
 }
 
+
+//returns is new Identity or an existing one
 function initIdentity() {
-    var ido = getCookieObject('ep_Identitys')
-    //console.log('ido ', ido);
-    if (ido) {
-        Object.keys(ido).forEach((id) => {
-            //console.log('Identity = ', id, ido[id])
-            //identitys.push(new Identity(ido[id].id, ido[id].username, ido[id].avatar))
-            identitys.push(new Identity({
-                id: ido[id].id,
-                username: ido[id].username,
-                avatar: ido[id].avatar
-            }))
-        })
-    } else {
-        identitys.push(new Identity({}))
-    }
-
+    return new Promise((resolve, reject) => {
+        var ido = getCookieObject('ep_Identitys')
+        //console.log('ido ', ido);
+        if (ido) {
+            Object.keys(ido).forEach((id) => {
+                //console.log('Identity = ', id, ido[id])
+                //identitys.push(new Identity(ido[id].id, ido[id].username, ido[id].avatar))
+                identitys.push(new Identity({
+                    id: ido[id].id,
+                    username: ido[id].username,
+                    avatar: ido[id].avatar
+                }))
+            })
+            resolve(false)
+        } else {
+            identitys.push(new Identity({}))
+            resolve(true)
+        }
+    })
 }
-
-
 
 function getBrowser() {
     var ua = navigator["userAgent"]
@@ -860,3 +889,204 @@ function initSound() {
         },
     });
 }
+var reloads = 0
+
+function reloadInterval() {
+    loadRoomMemberThumbnails();
+    testTimer = setInterval(loadRoomMemberThumbnails, reloadTime);
+}
+
+function loadRoomMemberThumbnails() {
+    socket.emit('getRoomMemberThumbnails', roomID, function (data) {
+        for (const key in data) {
+            if (Object.hasOwnProperty.call(data, key)) {
+                const element = data[key];
+                //console.log('loadRoomMemberThumbnails', element);
+                if (element.thumbnail != null) {
+                    var videoElement = document.getElementById('videoElement_' + element.socket);
+                    videoElement.querySelector('.thumbnail').src = element.thumbnail;
+                    videoElement.querySelector('.thumbnail').style.display = 'block';
+                } else {
+                    var videoElement = document.getElementById('videoElement_' + element.socket);
+                    videoElement.querySelector('.thumbnail').style.display = 'none';
+                }
+            }
+        }
+        //console.log('reloads = ', reloads);
+        reloads++;
+    });
+}
+
+function sendThumbnail() {
+    streamThumbnail = getFrame(1);
+    var sendToServer = {
+        fromSocket: socket.id,
+        room: roomID,
+        data: streamThumbnail
+    }
+    socket.emit('streamThumbnail', sendToServer);
+}
+
+var testTimer;
+
+function initJoinRoom() {
+    //(roomID, identity, pw
+    socket.emit('joinRoom', roomID, identitys[0], '', handleJoinRoomCB)
+}
+
+
+function createRoom() {
+    var pw = document.getElementById('password').value
+    var rid = document.getElementById('roomid').value
+    var rn = document.getElementById('roomname').value
+    console.log('createRoom', rid);
+    console.log('createRoom pw = ', pw);
+    socket.emit('createRoom', rid, identitys[0], pw, rn, handleCreateRoomCB)
+}
+
+function joinRoom() {
+    var pw = document.getElementById('joinpassword').value
+    socket.emit('joinRoom', roomID, identitys[0], pw, handleJoinRoomCB)
+}
+
+function addAdminUI() {
+    console.log('addAdminUI');
+    var modjs = document.createElement('script')
+    modjs.src = '/js/mod.js';
+    document.body.appendChild(modjs);
+}
+
+
+function handleCreateRoomCB(params) {
+    switch (params.code) {
+        case 0:
+            console.log('Raum erstellt ', params);
+            joinRoom()
+            new Toast({
+                content: 'Raum wurde erstellt'
+            })
+            break;
+        case 1:
+            console.log('Raum existiert bereits', params);
+            //new Toast({ms:2000, content: 'Raum existiert bereits', header: '', footer: ''})
+            new Toast({
+                content: 'Raum existiert bereits'
+            })
+            break;
+        case 2:
+            break;
+        case 3:
+            break;
+        case 4:
+            break;
+        case 5:
+            console.log('joinRoom error', params);
+            new Toast({
+                content: 'Es ist ein fehler aufgetreten'
+            })
+            break;
+        default:
+            break;
+    }
+}
+
+function handleJoinRoomCB(params) {
+
+    switch (params.code) {
+        case 0:
+            console.log('joinRoom beigetreten', params);
+            modals.joinRoom.close();
+            modals.createRoom.close();
+            if (params.isAdmin) {
+                addAdminUI();
+            }
+            new Toast({
+                content: 'Raum beigetreten'
+            })
+            break;
+        case 1:
+            console.log('joinRoom room not found', params);
+            document.getElementById('roomid').value = roomID
+            document.getElementById('joinroomid').value = roomID
+            modals.createRoom.open();
+            new Toast({
+                content: 'Raum wurde nicht gefunden, du kannst ihn erstellen'
+            })
+            break;
+        case 2:
+            console.log('joinRoom nothing');
+
+            break;
+        case 3:
+            console.log('joinRoom room blocked you ', params);
+            new Toast({
+                content: 'Du kannst diesem Raum nicht beiteten'
+            })
+            break;
+        case 4:
+            console.log('joinRoom room password wrong', params);
+            modals.joinRoom.open();
+            document.getElementById('joinroomid').value = roomID
+            new Toast({
+                content: 'Das Passwort ist falsch'
+            })
+            break;
+        case 5:
+            console.log('joinRoom error', params);
+            break;
+        default:
+            break;
+    }
+}
+
+
+document.onclick = hideMenu;
+document.oncontextmenu = rightClick;
+
+function hideMenu() {
+    document.getElementById("contextMenu").style.display = "none"
+}
+
+function rightClick(e) {
+    e.preventDefault();
+
+
+    if (document.getElementById("contextMenu").style.display == "block")
+        hideMenu();
+    else {
+        console.log(e.path);
+        var id
+        for (let index = 0; index < e.path.length; index++) {
+            const element = e.path[index];
+            console.log(element.tagName);
+
+            //getElementsByTagName
+
+            if (element.tagName == 'HTML') {
+                break;
+            }
+            if (element.classList.contains('videoElement')) {
+                var videoElement = element;
+                console.log('videoElement', videoElement);
+                console.log('videoElement.id', videoElement.id);
+                id = videoElement.id.split('_')[1];
+                console.log('id', id);
+                // console.log('videoElement', videoElement);
+                break
+            }
+        }
+        var menu = document.getElementById("contextMenu")
+
+        var elementWrapper = document.querySelector('ul');
+
+        var al = `<li><a href="#">${id}</a></li>`
+
+        elementWrapper.innerHTML += al;
+
+        menu.style.display = 'block';
+        menu.style.left = e.pageX + "px";
+        menu.style.top = e.pageY + "px";
+    }
+}
+
+//document.body.addEventListener

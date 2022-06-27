@@ -73,7 +73,7 @@ socket.on('memberStreamingState', (sid, identity) => {
 
 socket.on('memberStreamingState', (sid, identity) => {
     //console.log('memberStreamingState = ', identity)
-    room.changeMember(sid, identity)
+    //room.changeMember(sid, identity)
 })
 
 socket.on('getStream', async (indata) => {
@@ -116,6 +116,7 @@ socket.on('loadChatMsgs', async (data) => {
         renderMsgTemplate(data[key])
     }
 })
+
 
 socket.on('reloadCSS', async () => {
     if (reloadCSS) {

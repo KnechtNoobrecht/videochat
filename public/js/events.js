@@ -28,16 +28,21 @@ function initEvents() {
         var userElement = document.getElementById('userElement_' + socketid);
         var videoElement = document.getElementById('videoElement_' + socketid);
 
-        videoElement.querySelector('.namePlaceholder').innerText = identity.username;
+
         videoElement.querySelector('.avatar').src = identity.avatar
-        videoElement.querySelector('.thumbnail').src = identity.thumbnail;
+        //videoElement.querySelector('.thumbnail').src = identity.thumbnail;
 
 
-        userElement.getElementsByTagName('span')[0].innerHTML = identity.username;
+        if (!isMe(socketid)) {
+            videoElement.querySelector('.namePlaceholder').innerText = identity.username;
+            //userElement.getElementsByTagName('span')[0].innerHTML = 'Me';
+            userElement.getElementsByTagName('span')[0].innerHTML = identity.username;
+        }
+
         userElement.getElementsByTagName('img')[0].src = identity.avatar;
 
 
-        if (identity.isStreaming) {
+        if (identity.isStreaming && !isMe(socketid)) {
             userElement.getElementsByClassName('button-watch')[0].style = "display:flex !important";
         } else {
             userElement.getElementsByClassName('button-watch')[0].style = "display:none !important";
@@ -47,10 +52,12 @@ function initEvents() {
         console.log("userMsgs", userMsgs);
 
         for (var i = 0; i < userMsgs.length; i++) {
+
             userMsgs[i].querySelector('.connected-user').querySelector('.chat-message-username').innerText = identity.username;
+
+
             userMsgs[i].querySelector('.connected-user').querySelector('img').src = identity.avatar
         }
-
 
     });
 
@@ -251,8 +258,11 @@ function initEvents() {
     document.addEventListener('visibilitychange', function (event) {
         if (document.hidden) {
             console.log('not visible');
+            //testTimer.clear();
+            clearTimeout(testTimer)
         } else {
             console.log('is visible');
+            reloadInterval();
         }
     });
 

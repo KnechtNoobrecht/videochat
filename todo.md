@@ -9,12 +9,12 @@
 
 
 ## 🚩 PRIO:
-### ⚒️ stream starten button (mit auflösung und framerate) => Modal mit Animationen
-### ⚒️ stream muten/fullscreen -> controls
-### ⚒️ Chat UI verbessern
+### ✔️ stream starten button (mit auflösung und framerate) => Modal mit Animationen
+### ✔️ stream muten/fullscreen -> controls
+### ✔️ Chat UI verbessern
 
 ## UI:
-### ⚒️ Oberfläche für verschiedene Größen anpassen bzw. verbessern
+### ✔️ Oberfläche für verschiedene Größen anpassen bzw. verbessern
 ### ⚒️ von grid in stage-mode wechseln (ein stream groß, andere klein/ausgeblendet)
 ### ⚒️ Für chat emojis picker 
 ### ⚒️ Rechtsklick auf User soll eigenes Context menu anzeigen mit verschiedenen funktionen
@@ -32,8 +32,8 @@
 ### ⚒️ Voice Chat
 ### ⚒️ Hotkeys
 ### ⚒️ Animationen
-### ⚒️ Verschwommenes Vorschaubild machen und in Raum senden, wenn Stream gestartet wird
-### ⚒️ Touch Gesten
+### ✔️ Verschwommenes Vorschaubild machen und in Raum senden, wenn Stream gestartet wird
+### ✔️ Touch Gesten
 ### ⚒️ Bilder uploaden in Chat (Bilder im Chat verschicken)
 ### ⚒️ Senden Button für Chat für Mobile
 

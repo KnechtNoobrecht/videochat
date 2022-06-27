@@ -13,28 +13,180 @@ const PORT = 80;
 
 var identitys = {};
 var roomChatMsgs = {};
+var rooms = {};
+
+class Room {
+	constructor(id, name, pw) {
+		this.id = id
+		this.name = name
+		this.admins = []
+		this.members = []
+		this.blocked = []
+		this.password = pw
+	}
+	addMember(sid, identity) {
+
+	}
+	removeMember(sid, identity) {
+		if (this.members[sid]) {
+
+		} else {
+			console.log('Member not in room')
+		}
+	}
+	changeMember(sid, identity) {
+
+	}
+	sendMsg(msg) {
+		var data = {
+			room: this.id,
+			msg: msg
+		}
+		socket.emit('chatMSG', data);
+	}
+}
+
+const bcrypt = require('bcrypt'); //Importing the NPM bcrypt package.
+const saltRounds = 10; //We are setting salt rounds, higher is safer.
+const myPlaintextPassword = 's0/\/\P4$$w0rD'; //Unprotected password
+
+// JOIN Room Codes 
+
+// 0 beigetreten
+// 1 room not found
+// 2 
+// 3 room blocked you 
+// 4 room password wrong
+// 5 error
+
 
 io.on("connection", (socket) => {
 	socket.emit("ID", socket.id);
 
-	socket.on("joinRoom", async (roomID, identity) => {
+	socket.on("joinRoom", async (roomID, identity, pw, cb) => {
 		//identity.sid = socket.id;
 		try {
 			console.log("joinRoom", roomID, identity);
 			identity.isStreaming = false;
-			identitys[socket.id] = identity;
-			socket.join(roomID);
-			var sockets = await getSocketsOfRoom(roomID);
-			socket.emit("membersLoaded", sockets);
-			socket.emit("loadChatMsgs", roomChatMsgs[roomID]);
+			identity.thumbnail = null;
+			var room = rooms[roomID]
+			var userIsAdmin = isAdmin(roomID, identity.id);
+			var userIsBlocked = isBlocked(roomID, identity.id);
+			var userIsMember = isMember(roomID, identity.id);
+
+			if (!userIsAdmin && userIsBlocked) {
+				cb({
+					room: roomID,
+					joined: false,
+					code: 3,
+					msg: 'You are blocked from this room'
+				})
+				return;
+			}
+
+			if (!rooms[roomID]) {
+				cb({
+					room: roomID,
+					joined: false,
+					code: 1,
+					msg: 'Room not found'
+				})
+			} else {
+				console.log("room is passworded");
+				console.log("bcrypt.compare = ", await bcrypt.compare(pw, room.password));
+				console.log("userIsMember = ", userIsMember);
+				console.log("userIsAdmin = ", userIsAdmin);
+				console.log("userIsAdmin || userIsMember || await bcrypt.compare(pw, room.password) = ", userIsAdmin || userIsMember || await bcrypt.compare(pw, room.password));
+
+				if (userIsAdmin || userIsMember || await bcrypt.compare(pw, room.password)) {
+					console.log("Raum Beitreten", roomID, identity);
+					socket.join(roomID);
+					cb({
+						room: roomID,
+						joined: true,
+						code: 0,
+						msg: 'Room joined',
+						isAdmin: userIsAdmin
+					})
+					identitys[socket.id] = identity;
+					var sockets = await getSocketsOfRoom(roomID);
+					socket.emit("membersLoaded", sockets);
+					socket.emit("loadChatMsgs", roomChatMsgs[roomID]);
+				} else {
+					cb({
+						room: roomID,
+						joined: false,
+						code: 4,
+						msg: 'Room password incorrect'
+					})
+				}
+			}
 		} catch (error) {
 			console.log("JOIN ROOM error = ", error);
+			cb({
+				room: roomID,
+				joined: false,
+				code: 5,
+				msg: error
+			})
+		}
+
+	});
+
+	// 0 erstellt
+	// 1 room existiert bereits
+	// 2 
+	// 3 
+	// 4 
+	// 5 error
+
+	socket.on("createRoom", async (roomID, identity, pw, roomname, cb) => {
+		//identity.sid = socket.id;
+		try {
+			console.log("createRoom", roomID, identity);
+
+			if (!rooms[roomID]) {
+				var hpw = await bcrypt.hash(pw, saltRounds);
+				console.log(" pw", pw);
+				console.log("hashed pw", hpw);
+				rooms[roomID] = new Room(roomID, roomname, hpw)
+
+				rooms[roomID].admins.push(identity.id)
+				console.log("new room", rooms[roomID]);
+				cb({
+					room: roomID,
+					created: true,
+					code: 0,
+					msg: 'Room created'
+				})
+
+			} else {
+				cb({
+					room: roomID,
+					created: false,
+					code: 1,
+					msg: 'Room already exist'
+				})
+			}
+
+		} catch (error) {
+			console.log("create Room error = ", error);
+			console.log("create Room error = ", cb);
+			cb({
+				room: roomID,
+				created: false,
+				code: 5,
+				msg: error
+			})
 		}
 
 	});
 
 	socket.on("getRoomMember", async (roomID, cb) => {
 		cb(await getSocketsOfRoom(roomID));
+	});
+	socket.on("getRoomMemberThumbnails", async (roomID, cb) => {
+		cb(await getSocketsThumbnailsOfRoom(roomID));
 	});
 
 	socket.on("makePeerOffer", (data) => {
@@ -129,9 +281,13 @@ io.on("connection", (socket) => {
 	});
 
 	socket.on("streamThumbnail", (data) => {
-		console.log("streamThumbnail = ", data);
+		//console.log("streamThumbnail = ", data);
 		identitys[socket.id].thumbnail = data.data
-		io.sockets.in(data.room).emit("memberStreamingState", socket.id, identitys[socket.id]);
+		//io.sockets.in(data.room).emit("memberStreamingState", socket.id, identitys[socket.id]);
+	});
+	socket.on("load_ids", (roomID, cb) => {
+		console.log("load_ids = ");
+		cb(getSocketsOfRoom(roomID));
 	});
 });
 
@@ -170,7 +326,14 @@ app.get("/css/dist/main.css", async function (req, res) {
 
 app.get("/rooms/:id", async function (req, res) {
 	//await renderSCSS()
+
 	res.sendFile(path.join(__dirname + "/public/video.html"));
+});
+
+app.get("/rooms", async function (req, res) {
+	//await renderSCSS()
+	res.redirect("/rooms/" + uuidv4());
+	//res.sendFile(path.join(__dirname + "/public/video.html"));
 });
 
 app.get("/testing/rooms/:id", function (req, res) {
@@ -199,6 +362,20 @@ function getSocketsOfRoom(roomID) {
 			socketids.push({
 				socket: sockets[index].id,
 				identity: identitys[sockets[index].id]
+			});
+		}
+		resolve(socketids);
+	});
+}
+
+function getSocketsThumbnailsOfRoom(roomID) {
+	return new Promise(async (resolve, reject) => {
+		var sockets = await io.in(roomID).fetchSockets();
+		var socketids = [];
+		for (let index = 0; index < sockets.length; index++) {
+			socketids.push({
+				socket: sockets[index].id,
+				thumbnail: identitys[sockets[index].id].thumbnail
 			});
 		}
 		resolve(socketids);
@@ -351,7 +528,38 @@ async function getContentType(url) {
 	})
 }
 
+function isAdmin(roomid, userid) {
+	console.log("isAdmin", roomid, userid);
+	var room = rooms[roomid];
+	if (room) {
+		if (room.admins.indexOf(userid) > -1) {
+			return true;
+		}
+	}
+	return false;
+}
 
+function isMember(roomid, userid) {
+	console.log("isMember", roomid, userid);
+	var room = rooms[roomid];
+	if (room) {
+		if (room.members.indexOf(userid) > -1) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function isBlocked(roomid, userid) {
+	console.log("isBlocked", roomid, userid);
+	var room = rooms[roomid];
+	if (room) {
+		if (room.blocked.indexOf(userid) > -1) {
+			return true;
+		}
+	}
+	return false;
+}
 
 // SCSS Compiler and Reloader 
 var mainCSS = ""

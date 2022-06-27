@@ -68,7 +68,7 @@ var pma
  * @description Holds all modals that on this site
  */
 var modals = {}
-
+var toasts = {}
 var tabs = {}
 
 /**
@@ -76,7 +76,7 @@ var tabs = {}
  * @type {Boolean}
  * @description controls the automatic reloading of css files
  */
-var reloadCSS = false
+var reloadCSS = true
 
 /**
  * @var localStreamOptions
@@ -146,6 +146,7 @@ const sidebarR = document.getElementById('rs');
  * @description Hold the Left Side Bar element
  */
 const sidebarL = document.getElementById('ls');
+const toastContainer = document.getElementById('toastContainer');
 
 
 var soundsPlayer
@@ -174,6 +175,9 @@ var peerServerOptions = {
 
 var streamThumbnail = null;
 var streamThumbnailTimer = null;
+var reloadTime = 5000;
+
+var meString = 'Ich';
 
 
 /* var peerServerOptions = {

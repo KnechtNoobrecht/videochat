@@ -546,7 +546,7 @@ video {
   left: 0; }
 
 /* Could Use thise as well for Individual Controls */
-video::-webkit-media-controls-timeline {
+1 video::-webkit-media-controls-timeline {
   display: none; }
 
 video::-webkit-media-controls-current-time-display {
@@ -637,7 +637,7 @@ modal {
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-  background-color: var(--modal_header_bg);
+  background-color: var(--primary_bg);
   border-radius: 10px 10px 0 0; }
 
 .modal-body {
@@ -646,7 +646,7 @@ modal {
   justify-content: center;
   align-items: center;
   padding: 10px;
-  background-color: var(--secondary_bg);
+  background-color: var(--primary_bg);
   border-radius: 0 0 0px 0px; }
 
 .modal-footer {
@@ -654,7 +654,7 @@ modal {
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-  background-color: #36393F;
+  background-color: var(--primary_bg);
   border-radius: 0 0 10px 10px; }
 
 .show {
@@ -752,3 +752,65 @@ modal {
   width: 30px;
   height: 30px;
   margin-right: 0px; }
+
+.form-input {
+  border: none;
+  border-radius: 5px;
+  color: #d7d7d7;
+  font-size: 1rem;
+  font-weight: 400;
+  border: 1px solid var(--primary_bg);
+  background-color: var(--secondary_bg);
+  font-family: Inter, -apple-system, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  overflow: hidden; }
+  .form-input:focus {
+    border: 1px solid #767676; }
+
+.toast_wrapper {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background-color: #636363;
+  z-index: 99999;
+  display: flow-root;
+  border-radius: 10px; }
+
+.toast {
+  background-color: aqua;
+  min-width: 300px;
+  max-width: 100%;
+  min-height: 50px;
+  display: flow-root;
+  border-radius: 10px;
+  padding: 5px;
+  margin-top: 5px;
+  transition: all 0.3s ease 0s; }
+
+.toast-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; }
+
+.context-menu {
+  position: absolute;
+  text-align: center;
+  background: lightgray;
+  border: 1px solid black; }
+
+.context-menu ul {
+  padding: 0px;
+  margin: 0px;
+  min-width: 150px;
+  list-style: none; }
+
+.context-menu ul li {
+  padding-bottom: 7px;
+  padding-top: 7px;
+  border: 1px solid black; }
+
+.context-menu ul li a {
+  text-decoration: none;
+  color: black; }
+
+.context-menu ul li:hover {
+  background: darkgray; }

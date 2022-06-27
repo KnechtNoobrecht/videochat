@@ -2,18 +2,26 @@ const socket = io();
 const localVideo = document.getElementById('localVideo');
 const remoteVideo = document.getElementById('remoteVideo');
 const roomID = window.location.pathname.split('/').pop(); //last element of window.location.pathname.split('/')
-const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+const configuration = {
+	iceServers: [{
+		urls: 'stun:stun.l.google.com:19302'
+	}]
+};
 const peerConnection = new RTCPeerConnection(configuration);
 let dataChannel;
 let myDataChannel;
 var localStream;
 var selfID = '';
-var resolution = { width: 1920, height: 1080, framerate: 30 };
+var resolution = {
+	width: 1920,
+	height: 1080,
+	framerate: 30
+};
 
 socket.on('ID', (data) => {
 	console.log('My ID is', data);
 	selfID = data;
-	socket.emit('joinRoom', roomID);
+	//socket.emit('joinRoom', roomID);
 });
 
 function initiateStream() {
@@ -68,7 +76,10 @@ async function makeCall(stream) {
 	//console.log(peerConnection.currentLocalDescription);
 
 	//socket send offer
-	socket.emit('makePeerOffer', { offer: offer, roomID: roomID });
+	socket.emit('makePeerOffer', {
+		offer: offer,
+		roomID: roomID
+	});
 
 	//signalingChannel.send({'offer': offer})
 }
@@ -86,7 +97,10 @@ socket.on('incomingPeerOffer', async (data) => {
 	console.log(peerConnection.currentLocalDescription);
 	console.log('created answer:');
 	console.log(answer);
-	socket.emit('makePeerAnswer', { answer: answer, offerer: data.offerer });
+	socket.emit('makePeerAnswer', {
+		answer: answer,
+		offerer: data.offerer
+	});
 });
 
 //              ICE CANDIDATES
@@ -101,7 +115,10 @@ peerConnection.onicecandidate = function (event) {
 	//console.log('new ice candidate:')
 	//console.log(event)
 	if (event.candidate) {
-		socket.emit('new-ice-candidate', { candidate: event.candidate, roomID: roomID });
+		socket.emit('new-ice-candidate', {
+			candidate: event.candidate,
+			roomID: roomID
+		});
 	}
 };
 
