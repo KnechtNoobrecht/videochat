@@ -22,10 +22,11 @@ class Room {
 		this.admins = []
 		this.members = []
 		this.blocked = []
+		this.identitys = {}
 		this.password = pw
 	}
 	addMember(sid, identity) {
-
+		this.members.push()
 	}
 	removeMember(sid, identity) {
 		if (this.members[sid]) {
@@ -36,6 +37,24 @@ class Room {
 	}
 	changeMember(sid, identity) {
 
+	}
+	isMember(id) {
+		if (this.members.indexOf(id) > -1) {
+			return true
+		}
+		return false
+	}
+	isAdmin(id) {
+		if (this.admins.indexOf(id) > -1) {
+			return true
+		}
+		return false
+	}
+	isBlocked(id) {
+		if (this.blocked.indexOf(id) > -1) {
+			return true
+		}
+		return false
 	}
 	sendMsg(msg) {
 		var data = {
@@ -114,6 +133,8 @@ io.on("connection", (socket) => {
 					var sockets = await getSocketsOfRoom(roomID);
 					socket.emit("membersLoaded", sockets);
 					socket.emit("loadChatMsgs", roomChatMsgs[roomID]);
+					console.log("Raum identitys = ", identitys[socket.id]);
+					console.log("Raum Beitreten", roomID, identity);
 				} else {
 					cb({
 						room: roomID,
@@ -238,6 +259,14 @@ io.on("connection", (socket) => {
 		//console.log("chatMSG made by", data);
 		data.fromSocket = socket.id;
 		data.fromIdentity = identitys[socket.id];
+
+		if (rooms[data.room].members.indexOf(data.fromSocket) > -1) {
+			console.log("from user is in room");
+		} else {
+			console.log("from user is not in room");
+		}
+
+
 		data.time = new Date().getTime();
 		data.msg = await parseText(data.msg)
 		console.log("chatMSG made by", data);
@@ -260,18 +289,23 @@ io.on("connection", (socket) => {
 
 	socket.on("memberChangeIdentity", (data) => {
 		// data = { offer: offer, initiatorsid: this.sid, connectionID: this.id }
-		console.log("To Room memberChangeIdentity = ", data);
-		identitys[socket.id].username = data.username;
-		identitys[socket.id].avatar = data.avatar;
-		if (roomChatMsgs[data.room]) {
-			for (let index = 0; index < roomChatMsgs[data.room].length; index++) {
-				if (roomChatMsgs[data.room][index].fromSocket == socket.id) {
-					roomChatMsgs[data.room][index].fromIdentity = identitys[socket.id];
+		try {
+			console.log("To Room memberChangeIdentity = ", data);
+			console.log();
+			identitys[socket.id].username = data.username;
+			identitys[socket.id].avatar = data.avatar;
+			if (roomChatMsgs[data.room]) {
+				for (let index = 0; index < roomChatMsgs[data.room].length; index++) {
+					if (roomChatMsgs[data.room][index].fromSocket == socket.id) {
+						roomChatMsgs[data.room][index].fromIdentity = identitys[socket.id];
+					}
 				}
 			}
+			io.sockets.in(data.room).emit("memberStreamingState", socket.id, identitys[socket.id]);
+		} catch (error) {
+			console.log("memberChangeIdentity error = ", error);
 		}
 
-		io.sockets.in(data.room).emit("memberStreamingState", socket.id, identitys[socket.id]);
 	});
 
 	socket.on("memberStopStreaming", (data) => {
@@ -328,30 +362,26 @@ io.on("connection", (socket) => {
 	});
 
 	socket.on("makeAdmin", (sid, roomID) => {
-		console.log("makeAdmin = ", sid);
-		//console.log("kickMember = ", io.sockets);
-		//socket.clients[id].connection.end();
 
-		console.log("makeAdmin = ", identitys[sid]);
 		var isA = isAdmin(roomID, identitys[socket.id].id)
-		console.log("is admin = ", isA);
+
 		if (isA) {
-			rooms[roomID].admins.push(identitys[sid]);
-			io.sockets.in(roomID).emit("memberStreamingState", socket.id, identitys[socket.id]);
-			//io.sockets.sockets[sid].leave(roomID)
+
+			rooms[roomID].admins.push(identitys[sid].id);
+			identitys[sid].isAdmin = true;
+			io.sockets.in(roomID).emit("memberStreamingState", sid, identitys[sid]);
 		}
 	});
 
 	socket.on("removeAdmin", (sid, roomID) => {
-		console.log("removeAdmin = ", sid);
 
-		console.log("removeAdmin = ", identitys[sid]);
 		var isA = isAdmin(roomID, identitys[socket.id].id)
-		console.log("is admin = ", isA);
+
 		if (isA) {
-			rooms[roomID].admins.splice(rooms[roomID].members.indexOf(sid), 1);
-			io.sockets.in(roomID).emit("memberStreamingState", socket.id, identitys[socket.id]);
-			//io.sockets.sockets[sid].leave(roomID)
+
+			rooms[roomID].admins.splice(rooms[roomID].admins.indexOf(identitys[sid].id), 1);
+			identitys[sid].isAdmin = false;
+			io.sockets.in(roomID).emit("memberStreamingState", sid, identitys[sid]);
 		}
 	});
 });

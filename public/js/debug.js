@@ -149,6 +149,11 @@ function initDebug() {
             }
         }
 
+        for (const key in room.members) {
+            const member = room.members[key];
+            // console.log('member username = ', member.identity.username, 'member isAdmin = ', member.identity.isAdmin);
+        }
+
         document.getElementById('thumbnail_prev').src = streamThumbnail
     }, 1000);
 

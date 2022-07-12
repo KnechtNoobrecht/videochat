@@ -292,14 +292,13 @@ function rightClick(e) {
                 if (isAdmin) {
                     elementWrapper.innerHTML += renderConMenuItem(id, 'Kick', 'kick_member')
                     elementWrapper.innerHTML += renderConMenuItem(id, 'Ban', 'ban_member')
-                    elementWrapper.innerHTML += renderConMenuItem(id, 'Open Profile', 'user_profile')
+                    if (room.members[id].identity.isAdmin) {
+                        elementWrapper.innerHTML += renderConMenuItem(id, 'Remove Admin', 'remove_admin')
+                    } else {
+                        elementWrapper.innerHTML += renderConMenuItem(id, 'Make Admin', 'make_admin')
+                    }
                 }
-
-                if (room.members[id].identity.isAdmin) {
-                    elementWrapper.innerHTML += renderConMenuItem(id, 'Remove Admin', 'remove_admin')
-                } else {
-                    elementWrapper.innerHTML += renderConMenuItem(id, 'Make Admin', 'make_admin')
-                }
+                elementWrapper.innerHTML += renderConMenuItem(id, 'Open Profile', 'user_profile')
             }
 
 
