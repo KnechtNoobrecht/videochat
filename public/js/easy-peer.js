@@ -30,7 +30,6 @@ class BitrateObject {
     }
 }
 
-
 class Peer extends EventTarget {
     #event;
     /**

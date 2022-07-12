@@ -154,6 +154,26 @@
         </div>
     </modal>
 
+    <modal id="userIdent" class="hide">
+        <div class="modal-content">
+            <div class="modal-header col-6">
+                <h2>Profile</h2>
+                <button class="btn form-input" onclick="modals.userIdent.close()">X</button>
+            </div>
+            <div class="modal-body col-6">
+                <div class="row ">
+
+                    <p class="col-6" id="profile_username"></p>
+                </div>
+                <div class="row">
+
+                    <img class="avatar" id="profile_avatar">
+
+                </div>
+            </div>
+        </div>
+    </modal>
+
     <modal id="joinRoom" class="hide">
         <div class="modal-content">
             <div class="modal-header col-6">
@@ -248,6 +268,8 @@
             </div>
         </div>
     </modal>
+
+
 
     <template id="testToast">
         <div class="toast">

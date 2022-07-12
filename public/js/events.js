@@ -22,6 +22,8 @@ function initEvents() {
     room.addEventListener("memberChanged", function (e) {
         var identity = e.detail.identity;
         var socketid = e.detail.sid;
+
+        isAdmin = e.detail.identity.isAdmin;
         //console.log("memberChanged ", identity, socketid);
         //var videowrapper = document.getElementById('videowrapper');
 

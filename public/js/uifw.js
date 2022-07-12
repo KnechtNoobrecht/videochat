@@ -248,7 +248,9 @@ function rightClick(e) {
                 var videoElement = element;
                 console.log('videoElement', videoElement);
                 console.log('videoElement.id', videoElement.id);
-                id = videoElement.id.split('_')[1];
+
+                id = videoElement.id.substring(videoElement.id.indexOf('_') + 1);
+
                 console.log('id', id);
                 // console.log('videoElement', videoElement);
                 break
@@ -282,11 +284,23 @@ function rightClick(e) {
                 elementWrapper.innerHTML += renderConMenuItem(id, 'Mute', 'toggle_mute_video')
             }
 
-            if (isAdmin) {
-                elementWrapper.innerHTML += renderConMenuItem(id, 'Kick', 'kick_member')
 
+            if (isMe(room.members[id].sid)) {
+                elementWrapper.innerHTML += renderConMenuItem(id, 'Edit Profile', 'edit_profile')
+            } else {
+
+                if (isAdmin) {
+                    elementWrapper.innerHTML += renderConMenuItem(id, 'Kick', 'kick_member')
+                    elementWrapper.innerHTML += renderConMenuItem(id, 'Ban', 'ban_member')
+                    elementWrapper.innerHTML += renderConMenuItem(id, 'Open Profile', 'user_profile')
+                }
+
+                if (room.members[id].identity.isAdmin) {
+                    elementWrapper.innerHTML += renderConMenuItem(id, 'Remove Admin', 'remove_admin')
+                } else {
+                    elementWrapper.innerHTML += renderConMenuItem(id, 'Make Admin', 'make_admin')
+                }
             }
-
 
 
 
@@ -319,7 +333,34 @@ handleConMenuItemClick = async function (id, type) {
             break;
         case 'kick_member':
             console.log('kick_member = ', id);
-            socket.emit('kickMember', id)
+            socket.emit('kickMember', id, roomID)
+            //"kickMember", (id, roomID)
+            break;
+        case 'ban_member':
+            console.log('ban_member = ', id);
+            socket.emit('banMember', id, roomID)
+            //"kickMember", (id, roomID)
+            break;
+        case 'user_profile':
+            console.log('user_profile = ', room.members[id]);
+            console.log('room.members[id].identity.username; = ', room.members[id].identity.username);
+            document.getElementById('profile_username').innerText = room.members[id].identity.username;
+            document.getElementById('profile_avatar').src = room.members[id].identity.avatar;
+            modals.userIdent.open()
+            //socket.emit('kickMember', id, roomID)
+            //"kickMember", (id, roomID)
+            break;
+        case 'edit_profile':
+            console.log('edit_profile = ', room.members[id]);
+            modals.setIdent.open()
+            break;
+        case 'remove_admin':
+            console.log('remove_admin = ', room.members[id]);
+            socket.emit('removeAdmin', id, roomID)
+            break;
+        case 'make_admin':
+            console.log('make_admin = ', room.members[id]);
+            socket.emit('makeAdmin', id, roomID)
             break;
         default:
             break;

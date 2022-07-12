@@ -74,6 +74,8 @@ io.on("connection", (socket) => {
 			var userIsBlocked = isBlocked(roomID, identity.id);
 			var userIsMember = isMember(roomID, identity.id);
 
+			identity.isAdmin = userIsAdmin;
+
 			if (!userIsAdmin && userIsBlocked) {
 				cb({
 					room: roomID,
@@ -231,7 +233,6 @@ io.on("connection", (socket) => {
 		io.to(data.toSocket).emit("getStream", data);
 	});
 
-
 	socket.on("chatMSG", async (data) => {
 		// data = { room: this.id, msg: msg }
 		//console.log("chatMSG made by", data);
@@ -290,12 +291,72 @@ io.on("connection", (socket) => {
 		cb(getSocketsOfRoom(roomID));
 	});
 
-	socket.on("kickMember", (id) => {
-		console.log("kickMember = ", id);
-		console.log("kickMember = ", io.sockets);
+	socket.on("kickMember", (sid, roomID) => {
+		console.log("kickMember = ", sid);
+		//console.log("kickMember = ", io.sockets);
 		//socket.clients[id].connection.end();
+
+		console.log("kickMember = ", identitys[sid]);
+		var isA = isAdmin(roomID, identitys[socket.id].id)
+		console.log("is admin = ", isA);
+		if (isA) {
+			console.log(io.sockets.sockets.get(sid));
+			io.sockets.sockets.get(sid).leave(roomID)
+			rooms[roomID].members.splice(rooms[roomID].members.indexOf(sid), 1);
+			rooms[roomID].admins.splice(rooms[roomID].admins.indexOf(sid), 1);
+			//room[roomID].blocked.push(sid);
+			//io.sockets.sockets[sid].leave(roomID)
+		}
+	});
+
+	socket.on("banMember", (sid, roomID) => {
+		console.log("banMember = ", sid);
+		//console.log("kickMember = ", io.sockets);
+		//socket.clients[id].connection.end();
+
+		console.log("banMember = ", identitys[sid]);
+		var isA = isAdmin(roomID, identitys[socket.id].id)
+		console.log("is admin = ", isA);
+		if (isA) {
+			console.log(io.sockets.sockets.get(sid));
+			io.sockets.sockets.get(sid).leave(roomID)
+			rooms[roomID].members.splice(rooms[roomID].members.indexOf(sid), 1);
+			rooms[roomID].admins.splice(rooms[roomID].admins.indexOf(sid), 1);
+			rooms[roomID].blocked.push(sid);
+			//io.sockets.sockets[sid].leave(roomID)
+		}
+	});
+
+	socket.on("makeAdmin", (sid, roomID) => {
+		console.log("makeAdmin = ", sid);
+		//console.log("kickMember = ", io.sockets);
+		//socket.clients[id].connection.end();
+
+		console.log("makeAdmin = ", identitys[sid]);
+		var isA = isAdmin(roomID, identitys[socket.id].id)
+		console.log("is admin = ", isA);
+		if (isA) {
+			rooms[roomID].admins.push(identitys[sid]);
+			io.sockets.in(roomID).emit("memberStreamingState", socket.id, identitys[socket.id]);
+			//io.sockets.sockets[sid].leave(roomID)
+		}
+	});
+
+	socket.on("removeAdmin", (sid, roomID) => {
+		console.log("removeAdmin = ", sid);
+
+		console.log("removeAdmin = ", identitys[sid]);
+		var isA = isAdmin(roomID, identitys[socket.id].id)
+		console.log("is admin = ", isA);
+		if (isA) {
+			rooms[roomID].admins.splice(rooms[roomID].members.indexOf(sid), 1);
+			io.sockets.in(roomID).emit("memberStreamingState", socket.id, identitys[socket.id]);
+			//io.sockets.sockets[sid].leave(roomID)
+		}
 	});
 });
+
+
 
 io.of("/").adapter.on("create-room", (room) => {
 	console.log(`room ${room} was created`);
