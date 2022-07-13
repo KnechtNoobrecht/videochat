@@ -33,8 +33,29 @@ window.onload = async function () {
         console.log("init Join Room");
     }
 
-
     //reloadInterval()
     console.log("Reload Interval initalisiert");
 
+    new Toast({
+        ms: 1000,
+        content: 'Only Content'
+    })
+    new Toast({
+        ms: 1500,
+        content: 'Content',
+        header: 'Head',
+        footer: 'foot'
+    })
+    new Toast({
+        ms: 2000,
+        header: 'Head'
+    })
+    new Toast({
+        ms: 2500,
+        footer: 'Foot'
+    })
+    new Toast({
+        ms: 0,
+        header: 'muss geschlossen werden'
+    })
 }

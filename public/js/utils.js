@@ -664,7 +664,6 @@ function startStreaming() {
     })
 }
 
-
 function startCamStreaming() {
     return new Promise((resolve, reject) => {
 
@@ -835,7 +834,6 @@ function handleIncommingChatMSG(data) {
 
 }
 
-
 //returns is new Identity or an existing one
 function initIdentity() {
     return new Promise((resolve, reject) => {
@@ -956,7 +954,6 @@ function addAdminUI() {
     document.body.appendChild(modjs);
 }
 
-
 function handleCreateRoomCB(params) {
     switch (params.code) {
         case 0:
@@ -1039,8 +1036,3 @@ function handleJoinRoomCB(params) {
             break;
     }
 }
-
-
-
-
-//document.body.addEventListener
