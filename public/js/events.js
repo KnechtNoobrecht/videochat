@@ -22,6 +22,8 @@ function initEvents() {
     room.addEventListener("memberChanged", function (e) {
         var identity = e.detail.identity;
         var socketid = e.detail.sid;
+
+
         //console.log("memberChanged ", identity, socketid);
         //var videowrapper = document.getElementById('videowrapper');
 
@@ -37,6 +39,8 @@ function initEvents() {
             videoElement.querySelector('.namePlaceholder').innerText = identity.username;
             //userElement.getElementsByTagName('span')[0].innerHTML = 'Me';
             userElement.getElementsByTagName('span')[0].innerHTML = identity.username;
+        } else {
+            isAdmin = e.detail.identity.isAdmin;
         }
 
         userElement.getElementsByTagName('img')[0].src = identity.avatar;

@@ -22,13 +22,22 @@ class Room {
 		this.admins = []
 		this.members = []
 		this.blocked = []
+		this.identitys = {}
 		this.password = pw
+		this.msgs = []
 	}
 	addMember(sid, identity) {
-
+		console.log('addMember');
+		console.log(sid, identity);
+		this.identitys[sid] = identity;
+		this.members.push(identity.id);
 	}
-	removeMember(sid, identity) {
+	removeMember(sid) {
+		console.log('removeMember');
+		console.log(sid);
 		if (this.members[sid]) {
+			delete this.members[this.identitys[sid].id];
+			delete this.identitys[sid];
 
 		} else {
 			console.log('Member not in room')
@@ -36,6 +45,31 @@ class Room {
 	}
 	changeMember(sid, identity) {
 
+	}
+	isMember(id) {
+
+		if (this.members.indexOf(id) > -1) {
+			console.log(id, 'isMember');
+			return true
+		}
+		console.log(id, 'is not member');
+		return false
+	}
+	isAdmin(id) {
+		if (this.admins.indexOf(id) > -1) {
+			console.log(id, 'isAdmin');
+			return true
+		}
+		console.log(id, 'is not admin');
+		return false
+	}
+	isBlocked(id) {
+		if (this.blocked.indexOf(id) > -1) {
+			console.log(id, 'isBlocked');
+			return true
+		}
+		console.log(id, 'is not blocked');
+		return false
 	}
 	sendMsg(msg) {
 		var data = {
@@ -61,45 +95,45 @@ const myPlaintextPassword = 's0/\/\P4$$w0rD'; //Unprotected password
 
 
 io.on("connection", (socket) => {
-	socket.emit("ID", socket.id);
+	//socket.emit("ID", socket.id);
 
 	socket.on("joinRoom", async (roomID, identity, pw, cb) => {
 		//identity.sid = socket.id;
 		try {
-			console.log("joinRoom", roomID, identity);
+			//console.log("joinRoom", roomID, identity.username);
+			console.log(`User ${identity.username} try to join room ${roomID}`);
 			identity.isStreaming = false;
 			identity.thumbnail = null;
 			var room = rooms[roomID]
-			var userIsAdmin = isAdmin(roomID, identity.id);
-			var userIsBlocked = isBlocked(roomID, identity.id);
-			var userIsMember = isMember(roomID, identity.id);
 
-			if (!userIsAdmin && userIsBlocked) {
-				cb({
-					room: roomID,
-					joined: false,
-					code: 3,
-					msg: 'You are blocked from this room'
-				})
-				return;
-			}
-
-			if (!rooms[roomID]) {
+			if (!room) {
 				cb({
 					room: roomID,
 					joined: false,
 					code: 1,
 					msg: 'Room not found'
 				})
+
 			} else {
-				console.log("room is passworded");
-				console.log("bcrypt.compare = ", await bcrypt.compare(pw, room.password));
-				console.log("userIsMember = ", userIsMember);
-				console.log("userIsAdmin = ", userIsAdmin);
-				console.log("userIsAdmin || userIsMember || await bcrypt.compare(pw, room.password) = ", userIsAdmin || userIsMember || await bcrypt.compare(pw, room.password));
+
+				var userIsAdmin = room.isAdmin(identity.id);
+				var userIsBlocked = room.isBlocked(identity.id);
+				var userIsMember = room.isMember(identity.id);
+
+				identity.isAdmin = userIsAdmin;
+
+				if (!userIsAdmin && userIsBlocked) {
+					cb({
+						room: roomID,
+						joined: false,
+						code: 3,
+						msg: 'You are blocked from this room'
+					})
+					return;
+				}
+
 
 				if (userIsAdmin || userIsMember || await bcrypt.compare(pw, room.password)) {
-					console.log("Raum Beitreten", roomID, identity);
 					socket.join(roomID);
 					cb({
 						room: roomID,
@@ -108,10 +142,12 @@ io.on("connection", (socket) => {
 						msg: 'Room joined',
 						isAdmin: userIsAdmin
 					})
-					identitys[socket.id] = identity;
+
+					rooms[roomID].addMember(socket.id, identity)
 					var sockets = await getSocketsOfRoom(roomID);
 					socket.emit("membersLoaded", sockets);
 					socket.emit("loadChatMsgs", roomChatMsgs[roomID]);
+					console.log(`User ${identity.username} joined room ${roomID}`);
 				} else {
 					cb({
 						room: roomID,
@@ -143,16 +179,13 @@ io.on("connection", (socket) => {
 	socket.on("createRoom", async (roomID, identity, pw, roomname, cb) => {
 		//identity.sid = socket.id;
 		try {
-			console.log("createRoom", roomID, identity);
+			console.log(`User ${identity.username} try to create room ${roomID}`);
 
 			if (!rooms[roomID]) {
 				var hpw = await bcrypt.hash(pw, saltRounds);
-				console.log(" pw", pw);
-				console.log("hashed pw", hpw);
 				rooms[roomID] = new Room(roomID, roomname, hpw)
-
 				rooms[roomID].admins.push(identity.id)
-				console.log("new room", rooms[roomID]);
+
 				cb({
 					room: roomID,
 					created: true,
@@ -160,6 +193,7 @@ io.on("connection", (socket) => {
 					msg: 'Room created'
 				})
 
+				console.log(`User ${identity.username} created room ${roomID}`);
 			} else {
 				cb({
 					room: roomID,
@@ -231,12 +265,19 @@ io.on("connection", (socket) => {
 		io.to(data.toSocket).emit("getStream", data);
 	});
 
-
 	socket.on("chatMSG", async (data) => {
 		// data = { room: this.id, msg: msg }
 		//console.log("chatMSG made by", data);
 		data.fromSocket = socket.id;
 		data.fromIdentity = identitys[socket.id];
+
+		if (rooms[data.room].members.indexOf(data.fromSocket) > -1) {
+			console.log("from user is in room");
+		} else {
+			console.log("from user is not in room");
+		}
+
+
 		data.time = new Date().getTime();
 		data.msg = await parseText(data.msg)
 		console.log("chatMSG made by", data);
@@ -252,37 +293,42 @@ io.on("connection", (socket) => {
 
 	socket.on("memberStartStreaming", (data) => {
 		// data = { offer: offer, initiatorsid: this.sid, connectionID: this.id }
-		//console.log("To Room = ", data);
-		identitys[socket.id].isStreaming = true;
+		console.log("To Room = ", data);
+		rooms[data].identitys[socket.id].isStreaming = true;
 		io.sockets.in(data).emit("memberStreamingState", socket.id, identitys[socket.id]);
 	});
 
 	socket.on("memberChangeIdentity", (data) => {
 		// data = { offer: offer, initiatorsid: this.sid, connectionID: this.id }
-		console.log("To Room memberChangeIdentity = ", data);
-		identitys[socket.id].username = data.username;
-		identitys[socket.id].avatar = data.avatar;
-		if (roomChatMsgs[data.room]) {
-			for (let index = 0; index < roomChatMsgs[data.room].length; index++) {
-				if (roomChatMsgs[data.room][index].fromSocket == socket.id) {
-					roomChatMsgs[data.room][index].fromIdentity = identitys[socket.id];
+		try {
+			console.log("To Room memberChangeIdentity = ", data);
+			console.log();
+			identitys[socket.id].username = data.username;
+			identitys[socket.id].avatar = data.avatar;
+			if (roomChatMsgs[data.room]) {
+				for (let index = 0; index < roomChatMsgs[data.room].length; index++) {
+					if (roomChatMsgs[data.room][index].fromSocket == socket.id) {
+						roomChatMsgs[data.room][index].fromIdentity = identitys[socket.id];
+					}
 				}
 			}
+			io.sockets.in(data.room).emit("memberStreamingState", socket.id, identitys[socket.id]);
+		} catch (error) {
+			console.log("memberChangeIdentity error = ", error);
 		}
 
-		io.sockets.in(data.room).emit("memberStreamingState", socket.id, identitys[socket.id]);
 	});
 
 	socket.on("memberStopStreaming", (data) => {
 		// data = { offer: offer, initiatorsid: this.sid, connectionID: this.id }
-		console.log("To Room = ", data);
-		identitys[socket.id].isStreaming = false;
+		//console.log("To Room = ", data);
+		rooms[data].identitys[socket.id].isStreaming = false;
 		io.sockets.in(data).emit("memberStreamingState", socket.id, identitys[socket.id]);
 	});
 
 	socket.on("streamThumbnail", (data) => {
 		//console.log("streamThumbnail = ", data);
-		identitys[socket.id].thumbnail = data.data
+		rooms[data.room].identitys[socket.id].thumbnail = data.data
 		//io.sockets.in(data.room).emit("memberStreamingState", socket.id, identitys[socket.id]);
 	});
 	socket.on("load_ids", (roomID, cb) => {
@@ -290,28 +336,88 @@ io.on("connection", (socket) => {
 		cb(getSocketsOfRoom(roomID));
 	});
 
-	socket.on("kickMember", (id) => {
-		console.log("kickMember = ", id);
-		console.log("kickMember = ", io.sockets);
+	socket.on("kickMember", (sid, roomID) => {
+		console.log("kickMember = ", sid);
+		//console.log("kickMember = ", io.sockets);
 		//socket.clients[id].connection.end();
+
+		console.log("kickMember = ", rooms[roomID].identitys[sid]);
+		var isA = isAdmin(roomID, rooms[roomID].identitys[socket.id].id)
+		console.log("is admin = ", isA);
+		if (isA) {
+			console.log(io.sockets.sockets.get(sid));
+			io.sockets.sockets.get(sid).leave(roomID)
+			rooms[roomID].members.splice(rooms[roomID].members.indexOf(sid), 1);
+			rooms[roomID].admins.splice(rooms[roomID].admins.indexOf(sid), 1);
+			//room[roomID].blocked.push(sid);
+			//io.sockets.sockets[sid].leave(roomID)
+		}
+	});
+
+	socket.on("banMember", (sid, roomID) => {
+		console.log("banMember = ", sid);
+		//console.log("kickMember = ", io.sockets);
+		//socket.clients[id].connection.end();
+
+		console.log("banMember = ", identitys[sid]);
+		var isA = isAdmin(roomID, rooms[roomID].identitys[socket.id].id)
+		console.log("is admin = ", isA);
+		if (isA) {
+			console.log(io.sockets.sockets.get(sid));
+			io.sockets.sockets.get(sid).leave(roomID)
+			rooms[roomID].members.splice(rooms[roomID].members.indexOf(sid), 1);
+			rooms[roomID].admins.splice(rooms[roomID].admins.indexOf(sid), 1);
+			rooms[roomID].blocked.push(sid);
+			//io.sockets.sockets[sid].leave(roomID)
+		}
+	});
+
+	socket.on("makeAdmin", (sid, roomID) => {
+
+		var isA = isAdmin(roomID, rooms[roomID].identitys[socket.id].id)
+
+		if (isA) {
+
+			rooms[roomID].admins.push(rooms[roomID].identitys[sid].id);
+			rooms[roomID].identitys[sid].isAdmin = true;
+			io.sockets.in(roomID).emit("memberStreamingState", sid, rooms[roomID].identitys[sid]);
+		}
+	});
+
+	socket.on("removeAdmin", (sid, roomID) => {
+
+		var isA = isAdmin(roomID, rooms[roomID].identitys[socket.id].id)
+
+		if (isA) {
+
+			rooms[roomID].admins.splice(rooms[roomID].admins.indexOf(rooms[roomID].identitys[sid].id), 1);
+			rooms[roomID].identitys[sid].isAdmin = false;
+			io.sockets.in(roomID).emit("memberStreamingState", sid, rooms[roomID].identitys[sid]);
+		}
 	});
 });
 
+
+
 io.of("/").adapter.on("create-room", (room) => {
-	console.log(`room ${room} was created`);
+	//console.log(`room ${room} was created`);
 });
 
 io.of("/").adapter.on("join-room", async (room, id) => {
 	var sockets = await getSocketsOfRoom(room);
-	if (sockets[0].identity != undefined) {
-		io.to(room).emit("memberAdded", sockets, id, identitys[id]);
+	if (sockets[0]) {
+		io.to(room).emit("memberAdded", sockets, id, rooms[room].identitys[id]);
 	}
 });
 
 io.of("/").adapter.on("leave-room", async (room, id) => {
-	var sockets = await getSocketsOfRoom(room);
-	console.log(`socket ${id} has leaved room ${room}`);
-	io.to(room).emit('memberRemoved', sockets, id, identitys[id]);
+
+	//console.log(`socket ${id} has leaved room ${room}`);
+	if (rooms[room]) {
+		rooms[room].removeMember(id)
+		var sockets = await getSocketsOfRoom(room);
+		io.to(room).emit('memberRemoved', sockets, id, rooms[room].identitys[id]);
+	}
 });
 
 //use public folder
@@ -362,15 +468,20 @@ server.listen(PORT, () => {
 
 function getSocketsOfRoom(roomID) {
 	return new Promise(async (resolve, reject) => {
-		var sockets = await io.in(roomID).fetchSockets();
-		var socketids = [];
-		for (let index = 0; index < sockets.length; index++) {
-			socketids.push({
-				socket: sockets[index].id,
-				identity: identitys[sockets[index].id]
-			});
+		if (rooms[roomID]) {
+			var sockets = await io.in(roomID).fetchSockets();
+			var socketids = [];
+			for (let index = 0; index < sockets.length; index++) {
+				socketids.push({
+					socket: sockets[index].id,
+					identity: rooms[roomID].identitys[sockets[index].id]
+				});
+			}
+			resolve(socketids);
+		} else {
+			resolve([]);
 		}
-		resolve(socketids);
+
 	});
 }
 
@@ -381,7 +492,7 @@ function getSocketsThumbnailsOfRoom(roomID) {
 		for (let index = 0; index < sockets.length; index++) {
 			socketids.push({
 				socket: sockets[index].id,
-				thumbnail: identitys[sockets[index].id].thumbnail
+				thumbnail: rooms[roomID].identitys[sockets[index].id].thumbnail
 			});
 		}
 		resolve(socketids);

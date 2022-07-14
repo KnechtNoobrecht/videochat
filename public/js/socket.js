@@ -71,11 +71,6 @@ socket.on('memberStreamingState', (sid, identity) => {
     room.changeMember(sid, identity)
 })
 
-socket.on('memberStreamingState', (sid, identity) => {
-    //console.log('memberStreamingState = ', identity)
-    //room.changeMember(sid, identity)
-})
-
 socket.on('getStream', async (indata) => {
     console.log('getStream = ', indata);
     console.log('localStream = ', localStream);

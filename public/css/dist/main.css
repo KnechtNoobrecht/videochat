@@ -769,13 +769,12 @@ modal {
   position: fixed;
   top: 10px;
   right: 10px;
-  background-color: #636363;
   z-index: 99999;
   display: flow-root;
   border-radius: 10px; }
 
 .toast {
-  background-color: aqua;
+  background-color: #353a3b;
   min-width: 300px;
   max-width: 100%;
   min-height: 50px;
@@ -783,12 +782,29 @@ modal {
   border-radius: 10px;
   padding: 5px;
   margin-top: 5px;
-  transition: all 0.3s ease 0s; }
+  transition: all 0.3s ease 0s;
+  box-shadow: -8px 13px 74px -20px rgba(0, 0, 0, 0.61);
+  -webkit-box-shadow: -8px 13px 74px -20px rgba(0, 0, 0, 0.61);
+  -moz-box-shadow: -8px 13px 74px -20px rgba(0, 0, 0, 0.61);
+  opacity: 1; }
+
+.fade-out {
+  transition: all 0.3s ease 0s;
+  opacity: 0; }
+
+.swipe-in {
+  transition: all 0.3s ease 0s;
+  transform: translate(0%, 0%); }
 
 .toast-content {
   display: flex;
   justify-content: space-between;
   align-items: center; }
+
+.toast .toast-header .btn, .toast .toast-header .btn-primary, .toast .toast-header .btn-secondary {
+  right: 0px;
+  margin-right: 5px;
+  position: absolute; }
 
 .context-menu {
   position: absolute;

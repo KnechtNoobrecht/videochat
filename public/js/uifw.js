@@ -107,6 +107,7 @@ class Toast extends EventTarget {
         this.id = uuid();
         toasts[this.id] = this
         console.log('toast = ', data);
+
         if (typeof data.ms == 'undefined') {
             this.ms = 3000;
         } else if (data.ms <= 0) {
@@ -118,23 +119,29 @@ class Toast extends EventTarget {
         console.log(this.ms);
         if (this.ms > 0) {
             var inter = setInterval(() => {
-                console.log('interval stop ');
                 clearInterval(inter)
                 this.close();
             }, this.ms);
         }
 
-        this.testel = toastContainer.appendChild(this.element);
+        toastContainer.appendChild(this.element);
+        //this.element.classList.add('swipe-in');
+        //this.element.style.transform = 'translate(0%, 0%)';
     }
     close() {
         console.log('close', this.element);
         console.log('close', this.testel);
-        this.element.remove();
-        //toasts.splice(toasts.indexOf(this), 1);
-        delete toasts[this.id];
-        this.#event = new CustomEvent('closed');
-        this.dispatchEvent(this.#event);
-        delete this;
+        this.element.classList.add('fade-out');
+        var inter = setInterval(() => {
+            this.element.remove();
+            delete toasts[this.id];
+            this.#event = new CustomEvent('closed');
+            this.dispatchEvent(this.#event);
+            clearInterval(inter)
+            delete this;
+            console.log('closed');
+        }, 300);
+
     }
 }
 
@@ -226,47 +233,33 @@ function hideMenu() {
 }
 
 function rightClick(e) {
-
-    //var conMenu = new ConMenu(e);
-
     if (document.getElementById("contextMenu").style.display == "block")
         hideMenu();
     else {
-
-        console.log(e.path);
         var id
         for (let index = 0; index < e.path.length; index++) {
             const element = e.path[index];
-            console.log(element.tagName);
-
-            //getElementsByTagName
-
             if (element.tagName == 'HTML') {
                 break;
             }
             if (element.classList.contains('videoElement')) {
-                var videoElement = element;
-                console.log('videoElement', videoElement);
-                console.log('videoElement.id', videoElement.id);
-                id = videoElement.id.split('_')[1];
-                console.log('id', id);
-                // console.log('videoElement', videoElement);
+                id = element.id.substring(element.id.indexOf('_') + 1);
+                break
+            }
+            if (element.classList.contains('connected-user-wrapper')) {
+                id = element.id.substring(element.id.indexOf('_') + 1);
                 break
             }
         }
-        var menu = document.getElementById("contextMenu")
-
-        var elementWrapper = document.querySelector('ul');
-        elementWrapper.innerHTML = ""
-
 
         if (id) {
             e.preventDefault();
+            var menu = document.getElementById("contextMenu")
+            var elementWrapper = document.querySelector('ul');
             var videoElement = document.getElementById('videoElement_' + id)
             var video = videoElement.querySelector('video');
-            console.log('video', video);
-            //room.members[id]
-            console.log('room.members[id]', room.members[id]);
+
+            elementWrapper.innerHTML = ""
             room.members[id].identity.isStreaming
 
             if (room.members[id].identity.isStreaming) {
@@ -282,14 +275,20 @@ function rightClick(e) {
                 elementWrapper.innerHTML += renderConMenuItem(id, 'Mute', 'toggle_mute_video')
             }
 
-            if (isAdmin) {
-                elementWrapper.innerHTML += renderConMenuItem(id, 'Kick', 'kick_member')
-
+            if (isMe(room.members[id].sid)) {
+                elementWrapper.innerHTML += renderConMenuItem(id, 'Edit Profile', 'edit_profile')
+            } else {
+                if (isAdmin) {
+                    elementWrapper.innerHTML += renderConMenuItem(id, 'Kick', 'kick_member')
+                    elementWrapper.innerHTML += renderConMenuItem(id, 'Ban', 'ban_member')
+                    if (room.members[id].identity.isAdmin) {
+                        elementWrapper.innerHTML += renderConMenuItem(id, 'Remove Admin', 'remove_admin')
+                    } else {
+                        elementWrapper.innerHTML += renderConMenuItem(id, 'Make Admin', 'make_admin')
+                    }
+                }
+                elementWrapper.innerHTML += renderConMenuItem(id, 'Open Profile', 'user_profile')
             }
-
-
-
-
 
             menu.style.display = 'block';
             menu.style.left = e.pageX + "px";
@@ -319,39 +318,40 @@ handleConMenuItemClick = async function (id, type) {
             break;
         case 'kick_member':
             console.log('kick_member = ', id);
-            socket.emit('kickMember', id)
+            socket.emit('kickMember', id, roomID)
+            //"kickMember", (id, roomID)
+            break;
+        case 'ban_member':
+            console.log('ban_member = ', id);
+            socket.emit('banMember', id, roomID)
+            //"kickMember", (id, roomID)
+            break;
+        case 'user_profile':
+            console.log('user_profile = ', room.members[id]);
+            console.log('room.members[id].identity.username; = ', room.members[id].identity.username);
+            document.getElementById('profile_username').innerText = room.members[id].identity.username;
+            document.getElementById('profile_avatar').src = room.members[id].identity.avatar;
+            modals.userIdent.open()
+            //socket.emit('kickMember', id, roomID)
+            //"kickMember", (id, roomID)
+            break;
+        case 'edit_profile':
+            console.log('edit_profile = ', room.members[id]);
+            modals.setIdent.open()
+            break;
+        case 'remove_admin':
+            console.log('remove_admin = ', room.members[id]);
+            socket.emit('removeAdmin', id, roomID)
+            break;
+        case 'make_admin':
+            console.log('make_admin = ', room.members[id]);
+            socket.emit('makeAdmin', id, roomID)
             break;
         default:
             break;
     }
 }
 
-class ConMenu {
-    constructor(sourceID, type) {
-        this.menu = menu;
-        this.menu.classList.add('con-menu');
-        this.menu.classList.add('hide');
-        this.id = this.menu.id;
-        document.body.appendChild(this.menu);
-    }
-    open() {
-        this.menu.classList.add('show');
-        this.menu.classList.remove('hide');
-        //this.#wrapper.style.display = "block";
-    }
-    close() {
-        this.menu.classList.remove('show');
-        this.menu.classList.add('hide');
-        //this.#wrapper.style.display = "none";
-    }
-}
-
-function renderConMenu(source, items) {
-
-}
-
 function renderConMenuItem(id, txt, type) {
-    //return `<div class="con-menu-item" onclick="${cb}('${id}')">`
-    //console.log('renderConMenuItem', id, txt, cb);
     return `<li onclick="handleConMenuItemClick('${id}', '${type}')"><a href="#" >${txt}</a></li>`
 }
