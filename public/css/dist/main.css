@@ -546,7 +546,7 @@ video {
   left: 0; }
 
 /* Could Use thise as well for Individual Controls */
-1 video::-webkit-media-controls-timeline {
+video::-webkit-media-controls-timeline {
   display: none; }
 
 video::-webkit-media-controls-current-time-display {
@@ -704,7 +704,6 @@ modal {
   padding-top: 0px;
   width: 100%;
   gap: 10px;
-  overflow-x: scroll;
   overflow-y: hidden; }
 
 .bot_bar_hover {

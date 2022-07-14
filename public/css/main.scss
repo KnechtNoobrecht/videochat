@@ -585,7 +585,7 @@ video::-webkit-media-controls-play-button {
   //background-image: url('/svg/fullscreen.svg');
 }
 
-1 video::-webkit-media-controls-timeline {
+video::-webkit-media-controls-timeline {
   display: none;
 }
 
@@ -785,7 +785,6 @@ modal {
   padding-top: 0px;
   width: 100%;
   gap: 10px;
-  overflow-x: scroll;
   overflow-y: hidden;
 }
 
