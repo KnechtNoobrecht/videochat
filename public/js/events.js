@@ -23,7 +23,7 @@ function initEvents() {
         var identity = e.detail.identity;
         var socketid = e.detail.sid;
 
-
+        console.log(e.detail.identity, e.detail.sid);
         //console.log("memberChanged ", identity, socketid);
         //var videowrapper = document.getElementById('videowrapper');
 
@@ -156,15 +156,15 @@ function initEvents() {
         }
 
         /*     if (getCssVar('grid_left') === '1fr') {
-                if (distx > -200) {
-                    setSideBar('left', false)
-                }
-    
-            } else {
-                if (distx > 200) {
-                    setSideBar('left', true)
-                }
-            } */
+                    if (distx > -200) {
+                        setSideBar('left', false)
+                    }
+        
+                } else {
+                    if (distx > 200) {
+                        setSideBar('left', true)
+                    }
+                } */
 
         //   setCssVar('primary_bg', '#234421')
     }

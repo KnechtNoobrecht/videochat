@@ -162,11 +162,11 @@ var videoElemente = {}
 
 var peerServerOptions = {
     iceServers: [{
-        urls: 'stun:85.214.194.29:3578'
+        urls: 'stun:85.214.194.29:3478'
     }, {
-        urls: 'turn:85.214.194.29:3578',
-        username: 'test',
-        credential: 'test123'
+        urls: 'turn:85.214.194.29:3478',
+        username: 'coturn',
+        credential: 'D2hD09esky7I'
     }, {
         urls: 'stun:stun.l.google.com:19302'
     }]
