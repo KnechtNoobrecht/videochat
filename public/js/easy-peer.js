@@ -605,6 +605,7 @@ class Room extends EventTarget {
         }
     }
     changeMember(sid, identity) {
+        console.log('changeMember', sid, identity);
         this.#event = new CustomEvent("memberChanged", {
             detail: {
                 sid: sid,

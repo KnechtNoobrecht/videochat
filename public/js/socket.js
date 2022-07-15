@@ -67,7 +67,7 @@ socket.on('memberRemoved', (sockets, sid, identity) => {
 })
 
 socket.on('memberStreamingState', (sid, identity) => {
-    //console.log('memberStreamingState = ', identity)
+    console.log('memberStreamingState = ', identity)
     room.changeMember(sid, identity)
 })
 

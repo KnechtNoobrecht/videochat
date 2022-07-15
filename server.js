@@ -269,7 +269,7 @@ io.on("connection", (socket) => {
 		// data = { room: this.id, msg: msg }
 		//console.log("chatMSG made by", data);
 		data.fromSocket = socket.id;
-		data.fromIdentity = identitys[socket.id];
+		data.fromIdentity = rooms[data.room].identitys[socket.id];
 
 		if (rooms[data.room].members.indexOf(data.fromSocket) > -1) {
 			console.log("from user is in room");
@@ -295,7 +295,7 @@ io.on("connection", (socket) => {
 		// data = { offer: offer, initiatorsid: this.sid, connectionID: this.id }
 		console.log("To Room = ", data);
 		rooms[data].identitys[socket.id].isStreaming = true;
-		io.sockets.in(data).emit("memberStreamingState", socket.id, identitys[socket.id]);
+		io.sockets.in(data).emit("memberStreamingState", socket.id, rooms[data].identitys[socket.id]);
 	});
 
 	socket.on("memberChangeIdentity", (data) => {
@@ -303,16 +303,16 @@ io.on("connection", (socket) => {
 		try {
 			console.log("To Room memberChangeIdentity = ", data);
 			console.log();
-			identitys[socket.id].username = data.username;
-			identitys[socket.id].avatar = data.avatar;
+			rooms[data.room].identitys[socket.id].username = data.username;
+			rooms[data.room].identitys[socket.id].avatar = data.avatar;
 			if (roomChatMsgs[data.room]) {
 				for (let index = 0; index < roomChatMsgs[data.room].length; index++) {
 					if (roomChatMsgs[data.room][index].fromSocket == socket.id) {
-						roomChatMsgs[data.room][index].fromIdentity = identitys[socket.id];
+						roomChatMsgs[data.room][index].fromIdentity = rooms[data.room].identitys[socket.id];
 					}
 				}
 			}
-			io.sockets.in(data.room).emit("memberStreamingState", socket.id, identitys[socket.id]);
+			io.sockets.in(data.room).emit("memberStreamingState", socket.id, rooms[data.room].identitys[socket.id]);
 		} catch (error) {
 			console.log("memberChangeIdentity error = ", error);
 		}
@@ -323,13 +323,13 @@ io.on("connection", (socket) => {
 		// data = { offer: offer, initiatorsid: this.sid, connectionID: this.id }
 		//console.log("To Room = ", data);
 		rooms[data].identitys[socket.id].isStreaming = false;
-		io.sockets.in(data).emit("memberStreamingState", socket.id, identitys[socket.id]);
+		io.sockets.in(data).emit("memberStreamingState", socket.id, rooms[data].identitys[socket.id]);
 	});
 
 	socket.on("streamThumbnail", (data) => {
 		//console.log("streamThumbnail = ", data);
 		rooms[data.room].identitys[socket.id].thumbnail = data.data
-		//io.sockets.in(data.room).emit("memberStreamingState", socket.id, identitys[socket.id]);
+		//io.sockets.in(data.room).emit("memberStreamingState", socket.id, rooms[data.room].identitys[socket.id]);
 	});
 	socket.on("load_ids", (roomID, cb) => {
 		console.log("load_ids = ");
@@ -359,7 +359,7 @@ io.on("connection", (socket) => {
 		//console.log("kickMember = ", io.sockets);
 		//socket.clients[id].connection.end();
 
-		console.log("banMember = ", identitys[sid]);
+		console.log("banMember = ", rooms[roomID].identitys[sid]);
 		var isA = isAdmin(roomID, rooms[roomID].identitys[socket.id].id)
 		console.log("is admin = ", isA);
 		if (isA) {

@@ -81,7 +81,7 @@ function renderNewChatMsg(data) {
 }
 
 function renderMsgTemplate(msg) {
-    //console.log("renderMsgTemplate", msg);
+    console.log("renderMsgTemplate", msg);
     var chatBody = document.querySelector('.chat-body');
     var msgElement = document.getElementById('chatMsgTemplate').cloneNode(true).content.children[0];
     msgElement.setAttribute("name", 'msg_' + msg.fromIdentity.id)
