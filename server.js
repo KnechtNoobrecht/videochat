@@ -43,9 +43,7 @@ class Room {
 			console.log('Member not in room')
 		}
 	}
-	changeMember(sid, identity) {
-
-	}
+	changeMember(sid, identity) {}
 	isMember(id) {
 
 		if (this.members.indexOf(id) > -1) {

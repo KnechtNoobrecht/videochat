@@ -731,10 +731,21 @@ function startCamStreaming() {
     })
 }
 
+
+/* quality code
+low 1000
+medium 3000
+high 5000
+very high 7000
+ultra high 10000
+unlimited 20000
+*/
 function getStream(remotesid) {
     socket.emit('getStream', {
         fromSocket: socket.id,
-        toSocket: remotesid
+        toSocket: remotesid,
+        quality: remoteStreamOptions.bitrate
+
     });
 }
 
