@@ -93,7 +93,7 @@ var localStreamOptions = {
     mediaRecorderOptions: {
         mimeType: 'video/webm;codecs=opus,vp8',
         videoMaximizeFrameRate: true,
-        videoBitsPerSecond: 20000000,
+        videoBitsPerSecond: 5000000,
         audioBitsPerSecond: 128000
     }
 }

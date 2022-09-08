@@ -691,6 +691,8 @@ async function renderSCSS(reloadClients) {
 						console.log("err", err.formatted);
 						//reject(err);
 					} else {
+
+
 						console.log('SCSS compiled!');
 						fs.writeFile(path.join(__dirname, 'public', 'css', 'dist', sassFiles[key] + '.css'), result.css, function (err) {
 							//
@@ -699,7 +701,10 @@ async function renderSCSS(reloadClients) {
 								console.log('SCSS File write to Disk Error = ', err);
 							} else {
 								if (reloadClients) {
+
 									io.emit('reloadCSS');
+									duration = Date.now() - renderBegin;
+									console.log('duration', duration, 'ms');
 								}
 								resolve(result);
 							}
@@ -722,10 +727,14 @@ function watchSCSS() {
 	for (const key in sassWatcherFiles) {
 		const element = path.join(__dirname, 'public', 'css', sassWatcherFiles[key] + '.scss');
 		console.log("watchSCSS", element);
+
 		fs.watchFile(element, function (curr, prev) {
+			renderBegin = new Date();
 			renderSCSS(true);
 		});
 	}
 }
 
+
+var renderBegin = new Date();
 watchSCSS()

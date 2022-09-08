@@ -236,7 +236,7 @@ function toggleStageMode(id) {
     var botStage = document.querySelector('#stageWrapper').querySelector('#botStage');
     console.log("toggleStageMode", id);
     //document.getElementById('stageWrapper')
-    console.log(" document.getElementById(id).parentElement() = ", );
+    console.log(" document.getElementById(id).parentElement() = ",);
     console.log('parent = ', parent.id);
 
     if (parent.id == 'videoWrapper' && inStageMode) {
@@ -607,10 +607,12 @@ function startStreaming() {
                 }
 
                 //console.log('streaming started', stream);
-
+                console.log('streaming started', getBrowser());
                 if (getBrowser() != 'Safari') {
+
                     var mediaRecorder = new MediaRecorder(stream, localStreamOptions.mediaRecorderOptions);
                     mediaRecorder.start();
+                    console.log('mediaRecorder.videoBitsPerSecond : ', mediaRecorder.videoBitsPerSecond);
                     stream = mediaRecorder.stream;
 
                     mediaRecorder.onwarning = function (e) {
@@ -745,7 +747,6 @@ function getStream(remotesid) {
         fromSocket: socket.id,
         toSocket: remotesid,
         quality: remoteStreamOptions.bitrate
-
     });
 }
 

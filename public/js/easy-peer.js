@@ -68,7 +68,7 @@ class Peer extends EventTarget {
         this.connected = false
         this.type = type || 'video'
         this.tracks = []
-        this.maxBitrate = bitrate || 3000
+        this.maxBitrate = bitrate || 30000
         this.sended = new BitrateObject()
         this.received = new BitrateObject()
 
@@ -253,18 +253,20 @@ class Peer extends EventTarget {
 
             if (this.initiator) {
                 this.peer.createOffer().then(sdp => {
-                    var arr = sdp.sdp.split('\r\n');
-                    arr.forEach((str, i) => {
-                        if (/^a=fmtp:\d*/.test(str)) {
-                            arr[i] = str + ';x-google-max-bitrate=' + this.maxBitrate + ';x-google-min-bitrate=500;x-google-start-bitrate=' + this.maxBitrate;
-                        } else if (/^a=mid:(1|video)/.test(str)) {
-                            arr[i] += '\r\nb=AS:' + this.maxBitrate;
-                        }
-                    });
-                    sdp = new RTCSessionDescription({
-                        type: 'offer',
-                        sdp: arr.join('\r\n'),
-                    })
+                    //var arr = sdp.sdp.split('\r\n');
+                    //arr.forEach((str, i) => {
+                    //    if (/^a=fmtp:\d*/.test(str)) {
+                    //        console.log('SDP Offer max bitrate : ', this.maxBitrate);
+                    //        arr[i] = str + ';x-google-max-bitrate=' + this.maxBitrate + ';x-google-min-bitrate=500;//x-google-start-bitrate=' + this.maxBitrate;
+                    //    } else if (/^a=mid:(1|video)/.test(str)) {
+                    //        console.log('SDP Offer max bitrate : ', this.maxBitrate);
+                    //        arr[i] += '\r\nb=AS:' + this.maxBitrate;
+                    //    }
+                    //});
+                    //sdp = new RTCSessionDescription({
+                    //    type: 'offer',
+                    //    sdp: arr.join('\r\n'),
+                    //})
 
                     //console.log('setLocalDescription', sdp);
 
@@ -568,7 +570,7 @@ class Identity {
      */
     checkIdentity() {
         let coockies = getCookieObject('ep_Identitys')
-        if (coockies.length > 0) {}
+        if (coockies.length > 0) { }
     }
 }
 
