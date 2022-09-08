@@ -171,6 +171,7 @@ option {
 
 .thumbnail {
   position: absolute;
+  display: none;
   z-index: 1;
   top: 50%;
   left: 50%;
@@ -373,7 +374,7 @@ option {
   //max-width: 392px;
   //margin: 25px 0 0 25px;
   margin: 25px;
-  border-radius: 15px;
+  border-radius: 10px;
   background-color: var(--secondary_bg);
   justify-content: space-between;
   //padding: 9px 10px 9px 10px;
@@ -554,8 +555,9 @@ textarea {
 
   &-startStreaming {
     @extend .button;
+    margin-top: 10px;
     border-radius: 10px;
-    background-color: #f92c47;
+    background-color: var(--green);
     font-size: 24px;
   }
 
@@ -775,17 +777,12 @@ modal {
 .bot_bar {
   position: absolute;
   background-color: #36393F;
-  border-radius: 10px 10px 0px 0px;
+  border-radius: 10px;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  height: 10px;
-  bottom: 0px;
+  bottom: 10px;
   transition: all 0.3s cubic-bezier(0.2, 0.4, 0.8, 1);
-  padding-top: 0px;
-  width: 100%;
-  gap: 10px;
-  overflow-y: hidden;
 }
 
 .bot_bar_hover {
@@ -802,35 +799,18 @@ modal {
   transform: translateX(-50%);
 }
 
-.bot_bar_hover:hover>.bot_bar {
-
-  height: 50px;
-}
-
-.bot_bar_hover:hover>.bot_bar>.bot_bar_item,
-.bot_bar_hover:hover>.bot_bar>.button-startStreaming {
-  visibility: visible;
-  height: 50px;
-  padding-top: 0px;
-
-}
-
 .bot_bar_item {
   transition: all 0.3s cubic-bezier(0.2, 0.4, 0.8, 1);
-  display: flex;
+  display: flex;;
   justify-content: center;
   align-items: center;
-  height: 100%;
-  //width: 120px;
   color: white;
   font-size: 1.5rem;
-  font-weight: 400;
+  font-weight: 500;
   cursor: pointer;
   font-size: inherit;
-  padding-top: 30px;
-  padding-left: 10px;
-  padding-right: 10px;
-  visibility: hidden;
+  padding: 10px;
+  user-select: none;
 }
 
 .bot_bar_item:hover {
@@ -840,7 +820,7 @@ modal {
 .bot_bar_item img {
   width: 30px;
   height: 30px;
-  margin-right: 0px;
+  margin-right: 10px;
 }
 
 .form-input {
@@ -939,4 +919,139 @@ modal {
 
 .context-menu ul li:hover {
   background: rgb(112, 112, 112);
+}
+
+.startStreamStepsWrapper {
+  display: none;
+  overflow: hidden;
+  width: 165.2px;
+  height: 190.667px;
+  position: absolute;
+  //top: 0;
+  bottom: 75px;
+  left: 0;
+  background-color: #2F3136;
+  border-radius: 10px;
+  transition: height 0.2s ease 0s;
+}
+
+.shareScreenWrapper, .shareCameraWrapper {
+  display: grid;
+  justify-items: center;
+  background-color: #36393F;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 10px 15px 10px 15px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.shareScreenWrapper {
+  margin-bottom: 10px;
+}
+
+.shareScreenWrapper:hover, .shareCameraWrapper:hover {
+  //@extend .shareScreenWrapper;
+  background-color: #36393F;
+  border: 1px solid #6A6D70;
+}
+
+.shareScreenWrapper p, .shareCameraWrapper p {
+  color: #FDFDFD;
+  padding: 0;
+  margin: 5px 0 0 0;
+  font-size: 14px;
+}
+
+.shareScreenWrapper img, .shareCameraWrapper img {
+  fill: #FFFFFF;
+}
+
+.startStreamStepOne, .startStreamStepTwo {
+  width: 165.2px;
+  user-select: none;
+  padding: 10px;
+}
+
+.startStreamResolutionWrapper > select {
+  cursor: pointer;
+  background-color: #36393F;
+  border-radius: 5px;
+  text-align: center;
+  line-height: 40px;
+  font-size: 20px;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 10px;
+}
+
+#resolutionSelector {
+  font-family: Inter;
+  line-height: 40px;
+  font-weight: 600;
+  font-size: 20px;
+  color: white;
+  background: #36393F;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.startStreamResolutionWrapper > span, .startStreamFramerateWrapper > span {
+  color: #E3E3E3;
+  font-size: 16px;
+}
+
+.button-back img {
+  cursor: pointer;
+}
+
+.fr-rs-wrapper {
+  background-color: #36393F;
+  border-radius: 10px;
+  font-size: 20px;
+  font-weight: 600;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+
+  span {
+    z-index: 1;
+    line-height: 40px;
+    width: 30px;
+    text-align: center;
+  }
+
+  span:first-of-type {
+    margin: 0 10px 0 10px;
+  }
+
+  span:last-of-type {
+    margin: 0 10px 0 10px;
+  }
+}
+
+.slider {
+  position: absolute;
+  background-color: #6a6d70;
+  left: 4px;
+  width: 41px;
+  height: calc(100% - 8px);
+  border-radius: 7px;
+  transition: all 200ms;
+
+  &-framerate {
+    @extend .slider;
+  }
+
+  &-resolution {
+    @extend .slider;
+  }
+
+  &-right {
+    width: calc(50% - 3px);
+    transform: translateX(100%);
+  }
 }

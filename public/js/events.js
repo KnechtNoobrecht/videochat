@@ -270,4 +270,5 @@ function initEvents() {
         }
     });
 
+    //document.getElementById('startStreamBTN').addEventListener('click', function (e) { })
 }

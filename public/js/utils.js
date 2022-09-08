@@ -380,6 +380,8 @@ function toggleSideBar(side) {
 
 // show hide sidebar
 function setSideBar(side, open) {
+    gridLeftSize = '0.8fr'
+    gridRightSize = '0.7fr'
 
     var isLeftOpen = sidebarL.offsetWidth > '0' ? true : false;
     var isRightOpen = sidebarR.offsetWidth > '0' ? true : false;
@@ -393,7 +395,7 @@ function setSideBar(side, open) {
             document.getElementById('ls').style.left = "-100%";
 
         } else {
-            setCssVar('grid_left', '1fr')
+            setCssVar('grid_left', gridLeftSize)
             document.getElementById('ls').style.width = "100%";
             document.getElementById('ls').style.left = "0px";
 
@@ -408,7 +410,7 @@ function setSideBar(side, open) {
             document.getElementById('rs').style.width = "0";
             document.getElementById('rs').style.right = "-100%";
         } else {
-            setCssVar('grid_right', '1fr')
+            setCssVar('grid_right', gridRightSize)
             document.getElementById('rs').style.width = "100%";
             document.getElementById('rs').style.right = "0px";
 
@@ -560,14 +562,10 @@ function whatIsIt(object) {
 }
 
 async function chooseStream() {
-    console.log('chooseStream');
-    //var val = document.getElementById('streamType').value
-    //get element by name streamType
-    var val = document.getElementsByName('streamType')[0].value
-    // console.log(document.getElementById('streamType'));
-    if (val == 'dt') {
+    console.log("shareType: ", shareType);
+    if (shareType == 'screen') {
         await startStreaming()
-    } else if ('cam') {
+    } else if (shareType == 'camera') {
         await startCamStreaming()
     }
     pm.reconnectAllPeers()

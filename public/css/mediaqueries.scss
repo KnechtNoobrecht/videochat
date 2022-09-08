@@ -1,7 +1,7 @@
 @media only screen and (max-width:1600px) {
 
   .grid-container {
-    grid-template-columns: 1fr 3fr 1fr;
+    grid-template-columns: 0.8fr 3.5fr 0.7fr;
   }
 
   .videowrapper {
@@ -23,7 +23,7 @@
   }
 
   .right-sidebar {
-    box-shadow: 0 2px 16px 0 rgba(0, 0, 0, .25), 0 3px 15px 8px rgba(0, 0, 0, 0.08);
+    //box-shadow: 0 2px 16px 0 rgba(0, 0, 0, .25), 0 3px 15px 8px rgba(0, 0, 0, 0.08);
     width: 100%;
   }
 
@@ -58,9 +58,9 @@
     margin-left: 0px;
   }
 
-  .right-sidebar {
-    box-shadow: none;
-  }
+  //.right-sidebar {
+    //box-shadow: none;
+  //}
 
   .bot_bar_hover {
     width: 95% !important;

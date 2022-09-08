@@ -172,7 +172,6 @@ var peerServerOptions = {
     }]
 }
 
-
 var streamThumbnail = null;
 var streamThumbnailTimer = null;
 var reloadTime = 5000;
@@ -181,6 +180,7 @@ var meString = 'Ich';
 
 var isAdmin = false;
 
+var shareType = "none"
 
 /* var peerServerOptions = {
     iceServers: [{

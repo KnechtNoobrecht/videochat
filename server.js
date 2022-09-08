@@ -724,7 +724,7 @@ function watchSCSS() {
 	for (const key in sassWatcherFiles) {
 		const element = path.join(__dirname, 'public', 'css', sassWatcherFiles[key] + '.scss');
 		console.log("watchSCSS", element);
-		fs.watchFile(element, function (curr, prev) {
+		fs.watchFile(element, {interval: 1000},function (curr, prev) {
 			renderSCSS(true);
 		});
 	}

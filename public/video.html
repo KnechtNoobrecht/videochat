@@ -60,16 +60,60 @@
         </div>
     </div>
 
+    <div class="startStreamStepsWrapper" id="startStreamModal">
+        
+        <div class="startStreamStepOne" id="startStreamStepOne">
+            <div class="shareScreenWrapper" id="startScreenShare">
+                <img src="/svg/desktop.svg" alt="">
+                <p>Bildschirm teilen</p>
+            </div>
+            <div class="shareCameraWrapper" id="startCameraShare">
+                <img src="/svg/camera.svg" alt="">
+                <p>Kamera teilen</p>
+            </div>
+        </div>
+        
+        <div class="startStreamStepTwo" id="startStreamStepTwo">
+            <div class="button-back">
+                <img src="/svg/arrow-left.svg" alt="Back" id="startStreamGoBack">
+            </div>
+            <div class="startStreamResolutionWrapper">
+                <span>Auflösung</span>
+                <div name="resolution" id="resolutionSelector">
+                    <div data-value="1080">1080p</div>
+                    <div style="display: none;" data-value="720">720p</div>
+                    <div style="display: none;" data-value="1440">1440p</div>
+                    <div style="display: none;" data-value="2160">2160p</div>
+                </div>
+            </div>
+            <div class="startStreamFramerateWrapper">
+                <span>Bildrate</span>
+                <div class="fr-rs-wrapper" id="framerateDiv">
+                    <div class="slider-framerate" id="slider-fr"></div>
+                    <span data-value="15">15</span>
+                    <span data-value="30">30</span>
+                    <span data-value="60">60</span>
+                </div>
+            </div>
+            <div class="button-startStreaming" onclick="chooseStream()">
+                Start
+            </div>
+        </div>
+    </div>
+
     <div class="bot_bar_hover">
         <div class="bot_bar">
+            <!--
             <div id="stopStreamBTN" onclick="stopStream()" class="bot_bar_item">
                 <img src="/svg/stop.svg" />
                 <span>Stop</span>
             </div>
-            <div id="startStreamBTN" onclick="modals.chooseStream.open()" class="bot_bar_item">
+            -->
+            <div id="startStreamBTN" class="bot_bar_item">
                 <img src="/svg/desktop.svg" />
                 <span>Start Stream</span>
             </div>
+            <!--
             <div id="" onclick="openProfileModal() " class="bot_bar_item">
                 <img src="/svg/cog.svg" />
                 <span>Change Profile</span>
@@ -78,6 +122,7 @@
                 <img src="/svg/cog.svg" />
                 <span>Reload CSS</span>
             </div>
+            -->
         </div>
     </div>
 

@@ -6,6 +6,69 @@ resolutionDiv.onclick = function () {
     toggleSlider(this)
 } */
 
+function alignElement(targetElement) {
+    //targetElement.style.top = (document.getElementById('startStreamBTN').getBoundingClientRect().top - targetElement.getBoundingClientRect().height- 10) + 'px'
+    buttonSize = document.getElementById('startStreamBTN').getBoundingClientRect()
+    targetElement.style.left = `${buttonSize.left - (targetElement.getBoundingClientRect().width - buttonSize.width) / 2}px`
+}
+
+function openStartStreamModal(ctx) {
+    if (startStreamModal.style.display == "-webkit-box") {
+        startStreamModal.style.display = "none"
+        alignElement(startStreamModal)
+    } else {
+        startStreamModal.style.display = "-webkit-box"
+        alignElement(startStreamModal)
+    }
+    //console.log(ctx.target.getBoundingClientRect().top);
+}
+
+function startStream(ctx) {
+    if(ctx.target.className == "shareScreenWrapper" || ctx.target.parentNode.className == "shareScreenWrapper") {
+        shareType = "screen"
+    } else if(ctx.target.className == "shareCameraWrapper" || ctx.target.parentNode.className == "shareCameraWrapper") {
+        shareType = "camera"
+    }
+    console.log("shareType: ", shareType);
+    targetElement = document.getElementById('startStreamModal')
+    //startStreamModal.style.width = "150px"
+    startStreamModal.style.height = "228px"
+    startStreamStepTwo.scrollIntoView({behavior: "smooth"})
+
+    alignElement(targetElement)
+}
+
+function goBack(ctx) {
+    switch (ctx.target.id) {
+        case "startStreamGoBack":
+            targetElement = document.getElementById('startStreamModal')
+            //startStreamModal.style.width = "165.2px"
+            startStreamModal.style.height = "190.667px"
+            startStreamStepOne.scrollIntoView({behavior: "smooth"})
+            alignElement(targetElement)
+            break;
+
+        default:
+            break;
+    }
+}
+
+function framerateSliderSlide(ctx) {
+    slider = document.getElementById('slider-fr')
+    framerateDiv = document.getElementById('framerateDiv')
+
+    slider.style.left = ctx.target.getBoundingClientRect().left - framerateDiv.getBoundingClientRect().left - 6 + 'px' 
+    localStreamOptions.resolution.frameRate =ctx.target.dataset.value
+}
+
+document.getElementById('startStreamBTN').onclick = openStartStreamModal
+document.getElementById('startScreenShare').onclick = startStream
+document.getElementById('startCameraShare').onclick = startStream
+document.getElementById('startStreamGoBack').onclick = goBack
+document.getElementById('framerateDiv').childNodes.forEach(childNode => {
+    childNode.nodeName == "SPAN" ? childNode.onclick = framerateSliderSlide : null
+})
+
 function toggleSlider(ctx) {
     switch (ctx.id) {
         case "framerateDiv":
