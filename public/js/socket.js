@@ -11,7 +11,8 @@ socket.on('peerOffer', async (indata) => {
     let options = {
         initiator: false,
         remotesid: indata.fromSocket,
-        connectionID: indata.connectionID
+        connectionID: indata.connectionID,
+        bitrate: indata.bitrate
     }
     let peer = new Peer(options)
     var outdata = await peer.init(indata.data.offer)
@@ -67,7 +68,7 @@ socket.on('memberRemoved', (sockets, sid, identity) => {
 })
 
 socket.on('memberStreamingState', (sid, identity) => {
-    //console.log('memberStreamingState = ', identity)
+    console.log('memberStreamingState = ', identity)
     room.changeMember(sid, identity)
 })
 
@@ -89,7 +90,8 @@ socket.on('getStream', async (indata) => {
     let options = {
         initiator: true,
         remotesid: indata.fromSocket,
-        type: 'video'
+        type: 'video',
+        bitrate: indata.bitrate || 3000
     }
     let peer = new Peer(options)
     var outdata = await peer.init(null, localStream);

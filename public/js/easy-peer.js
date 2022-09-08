@@ -45,7 +45,8 @@ class Peer extends EventTarget {
         remotesid: remotesid,
         connectionID: connectionID,
         identity: identity,
-        type: type
+        type: type,
+        bitrate: bitrate
     }) {
         super();
         if (initiator) {
@@ -67,6 +68,7 @@ class Peer extends EventTarget {
         this.connected = false
         this.type = type || 'video'
         this.tracks = []
+        this.maxBitrate = bitrate || 30000
         this.sended = new BitrateObject()
         this.received = new BitrateObject()
 
@@ -251,18 +253,20 @@ class Peer extends EventTarget {
 
             if (this.initiator) {
                 this.peer.createOffer().then(sdp => {
-                    var arr = sdp.sdp.split('\r\n');
-                    arr.forEach((str, i) => {
-                        if (/^a=fmtp:\d*/.test(str)) {
-                            arr[i] = str + ';x-google-max-bitrate=28000;x-google-min-bitrate=10000;x-google-start-bitrate=20000';
-                        } else if (/^a=mid:(1|video)/.test(str)) {
-                            arr[i] += '\r\nb=AS:20000';
-                        }
-                    });
-                    sdp = new RTCSessionDescription({
-                        type: 'offer',
-                        sdp: arr.join('\r\n'),
-                    })
+                    //var arr = sdp.sdp.split('\r\n');
+                    //arr.forEach((str, i) => {
+                    //    if (/^a=fmtp:\d*/.test(str)) {
+                    //        console.log('SDP Offer max bitrate : ', this.maxBitrate);
+                    //        arr[i] = str + ';x-google-max-bitrate=' + this.maxBitrate + ';x-google-min-bitrate=500;//x-google-start-bitrate=' + this.maxBitrate;
+                    //    } else if (/^a=mid:(1|video)/.test(str)) {
+                    //        console.log('SDP Offer max bitrate : ', this.maxBitrate);
+                    //        arr[i] += '\r\nb=AS:' + this.maxBitrate;
+                    //    }
+                    //});
+                    //sdp = new RTCSessionDescription({
+                    //    type: 'offer',
+                    //    sdp: arr.join('\r\n'),
+                    //})
 
                     //console.log('setLocalDescription', sdp);
 
@@ -294,8 +298,6 @@ class Peer extends EventTarget {
                 })
                 resolve(this.id)
 
-
-
             } else {
 
                 await this.peer.setRemoteDescription(new RTCSessionDescription(offer))
@@ -303,9 +305,9 @@ class Peer extends EventTarget {
                     var arr = sdp.sdp.split('\r\n');
                     arr.forEach((str, i) => {
                         if (/^a=fmtp:\d*/.test(str)) {
-                            arr[i] = str + ';x-google-max-bitrate=28000;x-google-min-bitrate=10000;x-google-start-bitrate=20000';
+                            arr[i] = str + ';x-google-max-bitrate=' + this.maxBitrate + ';x-google-min-bitrate=500;x-google-start-bitrate=' + this.maxBitrate;
                         } else if (/^a=mid:(1|video)/.test(str)) {
-                            arr[i] += '\r\nb=AS:20000';
+                            arr[i] += '\r\nb=AS:' + this.maxBitrate;
                         }
                     });
                     sdp = new RTCSessionDescription({
@@ -358,7 +360,14 @@ class Peer extends EventTarget {
         debugNode.parentNode.removeChild(debugNode);
 
         //document.getElementById('videoElement_' + this.remotesid).getElementsByTagName('video')[0].srcObject = null;
-        document.getElementById('videoElement_' + this.remotesid).querySelector('video').srcObject = null;
+
+        if (!this.initiator) {
+            console.log('videoElement_' + this.remotesid)
+            console.log(document.getElementById('videoElement_' + this.remotesid))
+            console.log(document.getElementById('videoElement_' + this.remotesid).querySelector('video'))
+            document.getElementById('videoElement_' + this.remotesid).querySelector('video').srcObject = null;
+        }
+
         this.peer.close()
         delete peers[this.connectionID]
         delete pm.peers[this.connectionID]
@@ -561,7 +570,7 @@ class Identity {
      */
     checkIdentity() {
         let coockies = getCookieObject('ep_Identitys')
-        if (coockies.length > 0) {}
+        if (coockies.length > 0) { }
     }
 }
 
@@ -605,6 +614,7 @@ class Room extends EventTarget {
         }
     }
     changeMember(sid, identity) {
+        console.log('changeMember', sid, identity);
         this.#event = new CustomEvent("memberChanged", {
             detail: {
                 sid: sid,

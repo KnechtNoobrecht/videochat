@@ -36,6 +36,9 @@
 ### ✔️ Touch Gesten
 ### ⚒️ Bilder uploaden in Chat (Bilder im Chat verschicken)
 ### ⚒️ Senden Button für Chat für Mobile
+### ⚒️ Bot Bar verbessern 
+### ⚒️ 
+
 
 ## Fehler:
 ### ⚒️ Wenn der Initiator vom anderen Client keine SocketIO ID hat kommt es zu extrem hohen CPU-Lasten

@@ -81,7 +81,7 @@ function renderNewChatMsg(data) {
 }
 
 function renderMsgTemplate(msg) {
-    //console.log("renderMsgTemplate", msg);
+    console.log("renderMsgTemplate", msg);
     var chatBody = document.querySelector('.chat-body');
     var msgElement = document.getElementById('chatMsgTemplate').cloneNode(true).content.children[0];
     msgElement.setAttribute("name", 'msg_' + msg.fromIdentity.id)
@@ -236,7 +236,7 @@ function toggleStageMode(id) {
     var botStage = document.querySelector('#stageWrapper').querySelector('#botStage');
     console.log("toggleStageMode", id);
     //document.getElementById('stageWrapper')
-    console.log(" document.getElementById(id).parentElement() = ", );
+    console.log(" document.getElementById(id).parentElement() = ",);
     console.log('parent = ', parent.id);
 
     if (parent.id == 'videoWrapper' && inStageMode) {
@@ -605,10 +605,12 @@ function startStreaming() {
                 }
 
                 //console.log('streaming started', stream);
-
+                console.log('streaming started', getBrowser());
                 if (getBrowser() != 'Safari') {
+
                     var mediaRecorder = new MediaRecorder(stream, localStreamOptions.mediaRecorderOptions);
                     mediaRecorder.start();
+                    console.log('mediaRecorder.videoBitsPerSecond : ', mediaRecorder.videoBitsPerSecond);
                     stream = mediaRecorder.stream;
 
                     mediaRecorder.onwarning = function (e) {
@@ -729,10 +731,20 @@ function startCamStreaming() {
     })
 }
 
+
+/* quality code
+low 1000
+medium 3000
+high 5000
+very high 7000
+ultra high 10000
+unlimited 20000
+*/
 function getStream(remotesid) {
     socket.emit('getStream', {
         fromSocket: socket.id,
-        toSocket: remotesid
+        toSocket: remotesid,
+        quality: remoteStreamOptions.bitrate
     });
 }
 
