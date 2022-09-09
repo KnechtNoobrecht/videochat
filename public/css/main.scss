@@ -801,7 +801,8 @@ modal {
 
 .bot_bar_item {
   transition: all 0.3s cubic-bezier(0.2, 0.4, 0.8, 1);
-  display: flex;;
+  display: flex;
+  ;
   justify-content: center;
   align-items: center;
   color: white;
@@ -933,9 +934,11 @@ modal {
   background-color: #2F3136;
   border-radius: 10px;
   transition: height 0.2s ease 0s;
+  //transition: 0.4s cubic-bezier(0, 0.32, 0, 1.19);
 }
 
-.shareScreenWrapper, .shareCameraWrapper {
+.shareScreenWrapper,
+.shareCameraWrapper {
   display: grid;
   justify-items: center;
   background-color: #36393F;
@@ -950,30 +953,34 @@ modal {
   margin-bottom: 10px;
 }
 
-.shareScreenWrapper:hover, .shareCameraWrapper:hover {
+.shareScreenWrapper:hover,
+.shareCameraWrapper:hover {
   //@extend .shareScreenWrapper;
   background-color: #36393F;
   border: 1px solid #6A6D70;
 }
 
-.shareScreenWrapper p, .shareCameraWrapper p {
+.shareScreenWrapper p,
+.shareCameraWrapper p {
   color: #FDFDFD;
   padding: 0;
   margin: 5px 0 0 0;
   font-size: 14px;
 }
 
-.shareScreenWrapper img, .shareCameraWrapper img {
+.shareScreenWrapper img,
+.shareCameraWrapper img {
   fill: #FFFFFF;
 }
 
-.startStreamStepOne, .startStreamStepTwo {
+.startStreamStepOne,
+.startStreamStepTwo {
   width: 165.2px;
   user-select: none;
   padding: 10px;
 }
 
-.startStreamResolutionWrapper > select {
+.startStreamResolutionWrapper>select {
   cursor: pointer;
   background-color: #36393F;
   border-radius: 5px;
@@ -996,7 +1003,8 @@ modal {
   text-align: center;
 }
 
-.startStreamResolutionWrapper > span, .startStreamFramerateWrapper > span {
+.startStreamResolutionWrapper>span,
+.startStreamFramerateWrapper>span {
   color: #E3E3E3;
   font-size: 16px;
 }

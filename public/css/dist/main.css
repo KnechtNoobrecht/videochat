@@ -827,7 +827,8 @@ modal {
   border-radius: 10px;
   transition: height 0.2s ease 0s; }
 
-.shareScreenWrapper, .shareCameraWrapper {
+.shareScreenWrapper,
+.shareCameraWrapper {
   display: grid;
   justify-items: center;
   background-color: #36393F;
@@ -840,20 +841,24 @@ modal {
 .shareScreenWrapper {
   margin-bottom: 10px; }
 
-.shareScreenWrapper:hover, .shareCameraWrapper:hover {
+.shareScreenWrapper:hover,
+.shareCameraWrapper:hover {
   background-color: #36393F;
   border: 1px solid #6A6D70; }
 
-.shareScreenWrapper p, .shareCameraWrapper p {
+.shareScreenWrapper p,
+.shareCameraWrapper p {
   color: #FDFDFD;
   padding: 0;
   margin: 5px 0 0 0;
   font-size: 14px; }
 
-.shareScreenWrapper img, .shareCameraWrapper img {
+.shareScreenWrapper img,
+.shareCameraWrapper img {
   fill: #FFFFFF; }
 
-.startStreamStepOne, .startStreamStepTwo {
+.startStreamStepOne,
+.startStreamStepTwo {
   width: 165.2px;
   user-select: none;
   padding: 10px; }
@@ -879,7 +884,8 @@ modal {
   border-radius: 10px;
   text-align: center; }
 
-.startStreamResolutionWrapper > span, .startStreamFramerateWrapper > span {
+.startStreamResolutionWrapper > span,
+.startStreamFramerateWrapper > span {
   color: #E3E3E3;
   font-size: 16px; }
 

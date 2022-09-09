@@ -114,6 +114,11 @@ socket.on('loadChatMsgs', async (data) => {
     }
 })
 
+socket.on('ban', async () => {
+    //console.log('ban = ');
+    window.location.href = '/';
+})
+
 
 socket.on('reloadCSS', async () => {
     if (reloadCSS) {

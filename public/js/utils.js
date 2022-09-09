@@ -41,8 +41,6 @@ function resetVideoWrapperElement(remotesid) {
     remoteVideo.style.opacity = "0";
 }
 
-
-
 function renderNewChatMsg(data) {
     console.log("renderNewChatMsg", data);
     console.log("data.fromIdentity", data.fromIdentity);
@@ -201,8 +199,6 @@ function moveElement(target, destination) {
     destination.appendChild(target);
 }
 
-
-
 function sortStreams() {
     var videoelemente = document.getElementsByClassName('videoElement');
     var videoelementeArray = Array.from(videoelemente);
@@ -295,15 +291,16 @@ function getFrame(blur) {
     var b = blur || 0
     var canvas = document.createElement('canvas');
     var videoElement = document.querySelector('#videoElement_' + socket.id).querySelector('video');
-    //console.log('videoElement = ', videoElement);
+    console.log('videoElement', videoElement);
+    console.log('socket.id', socket.id);
     canvas.width = videoElement.videoWidth / 4;
     canvas.height = videoElement.videoHeight / 4;
     var ctx = canvas.getContext('2d');
-    //ctx.filter = "blur(1px)"
     ctx.filter = `blur(${b}px)`
     ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
     var dataURL = canvas.toDataURL();
     canvas.remove();
+    console.log('getFrame', canvas);
     return dataURL
 }
 
@@ -481,6 +478,7 @@ function getIdentityByUsernameInIdentityObject(username) {
     }
     return null
 }
+
 async function checkUsernameTaken(username) {
     var a = await getIdentityByUsernameInCookie(username)
     var b = await getIdentityByUsernameInIdentityObject(username)
@@ -490,6 +488,7 @@ async function checkUsernameTaken(username) {
         return true
     }
 }
+
 async function addIdentityToObjects(data) {
     var a = await getIdentityByUsernameInCookie(data.username)
     if (a === null) {
@@ -573,7 +572,7 @@ async function chooseStream() {
 
 function startStreaming() {
     return new Promise((resolve, reject) => {
-        console.log('startStreaming', localStreamOptions);
+        //console.log('startStreaming', localStreamOptions);
 
         navigator.mediaDevices
             .getDisplayMedia({
@@ -605,12 +604,12 @@ function startStreaming() {
                 }
 
                 //console.log('streaming started', stream);
-                console.log('streaming started', getBrowser());
+                //console.log('streaming started', getBrowser());
                 if (getBrowser() != 'Safari') {
 
                     var mediaRecorder = new MediaRecorder(stream, localStreamOptions.mediaRecorderOptions);
                     mediaRecorder.start();
-                    console.log('mediaRecorder.videoBitsPerSecond : ', mediaRecorder.videoBitsPerSecond);
+                    // console.log('mediaRecorder.videoBitsPerSecond : ', mediaRecorder.videoBitsPerSecond);
                     stream = mediaRecorder.stream;
 
                     mediaRecorder.onwarning = function (e) {
@@ -637,11 +636,13 @@ function startStreaming() {
                 localVideo.srcObject = localStream;
 
                 localVideo.onloadedmetadata = (e) => {
+                    console.log('onloadedmetadata');
+                    toggleStartStreamModal()
                     localVideo.play()
+                    localVideo.volume = 0
                     socket.emit('memberStartStreaming', room.id);
                     icon.style = "display:none"
-                    modals.chooseStream.close()
-                    resolve(localStream);
+                    //modals.chooseStream.close()
 
                     localStream.getVideoTracks()[0].onended = function (e) {
                         // doWhatYouNeedToDo();
@@ -654,6 +655,8 @@ function startStreaming() {
                     streamThumbnailTimer = setInterval(() => {
                         sendThumbnail()
                     }, reloadTime)
+
+                    resolve(localStream);
                 };
             })
             .catch((err) => {
@@ -714,13 +717,15 @@ function startCamStreaming() {
 
                     localStream.getVideoTracks()[0].contentHint = localStreamOptions.resolution.hint;
 
-                    // localVideo.srcObject = localStream;
+                    localVideo.srcObject = localStream;
+
                     socket.emit('memberStartStreaming', room.id);
 
                     streamThumbnailTimer = setInterval(() => {
                         streamThumbnail = getFrame(1);
                     }, 1000)
 
+                    toggleStartStreamModal()
                     resolve(localStream);
                 })
                 .catch((err) => {
@@ -760,6 +765,12 @@ function stopStream() {
         //console.log(error);
     }
     socket.emit('memberStopStreaming', room.id);
+}
+
+async function stopWatching(id) {
+    console.log(await pm.getPeerBySocketID(id));
+    var pe = await pm.getPeerBySocketID(id)
+    pe.remove()
 }
 
 async function readFile(input, toSocketID) {
@@ -926,7 +937,9 @@ function loadRoomMemberThumbnails() {
 }
 
 function sendThumbnail() {
+    console.log('sendThumbnail');
     streamThumbnail = getFrame(1);
+    //console.log('streamThumbnail', streamThumbnail);
     var sendToServer = {
         fromSocket: socket.id,
         room: roomID,

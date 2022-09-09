@@ -12,8 +12,10 @@ function alignElement(targetElement) {
     targetElement.style.left = `${buttonSize.left - (targetElement.getBoundingClientRect().width - buttonSize.width) / 2}px`
 }
 
-function openStartStreamModal(ctx) {
+function toggleStartStreamModal(ctx) {
     if (startStreamModal.style.display == "-webkit-box") {
+        startStreamModal.style.height = "190.667px"
+        startStreamModal.scrollTo(0, 0)
         startStreamModal.style.display = "none"
         alignElement(startStreamModal)
     } else {
@@ -24,44 +26,37 @@ function openStartStreamModal(ctx) {
 }
 
 function startStream(ctx) {
-    if(ctx.target.className == "shareScreenWrapper" || ctx.target.parentNode.className == "shareScreenWrapper") {
+    if (ctx.target.className == "shareScreenWrapper" || ctx.target.parentNode.className == "shareScreenWrapper") {
         shareType = "screen"
-    } else if(ctx.target.className == "shareCameraWrapper" || ctx.target.parentNode.className == "shareCameraWrapper") {
+    } else if (ctx.target.className == "shareCameraWrapper" || ctx.target.parentNode.className == "shareCameraWrapper") {
         shareType = "camera"
     }
     console.log("shareType: ", shareType);
     targetElement = document.getElementById('startStreamModal')
     //startStreamModal.style.width = "150px"
     startStreamModal.style.height = "228px"
-    startStreamStepTwo.scrollIntoView({behavior: "smooth"})
+    startStreamStepTwo.scrollIntoView({ behavior: "smooth" })
 
     alignElement(targetElement)
 }
 
 function goBack(ctx) {
-    switch (ctx.target.id) {
-        case "startStreamGoBack":
-            targetElement = document.getElementById('startStreamModal')
-            //startStreamModal.style.width = "165.2px"
-            startStreamModal.style.height = "190.667px"
-            startStreamStepOne.scrollIntoView({behavior: "smooth"})
-            alignElement(targetElement)
-            break;
-
-        default:
-            break;
-    }
+    targetElement = document.getElementById('startStreamModal')
+    //startStreamModal.style.width = "165.2px"
+    startStreamModal.style.height = "190.667px"
+    startStreamStepOne.scrollIntoView({ behavior: "smooth" })
+    alignElement(targetElement)
 }
 
 function framerateSliderSlide(ctx) {
     slider = document.getElementById('slider-fr')
     framerateDiv = document.getElementById('framerateDiv')
 
-    slider.style.left = ctx.target.getBoundingClientRect().left - framerateDiv.getBoundingClientRect().left - 6 + 'px' 
-    localStreamOptions.resolution.frameRate =ctx.target.dataset.value
+    slider.style.left = ctx.target.getBoundingClientRect().left - framerateDiv.getBoundingClientRect().left - 6 + 'px'
+    localStreamOptions.resolution.frameRate = ctx.target.dataset.value
 }
 
-document.getElementById('startStreamBTN').onclick = openStartStreamModal
+document.getElementById('startStreamBTN').onclick = toggleStartStreamModal
 document.getElementById('startScreenShare').onclick = startStream
 document.getElementById('startCameraShare').onclick = startStream
 document.getElementById('startStreamGoBack').onclick = goBack
@@ -70,6 +65,7 @@ document.getElementById('framerateDiv').childNodes.forEach(childNode => {
 })
 
 function toggleSlider(ctx) {
+    //console.log('toggleSlider(ctx)');
     switch (ctx.id) {
         case "framerateDiv":
             if (framerateSlider.classList.contains("slider-right")) {
@@ -96,6 +92,7 @@ function toggleSlider(ctx) {
             break;
     }
 }
+
 
 class Modal extends EventTarget {
     #event;
@@ -140,7 +137,7 @@ class Tab {
     }
 }
 
-function escapeRegExp(string, ) {
+function escapeRegExp(string,) {
     return string.replace(/(?<=\${).*(?=})/g, '\\$&'); // $& means the whole matched string
 }
 
@@ -374,10 +371,9 @@ handleConMenuItemClick = async function (id, type) {
             getStream(id)
             break;
         case 'stop_video':
+            stopWatching(id)
             console.log('stop_video = ', id);
-            console.log(await pm.getPeerBySocketID(id));
-            var pe = await pm.getPeerBySocketID(id)
-            pe.remove()
+
             break;
         case 'kick_member':
             console.log('kick_member = ', id);

@@ -11,7 +11,6 @@ fs = require('fs');
 
 const PORT = 80;
 
-var identitys = {};
 var roomChatMsgs = {};
 var rooms = {};
 
@@ -43,7 +42,7 @@ class Room {
 			console.log('Member not in room')
 		}
 	}
-	changeMember(sid, identity) {}
+	changeMember(sid, identity) { }
 	isMember(id) {
 
 		if (this.members.indexOf(id) > -1) {
@@ -62,6 +61,8 @@ class Room {
 		return false
 	}
 	isBlocked(id) {
+		console.log('this.blocked= ', this.blocked);
+		console.log('id= ', id);
 		if (this.blocked.indexOf(id) > -1) {
 			console.log(id, 'isBlocked');
 			return true
@@ -80,7 +81,7 @@ class Room {
 
 const bcrypt = require('bcrypt'); //Importing the NPM bcrypt package.
 const saltRounds = 10; //We are setting salt rounds, higher is safer.
-const myPlaintextPassword = 's0/\/\P4$$w0rD'; //Unprotected password
+
 
 // JOIN Room Codes 
 
@@ -119,6 +120,9 @@ io.on("connection", (socket) => {
 				var userIsMember = room.isMember(identity.id);
 
 				identity.isAdmin = userIsAdmin;
+
+				console.log('User try join room is admin? = ', userIsAdmin, ' // is user blocked? = ', userIsBlocked);
+				console.log('!userIsAdmin && userIsBlocked = ', !userIsAdmin && userIsBlocked);
 
 				if (!userIsAdmin && userIsBlocked) {
 					cb({
@@ -327,7 +331,7 @@ io.on("connection", (socket) => {
 	socket.on("streamThumbnail", (data) => {
 		//console.log("streamThumbnail = ", data);
 		rooms[data.room].identitys[socket.id].thumbnail = data.data
-		//io.sockets.in(data.room).emit("memberStreamingState", socket.id, rooms[data.room].identitys[socket.id]);
+		io.sockets.in(data.room).emit("memberStreamingState", socket.id, rooms[data.room].identitys[socket.id]);
 	});
 	socket.on("load_ids", (roomID, cb) => {
 		console.log("load_ids = ");
@@ -335,47 +339,35 @@ io.on("connection", (socket) => {
 	});
 
 	socket.on("kickMember", (sid, roomID) => {
-		console.log("kickMember = ", sid);
-		//console.log("kickMember = ", io.sockets);
-		//socket.clients[id].connection.end();
-
-		console.log("kickMember = ", rooms[roomID].identitys[sid]);
-		var isA = isAdmin(roomID, rooms[roomID].identitys[socket.id].id)
-		console.log("is admin = ", isA);
+		var room = rooms[roomID]
+		var isA = room.isAdmin(room.identitys[socket.id].id);
+		console.log("kickMember = ", room.identitys[sid]);
 		if (isA) {
 			console.log(io.sockets.sockets.get(sid));
 			io.sockets.sockets.get(sid).leave(roomID)
 			rooms[roomID].members.splice(rooms[roomID].members.indexOf(sid), 1);
 			rooms[roomID].admins.splice(rooms[roomID].admins.indexOf(sid), 1);
-			//room[roomID].blocked.push(sid);
-			//io.sockets.sockets[sid].leave(roomID)
 		}
 	});
 
 	socket.on("banMember", (sid, roomID) => {
-		console.log("banMember = ", sid);
-		//console.log("kickMember = ", io.sockets);
-		//socket.clients[id].connection.end();
-
-		console.log("banMember = ", rooms[roomID].identitys[sid]);
-		var isA = isAdmin(roomID, rooms[roomID].identitys[socket.id].id)
-		console.log("is admin = ", isA);
+		var room = rooms[roomID]
+		var isA = room.isAdmin(room.identitys[socket.id].id);
+		console.log("banMember = ", room.identitys[sid]);
 		if (isA) {
-			console.log(io.sockets.sockets.get(sid));
+			io.to(sid).emit("ban");
 			io.sockets.sockets.get(sid).leave(roomID)
 			rooms[roomID].members.splice(rooms[roomID].members.indexOf(sid), 1);
 			rooms[roomID].admins.splice(rooms[roomID].admins.indexOf(sid), 1);
-			rooms[roomID].blocked.push(sid);
-			//io.sockets.sockets[sid].leave(roomID)
+			rooms[roomID].blocked.push(rooms[roomID].identitys[sid].id);
 		}
 	});
 
 	socket.on("makeAdmin", (sid, roomID) => {
-
-		var isA = isAdmin(roomID, rooms[roomID].identitys[socket.id].id)
+		var room = rooms[roomID]
+		var isA = room.isAdmin(room.identitys[socket.id].id);
 
 		if (isA) {
-
 			rooms[roomID].admins.push(rooms[roomID].identitys[sid].id);
 			rooms[roomID].identitys[sid].isAdmin = true;
 			io.sockets.in(roomID).emit("memberStreamingState", sid, rooms[roomID].identitys[sid]);
@@ -383,11 +375,9 @@ io.on("connection", (socket) => {
 	});
 
 	socket.on("removeAdmin", (sid, roomID) => {
-
-		var isA = isAdmin(roomID, rooms[roomID].identitys[socket.id].id)
-
+		var room = rooms[roomID]
+		var isA = room.isAdmin(room.identitys[socket.id].id);
 		if (isA) {
-
 			rooms[roomID].admins.splice(rooms[roomID].admins.indexOf(rooms[roomID].identitys[sid].id), 1);
 			rooms[roomID].identitys[sid].isAdmin = false;
 			io.sockets.in(roomID).emit("memberStreamingState", sid, rooms[roomID].identitys[sid]);
@@ -409,8 +399,6 @@ io.of("/").adapter.on("join-room", async (room, id) => {
 });
 
 io.of("/").adapter.on("leave-room", async (room, id) => {
-
-	//console.log(`socket ${id} has leaved room ${room}`);
 	if (rooms[room]) {
 		rooms[room].removeMember(id)
 		var sockets = await getSocketsOfRoom(room);
@@ -643,38 +631,6 @@ async function getContentType(url) {
 	})
 }
 
-function isAdmin(roomid, userid) {
-	console.log("isAdmin", roomid, userid);
-	var room = rooms[roomid];
-	if (room) {
-		if (room.admins.indexOf(userid) > -1) {
-			return true;
-		}
-	}
-	return false;
-}
-
-function isMember(roomid, userid) {
-	console.log("isMember", roomid, userid);
-	var room = rooms[roomid];
-	if (room) {
-		if (room.members.indexOf(userid) > -1) {
-			return true;
-		}
-	}
-	return false;
-}
-
-function isBlocked(roomid, userid) {
-	console.log("isBlocked", roomid, userid);
-	var room = rooms[roomid];
-	if (room) {
-		if (room.blocked.indexOf(userid) > -1) {
-			return true;
-		}
-	}
-	return false;
-}
 
 // SCSS Compiler and Reloader 
 var mainCSS = ""

@@ -32,8 +32,16 @@ function initEvents() {
 
 
         videoElement.querySelector('.avatar').src = identity.avatar
-        //videoElement.querySelector('.thumbnail').src = identity.thumbnail;
+        // videoElement.querySelector('.thumbnail').src = identity.thumbnail;
 
+        if (identity.thumbnail != null) {
+            //var videoElement = document.getElementById('videoElement_' + identity.socket);
+            videoElement.querySelector('.thumbnail').src = identity.thumbnail;
+            videoElement.querySelector('.thumbnail').style.display = 'block';
+        } else {
+            //var videoElement = document.getElementById('videoElement_' + identity.socket);
+            videoElement.querySelector('.thumbnail').style.display = 'none';
+        }
 
         if (!isMe(socketid)) {
             videoElement.querySelector('.namePlaceholder').innerText = identity.username;
@@ -45,12 +53,29 @@ function initEvents() {
 
         userElement.getElementsByTagName('img')[0].src = identity.avatar;
 
+        console.log(videoElement.querySelector('video'));
 
-        if (identity.isStreaming && !isMe(socketid)) {
-            userElement.getElementsByClassName('button-watch')[0].style = "display:flex !important";
+        if (isMe(socketid)) {
+            if (identity.isStreaming) {
+                userElement.getElementsByClassName('button-watch')[0].style = "display:flex !important";
+                userElement.getElementsByClassName('button-watch')[0].innerHTML = "Live"
+            } else {
+                userElement.getElementsByClassName('button-watch')[0].style = "display:none !important";
+                videoElement.querySelector('video').srcObject = null
+            }
         } else {
-            userElement.getElementsByClassName('button-watch')[0].style = "display:none !important";
+            if (identity.isStreaming) {
+                userElement.getElementsByClassName('button-watch')[0].style = "display:flex !important";
+                userElement.getElementsByClassName('button-watch')[0].innerHTML = "Watch"
+            } else {
+                userElement.getElementsByClassName('button-watch')[0].style = "display:none !important";
+                videoElement.querySelector('video').srcObject = null
+            }
         }
+
+
+
+
 
         var userMsgs = Array.from(document.getElementsByName('msg_' + identity.id));
         console.log("userMsgs", userMsgs);
@@ -58,7 +83,6 @@ function initEvents() {
         for (var i = 0; i < userMsgs.length; i++) {
 
             userMsgs[i].querySelector('.connected-user').querySelector('.chat-message-username').innerText = identity.username;
-
 
             userMsgs[i].querySelector('.connected-user').querySelector('img').src = identity.avatar
         }

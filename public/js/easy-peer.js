@@ -365,7 +365,7 @@ class Peer extends EventTarget {
             console.log('videoElement_' + this.remotesid)
             console.log(document.getElementById('videoElement_' + this.remotesid))
             console.log(document.getElementById('videoElement_' + this.remotesid).querySelector('video'))
-            document.getElementById('videoElement_' + this.remotesid).querySelector('video').srcObject = null;
+            //document.getElementById('videoElement_' + this.remotesid).querySelector('video').srcObject = null;
         }
 
         this.peer.close()
