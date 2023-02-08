@@ -855,6 +855,12 @@ function handleIncommingChatMSG(data) {
 
 }
 
+function getRoomList() {
+    socket.emit('getRooms', (data) => {
+        console.log(data);
+    });
+}
+
 //returns is new Identity or an existing one
 function initIdentity() {
     return new Promise((resolve, reject) => {

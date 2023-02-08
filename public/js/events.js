@@ -16,7 +16,6 @@ function initEvents() {
         document.getElementById('videoElement_' + socketid).remove();
         document.getElementById('userElement_' + socketid).remove();
         delete videoElemente[socketid];
-
     });
 
     room.addEventListener("memberChanged", function (e) {

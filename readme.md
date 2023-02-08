@@ -1,3 +1,8 @@
+
+
+
+
+
 # Anmerkung für Julius 
 
 Es gibt jetzt 2 Branches main und dev bei branches haben auf dem server einen ordner und werden unabhängig voneinander mit pm2 ausgeführt. 
@@ -18,9 +23,17 @@ pm2 start ecosystem.config.js --only Video-Stream-Server
 pm2 restart ecosystem.config.js --only Video-Stream-Server
 ```
 
+Zeigt alle pm2 Prozesse
+```bash
+pm2 list
 ```
-pm2 restart ecosystem.config.js
+
+Zeigt alle log von pm2 Prozessen live an 
+```bash
+pm2 log
 ```
+
+
 
 
 ## CSS Vars 

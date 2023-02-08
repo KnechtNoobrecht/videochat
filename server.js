@@ -9,9 +9,10 @@ const {
 var sass = require('node-sass');
 fs = require('fs');
 
-const PORT = process.env.PORT || 6001;
+const bcrypt = require('bcrypt'); //Importing the NPM bcrypt package.
+const saltRounds = 10; //We are setting salt rounds, higher is safer.
 
-console.log(process.env.NODE_ENV);
+const PORT = process.env.PORT || 6001;
 
 var roomChatMsgs = {};
 var rooms = {};
@@ -80,9 +81,6 @@ class Room {
 		socket.emit('chatMSG', data);
 	}
 }
-
-const bcrypt = require('bcrypt'); //Importing the NPM bcrypt package.
-const saltRounds = 10; //We are setting salt rounds, higher is safer.
 
 
 // JOIN Room Codes 
@@ -220,9 +218,32 @@ io.on("connection", (socket) => {
 
 	});
 
+	socket.on("getRooms", (cb) => {
+		var temp_rooms = [];
+		for (const key in rooms) {
+			if (Object.hasOwnProperty.call(rooms, key)) {
+				const element = rooms[key];
+				var temp_element = {
+					id: element.id,
+					name: element.name,
+					admins: element.admins,
+					members: element.members,
+					blocked: element.blocked,
+					identitys: element.identitys
+				}
+				temp_rooms.push(temp_element);
+			}
+		}
+		console.log(temp_rooms);
+		cb(temp_rooms)
+	});
+
+
+
 	socket.on("getRoomMember", async (roomID, cb) => {
 		cb(await getSocketsOfRoom(roomID));
 	});
+
 	socket.on("getRoomMemberThumbnails", async (roomID, cb) => {
 		cb(await getSocketsThumbnailsOfRoom(roomID));
 	});
@@ -335,6 +356,7 @@ io.on("connection", (socket) => {
 		rooms[data.room].identitys[socket.id].thumbnail = data.data
 		io.sockets.in(data.room).emit("memberStreamingState", socket.id, rooms[data.room].identitys[socket.id]);
 	});
+
 	socket.on("load_ids", (roomID, cb) => {
 		console.log("load_ids = ");
 		cb(getSocketsOfRoom(roomID));
@@ -450,9 +472,58 @@ app.get("/reference", function (req, res) {
 	res.redirect("/rooms/reference/" + uuidv4());
 });
 
-server.listen(PORT, () => {
-	console.log("Server started on port " + PORT);
+app.post('/upload', (req, res) => {
+	console.log('/upload');
+	console.log(req.params);
+	console.log(req.query);
+	res.end();
+	//const filePath = path.join(__dirname, `/image.jpg`);
+	//uploadFile(req, filePath).then(path => res.send({ status: 'success', path })).catch(err => res.send({ status: 'error', err }));
 });
+
+
+server.listen(PORT, () => {
+	if (process.env.NODE_ENV) {
+		console.log('https://vs-dev.h2899502.stratoserver.net/');
+	} else {
+		console.log('https://vs.h2899502.stratoserver.net/');
+	}
+});
+
+// Take in the request & filepath, stream the file to the filePath
+function uploadFile(req, filePath) {
+	return new Promise((resolve, reject) => {
+		const stream = fs.createWriteStream(filePath);
+		// With the open - event, data will start being written
+		// from the request to the stream's destination path
+		stream.on('open', () => {
+			console.log('Stream open ...  0.00%');
+			req.pipe(stream);
+		});
+
+		// Drain is fired whenever a data chunk is written.
+		// When that happens, print how much data has been written yet.
+		stream.on('drain', () => {
+			const written = parseInt(stream.bytesWritten);
+			const total = parseInt(req.headers['content-length']);
+			const pWritten = ((written / total) * 100).toFixed(2);
+			console.log(`Processing  ...  ${pWritten}% done`);
+		});
+
+		// When the stream is finished, print a final message
+		// Also, resolve the location of the file to calling function
+		stream.on('close', () => {
+			console.log('Processing  ...  100%');
+			resolve(filePath);
+		});
+		// If something goes wrong, reject the primise
+		stream.on('error', err => {
+			console.error(err);
+			reject(err);
+		});
+	});
+};
+
 
 function getSocketsOfRoom(roomID) {
 	return new Promise(async (resolve, reject) => {
@@ -633,7 +704,6 @@ async function getContentType(url) {
 	})
 }
 
-
 // SCSS Compiler and Reloader 
 var mainCSS = ""
 var sassFiles = ['main'];
@@ -650,8 +720,7 @@ async function renderSCSS(reloadClients) {
 						//reject(err);
 					} else {
 
-
-						console.log('SCSS compiled!');
+						//console.log('SCSS compiled!');
 						fs.writeFile(path.join(__dirname, 'public', 'css', 'dist', sassFiles[key] + '.css'), result.css, function (err) {
 							//
 
@@ -684,7 +753,7 @@ var sassWatcherFiles = ['vars', 'main', 'mediaqueries'];
 function watchSCSS() {
 	for (const key in sassWatcherFiles) {
 		const element = path.join(__dirname, 'public', 'css', sassWatcherFiles[key] + '.scss');
-		console.log("watchSCSS", element);
+		//console.log("watchSCSS", element);
 
 		fs.watchFile(element, function (curr, prev) {
 			renderBegin = new Date();

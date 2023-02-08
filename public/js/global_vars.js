@@ -178,7 +178,7 @@ var peerServerOptions = {
 
 var streamThumbnail = null;
 var streamThumbnailTimer = null;
-var reloadTime = 5000;
+var reloadTime = 20000;
 
 var meString = 'Ich';
 
