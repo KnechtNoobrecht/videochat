@@ -298,12 +298,19 @@ function rightClick(e) {
     else {
         var id
         var path = e.composedPath ? e.composedPath() : e.path;
-        for (let index = 0; index < path; index++) {
+
+        console.log(path);
+
+        for (let index = 0; index < path.length; index++) {
             const element = path[index];
+
+            console.log(element);
+
             if (element.tagName == 'HTML') {
                 break;
             }
             if (element.classList.contains('videoElement')) {
+                console.log('videoElement');
                 id = element.id.substring(element.id.indexOf('_') + 1);
                 break
             }
@@ -313,7 +320,10 @@ function rightClick(e) {
             }
         }
 
+        console.log(id);
+
         if (id) {
+
             e.preventDefault();
             var menu = document.getElementById("contextMenu")
             var elementWrapper = document.querySelector('ul');
