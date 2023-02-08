@@ -9,7 +9,9 @@ const {
 var sass = require('node-sass');
 fs = require('fs');
 
-const PORT = 80;
+const PORT = 6001;
+
+console.log(process.env.NODE_ENV);
 
 var roomChatMsgs = {};
 var rooms = {};

@@ -1,3 +1,35 @@
+## Server Starten 
+
+
+Start Restart in Development 
+```bash
+pm2 start ecosystem.config.js --env development
+pm2 restart ecosystem.config.js --env development
+```
+
+Start Restart in Production 
+```bash
+pm2 start ecosystem.config.js --env production
+pm2 restart ecosystem.config.js --env production
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## CSS Vars 
 
 Primäre Hintergrund Farbe 

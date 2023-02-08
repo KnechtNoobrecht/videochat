@@ -1,8 +1,15 @@
 module.exports = {
   apps: [{
-    name: "NodeJS Peer Signal Server",
+    name: "Video-Stream-Server-DEV",
     script: "./server.js",
-    watch: true,
-    ignore_watch: ['node_modules']
+    watch: false,
+    env_development: {
+      "NODE_ENV": "development",
+      "PORT": 6001
+    },
+    env_production: {
+      "NODE_ENV": "production",
+      "PORT": 6565
+    }
   }]
 }

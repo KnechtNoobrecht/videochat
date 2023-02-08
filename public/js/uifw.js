@@ -297,8 +297,9 @@ function rightClick(e) {
         hideMenu();
     else {
         var id
-        for (let index = 0; index < e.path.length; index++) {
-            const element = e.path[index];
+        var path = e.composedPath ? e.composedPath() : e.path;
+        for (let index = 0; index < path; index++) {
+            const element = path[index];
             if (element.tagName == 'HTML') {
                 break;
             }
