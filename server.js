@@ -12,7 +12,6 @@ fs = require('fs');
 const PORT = process.env.PORT || 6001;
 
 console.log(process.env.NODE_ENV);
-console.log(process.env.NODE_ENV);
 
 var roomChatMsgs = {};
 var rooms = {};
