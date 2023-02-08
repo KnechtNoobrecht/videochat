@@ -6,7 +6,7 @@ module.exports = {
     // Delay between restart
     watch_delay: 1000,
     ignore_watch: ["node_modules", "public"],
-    env_development: {
+    env: {
       "NODE_ENV": "development",
       "PORT": 6001
     }
