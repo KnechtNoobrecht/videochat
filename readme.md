@@ -3,15 +3,18 @@
 
 Start Restart in Development 
 ```bash
-pm2 start ecosystem.config.js --env development
-pm2 restart ecosystem.config.js --env development
+pm2 start ecosystem.config.js --only Video-Stream-Server-DEV
+pm2 restart ecosystem.config.js --only Video-Stream-Server-DEV
 ```
 
 Start Restart in Production 
 ```bash
-pm2 start ecosystem.config.js --env production
-pm2 restart ecosystem.config.js --env production
+pm2 start ecosystem.config.js --only Video-Stream-Server
+pm2 restart ecosystem.config.js --only Video-Stream-Server
 ```
+
+pm2 restart ecosystem.config.js 
+
 
 
 
