@@ -472,13 +472,32 @@ app.get("/reference", function (req, res) {
 	res.redirect("/rooms/reference/" + uuidv4());
 });
 
+
+
+app.get("/rooms/:roomid/:file", function (req, res) {
+	const filePath = path.join(__dirname, 'public', 'uploads', req.params.roomid, req.params.file);
+
+	if (!fs.existsSync(filePath)) {
+		res.sendStatus(204)
+		return;
+	}
+
+	reader = fs.createReadStream(filePath);
+	reader.on('data', (chunk) => { res.write(chunk) });
+	reader.on('close', () => { res.end() });
+	reader.on('error', err => { res.sendStatus(500) });
+});
+
+
 app.post('/upload', (req, res) => {
 	console.log('/upload');
-	console.log(req.params);
+	//console.log(req.params);
 	console.log(req.query);
-	res.end();
-	//const filePath = path.join(__dirname, `/image.jpg`);
-	//uploadFile(req, filePath).then(path => res.send({ status: 'success', path })).catch(err => res.send({ status: 'error', err }));
+
+	const filePath = path.join(__dirname, 'public', 'uploads', req.query.roomid, req.query.file);
+	console.log(filePath);
+	uploadFile(req, filePath).then(path => res.sendStatus(201)).catch(err => res.sendStatus(500));
+	//res.end();
 });
 
 
@@ -490,19 +509,21 @@ server.listen(PORT, () => {
 	}
 });
 
-// Take in the request & filepath, stream the file to the filePath
 function uploadFile(req, filePath) {
 	return new Promise((resolve, reject) => {
+		var parsedPath = path.parse(filePath);
+
+		if (!fs.existsSync(parsedPath.dir)) {
+			fs.mkdirSync(parsedPath.dir);
+		}
+
 		const stream = fs.createWriteStream(filePath);
-		// With the open - event, data will start being written
-		// from the request to the stream's destination path
+
 		stream.on('open', () => {
 			console.log('Stream open ...  0.00%');
 			req.pipe(stream);
 		});
 
-		// Drain is fired whenever a data chunk is written.
-		// When that happens, print how much data has been written yet.
 		stream.on('drain', () => {
 			const written = parseInt(stream.bytesWritten);
 			const total = parseInt(req.headers['content-length']);
@@ -510,13 +531,11 @@ function uploadFile(req, filePath) {
 			console.log(`Processing  ...  ${pWritten}% done`);
 		});
 
-		// When the stream is finished, print a final message
-		// Also, resolve the location of the file to calling function
 		stream.on('close', () => {
 			console.log('Processing  ...  100%');
 			resolve(filePath);
 		});
-		// If something goes wrong, reject the primise
+
 		stream.on('error', err => {
 			console.error(err);
 			reject(err);

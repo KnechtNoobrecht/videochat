@@ -1,10 +1,12 @@
 ## 🚩 PRIO:
+### ⚒️ stream-starten-menü fertigstellen
 ### ⚒️ (WIP) Dateien verschicken 
 ### ⚒️ von grid in stage-mode wechseln (ein stream groß, andere klein/ausgeblendet)
 ### ⚒️ Voice Chat
-
+### ⚒️ Login System (mit Discord/Google/Apple)
 
 ## UI:
+### ⚒️ generelles UI-"re"work
 ### ⚒️ Für chat emojis picker 
 ### ⚒️ Sammlung aus Farben, aus denen Usern eine zufällige zugewiesen wird und/oder irgendwie aus Profilbild passende Farbe ziehen (random für user ohne PB, letzteres für user mit PB)
 
@@ -51,3 +53,5 @@
 https://stackoverflow.com/questions/57653899/how-to-increase-the-bitrate-of-webrtc
 
 https://github.com/bbc/videocontext
+
+https://developer.chrome.com/articles/fetch-streaming-requests/

@@ -1065,3 +1065,53 @@ function handleJoinRoomCB(params) {
             break;
     }
 }
+
+async function uploadFile() {
+
+    const { readable, writable } = new TransformStream();
+
+
+    console.log(filePicker.value);
+    console.log(filePicker.files);
+    let fileReader = new FileReader(); // not a arguments
+    console.log(filePicker.files[0].stream());
+
+
+
+    const stream = new ReadableStream({
+        async start(controller) {
+
+            fileReader.onloadstart = function (params) {
+                console.log('onloadstart', params);
+            }
+
+            fileReader.onprogress = function (params) {
+                console.log('onprogress', params);
+                controller.enqueue(fileReader.result);
+            }
+
+            fileReader.onended = function (params) {
+                console.log('onended', params);
+                controller.close();
+            }
+
+            fileReader.readAsArrayBuffer(filePicker.files[0])
+            //controller.close();
+
+        },
+    })
+
+  
+    
+        //filePicker.files[0].stream().pipeThrough(new CompressionStream('gzip')).pipeTo(writable);
+       // filePicker.files[0].stream().pipeTo(writable);
+    
+        const response = await fetch("/upload?roomid=wte&userid=userlol&file=test.mp4", {
+            method: "POST",
+            body: stream,
+            duplex: 'half'
+        })
+    
+        console.log(response); 
+
+}
