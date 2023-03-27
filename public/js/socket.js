@@ -122,6 +122,7 @@ socket.on('ban', async () => {
 
 socket.on('reloadCSS', async () => {
     if (reloadCSS) {
+        console.log('Reload Css');
         rcss()
     }
 })

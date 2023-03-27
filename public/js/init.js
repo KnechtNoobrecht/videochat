@@ -8,6 +8,7 @@ window.onload = async function () {
     var isNewID = await initIdentity();
     console.log("Identity initalisiert");
     initModals();
+
     console.log("Modals initalisiert");
     initTabs()
     console.log("Tabs initalisiert");
@@ -34,9 +35,9 @@ window.onload = async function () {
     }
 
     //reloadInterval()
-    console.log("Reload Interval initalisiert");
+    //console.log("Reload Interval initalisiert");
 
-    new Toast({
+/*     new Toast({
         content: 'Only Content'
     })
     new Toast({
@@ -53,5 +54,5 @@ window.onload = async function () {
     new Toast({
         ms: 0,
         header: 'muss geschlossen werden'
-    })
+    }) */
 }

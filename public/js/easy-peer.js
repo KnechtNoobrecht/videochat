@@ -493,12 +493,14 @@ class Identity {
     constructor({
         id: id,
         username: username,
-        avatar: avatar
+        avatar: avatar,
+        color: color
     }) {
         //console.log('Identity Created', id, username, avatar);
         this.id = id || uuid()
         this.username = username || 'Anonymous'
         this.avatar = avatar || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
+        this.color = this.generateUserColor()
         addIdentityToObjects(this)
     }
 
@@ -513,16 +515,19 @@ class Identity {
         this.id = data.id || this.id
         this.username = data.username || this.username
         this.avatar = data.avatar || this.avatar
+        this.color = data.color || this.color
         addCookieObjectElement({
             id: this.id,
             username: this.username,
-            avatar: this.avatar
+            avatar: this.avatar,
+            color: this.color
         })
 
         return {
             id: this.id,
             username: this.username,
-            avatar: this.avatar
+            avatar: this.avatar,
+            color: this.color
         }
     }
 
@@ -535,7 +540,8 @@ class Identity {
         return {
             id: this.id,
             username: this.username,
-            avatar: this.avatar
+            avatar: this.avatar,
+            color: this.color
         }
     }
 
@@ -560,7 +566,8 @@ class Identity {
         return {
             id: this.id,
             username: this.username,
-            avatar: this.avatar
+            avatar: this.avatar,
+            color: this.color
         }
     }
     /**
@@ -571,6 +578,11 @@ class Identity {
     checkIdentity() {
         let coockies = getCookieObject('ep_Identitys')
         if (coockies.length > 0) { }
+    }
+
+    generateUserColor() {
+        // colors is a global var
+        return colors[Math.floor(Math.random() * colors.length)]
     }
 }
 
@@ -628,14 +640,157 @@ class Room extends EventTarget {
         }
         console.log('Member changed');
     }
-    sendMsg(msg) {
+    sendMsg(msg, attachments) {
         var data = {
             room: this.id,
-            msg: msg
+            msg: msg,
+            attachments: attachments
         }
         socket.emit('chatMSG', data);
     }
+    isIIDInRoom(id) {
+        var res = false;
+        for (const sid in this.members) {
+            if (Object.hasOwnProperty.call(this.members, sid)) {
+                const member = this.members[sid];
+                if (member.identity.id == id) {
+                    res = true;
+                }
+            }
+        }
+        return res
+    }
+    getUserByIID(id) {
+        var res = null;
+        for (const sid in this.members) {
+            if (Object.hasOwnProperty.call(this.members, sid)) {
+                const member = this.members[sid];
+                if (member.identity.id == id) {
+                    res = member;
+                }
+            }
+        }
+        return res
+    }
 }
+
+
+class HttpReq extends EventTarget {
+    #event;
+    constructor() {
+        super();
+        this.xhr = new XMLHttpRequest()
+    }
+    request(path, identity) {
+        xhr.open('post', '/upload', true)
+        this.#event = new CustomEvent("memberAdded", {
+            detail: {
+                sid: sid,
+                identity: identity
+            }
+        });
+        this.dispatchEvent(this.#event);
+
+    }
+
+}
+
+
+
+
+
+function XHRupload(files) {
+
+    var file = document.getElementById('file').files[0]
+
+
+    var formData = new FormData()
+
+    formData.append('file', file)
+    formData.append('enctype', 'multipart/form-data')
+
+    var xhr = new XMLHttpRequest()
+    xhr.open('post', '/upload', true)
+
+    ProgressDInterval = setInterval(() => {
+        ProgressD.innerHTML = ProgressDValue
+    }, 1000)
+
+    xhr.upload.onprogress = function (e) {
+        if (e.lengthComputable) {
+            // calc progress per second, then update lastprogressval
+            loadSpeed = (e.loaded - lastProgressVal) / (Date.now() - lastTimestamp)
+            lastProgressVal = e.loaded
+            lastTimestamp = Date.now()
+            //console.log(processLoadingSpeed(loadSpeed))
+            ArrowUp.classList.add('uploadAnimation')
+            var percentage = (e.loaded / e.total) * 100
+            percentage = Math.round(percentage)
+            //console.log(percentage)
+            ProgressForeground.style.width = percentage + '%'
+            timeRemaining = Math.round((e.total - e.loaded) / loadSpeed / 1000)
+            //console.log(loadSpeed)
+            if (loadSpeed > 1) {
+                ProgressD.style.visibility = "visible"
+                if (timeRemaining > 3600) {
+                    Math.round(timeRemaining / 3600) != 1 ? ProgressDValue = `${processLoadingSpeed(loadSpeed)} - ${Math.round(timeRemaining / 3600)} Stunden verbleibend` : ProgressDValue = `${processLoadingSpeed(loadSpeed)} - ${Math.round(timeRemaining / 3600)} Stunde verbleibend`
+                } else if (timeRemaining > 60) {
+                    Math.round(timeRemaining / 60) != 1 ? ProgressDValue = `${processLoadingSpeed(loadSpeed)} - ${Math.round(timeRemaining / 60)} Minuten verbleibend` : ProgressDValue = `${processLoadingSpeed(loadSpeed)} - ${Math.round(timeRemaining / 60)} Minute verbleibend`
+                } else {
+                    timeRemaining != 1 ? ProgressDValue = `${processLoadingSpeed(loadSpeed)} - ${timeRemaining} Sekunden verbleibend` : ProgressDValue = `${processLoadingSpeed(loadSpeed)} - ${timeRemaining} Sekunde verbleibend`
+                }
+            }
+        }
+    }
+
+    xhr.onerror = function (e) {
+        ProgressBackground.style.background = "#F92C47"
+        ProgressForeground.style.background = "#F92C47"
+        ProgressD.style.visibility = "visible"
+        clearInterval(ProgressDInterval)
+        ProgressD.innerHTML = "Ein Fehler ist aufgetreten"
+        setTimeout(() => {
+            resetUI()
+        }, 5000)
+    }
+
+    xhr.onload = function () {
+        console.log(this.status)
+        if (this.status == 500) {
+            ProgressBackground.style.background = "#F92C47"
+            ProgressForeground.style.background = "#F92C47"
+            ProgressD.style.visibility = "visible"
+            clearInterval(ProgressDInterval)
+            ProgressD.innerHTML = "Ein Fehler ist aufgetreten"
+            setTimeout(() => {
+                resetUI()
+            }, 5000)
+        } else if (this.statusText == 'OK') {
+            clearInterval(ProgressDInterval)
+            ProgressD.innerHTML = "Upload abgeschlossen"
+            var lastProgressVal = 0
+            var lastTimestamp = 0
+            ArrowUp.classList.remove('uploadAnimation')
+            setTimeout(() => {
+                ProgressWrapper.style.opacity = "1"
+                ProgressWrapper.classList.remove('fadeInProgress')
+                ProgressWrapper.classList.add('fadeOutProgress')
+            }, 2000)
+            setTimeout(() => {
+                Button.innerHTML = "weitere Datei hochladen"
+                Button.classList.add('fadeInButton')
+            }, 6000)
+            setTimeout(() => {
+                Button.style.opacity = "1"
+                Button.style.visibility = "visible"
+                Button.classList.remove('fadeInButton')
+            }, 7000)
+        }
+    }
+
+    xhr.send(formData)
+}
+
 
 class SoundsPlayer {
     constructor(options) {

@@ -1,4 +1,46 @@
+## 🚩 PRIO:
+### ⚒️ fixen: stage mode funktioniert nicht, nachdem aus dem stage mode heraus angefangen wurde einem stream zuzuschauen
+### ⚒️ avatar upload toasts (file too large,etc.)
+### ⚒️ create room modal rework + create/join room rework
+### ⚒️ stream-starten-menü fertigstellen (start stream knopf zu starten umwandeln, wenn )
+### ⚒️ (WIP) Dateien verschicken 
+
+## UI:
+### ⚒️ generelles UI-"re"work
+### ⚒️ emojis picker für chat 
+### ⚒️ Attachments Picker Style (Leiste über Text Input mit icons für file picker und emote picker über der liste oder woander die derzeit ausgewählten files anzeigen)
+### ⚒️ Chat vergößern (Modal?) 
+### ⚒️ Attachments große Modal anzeige (dc like)
+
+
+## Funktionen:
+### ⚒️ Voice Chat
+### ⚒️ Login System (mit Discord/Google/Apple)
+### ⚒️ settings
+### ⚒️ Auf Chat msg reagieren und antworten können. kleine vorbereitung getroffen. jede Msg hat jetzt eine id sobalt sie beim server angekommen ist und verteilt wird 
+### ⚒️ upload progress
+### ⚒️ Hotkeys
+### ⚒️ Animationen
+### ⚒️ Senden Button für Chat für Mobile
+### ⚒️ Bot Bar verbessern 
+### ⚒️ Attachments mehr Formate unterstützen derzeit nur png jpg webp mp4
+### ⚒️ Video beim Streamen deaktivieren oder thumbnail ausblenden (von einem selbst)
+### ⚒️ Discord Status interaktion mit link zum raum in dem man ist 
+
+
+## Fehler:
+### ⚒️ komplett broken auf safari browsern
+### ⚒️ Wenn der Initiator vom anderen Client keine SocketIO ID hat kommt es zu extrem hohen CPU-Lasten
+
+
 ## Fertig
+### ✔️ ein background image nutzen und src entweder farbe oder preview image, damit background color nicht an dem preview img vorbeischeint
+### ✔️ videoelement background leer wenn stream aufhört fixen (soll wieder farbig sein)
+### ✔️ bot_bar_hover entfernen
+### ✔️ Chat Text Input Fixen es bleibt beim abschicken eine zeile bestehen
+### ✔️ Sammlung aus Farben, aus denen Usern eine zufällige zugewiesen wird und/oder irgendwie aus Profilbild passende Farbe ziehen (random für user ohne PB, letzteres für user mit PB)
+### ✔️ Bilder uploaden in Chat (Bilder im Chat verschicken)
+### ✔️ neue farbe bei seitenreload
 ### ✔️ grundfuntionalität Chat
 ### ✔️ bitrate erhöhen Am client sdp settings anschauen
 ### ✔️ Stream zwischen Fenstern wechseln können 
@@ -6,42 +48,18 @@
 ### ✔️ localstream bei start mute
 ### ✔️ liste von leuten in räumen
 ### ✔️ streams zuschauen
-
-
-## 🚩 PRIO:
-### ✔️ stream starten button (mit auflösung und framerate) => Modal mit Animationen
-### ✔️ stream muten/fullscreen -> controls
-### ✔️ Chat UI verbessern
-
-## UI:
-### ✔️ Oberfläche für verschiedene Größen anpassen bzw. verbessern
-### ⚒️ von grid in stage-mode wechseln (ein stream groß, andere klein/ausgeblendet)
-### ⚒️ Für chat emojis picker 
-### ✔️ Rechtsklick auf User soll eigenes Context menu anzeigen mit verschiedenen funktionen
-### ⚒️ Sammlung aus Farben, aus denen Usern eine zufällige zugewiesen wird und/oder irgendwie aus Profilbild passende Farbe ziehen (random für user ohne PB, letzteres für user mit PB)
-### ✔️ Kleine Infomodals für Fehlermeldungen (z.B. wenn User getDisplaMedia blockiert)
-
-## Funktionen:
 ### ✔️ identität erstellen wenn keine vorhanden ist (meistens beim ersten mal laden)
 ### ✔️ startseite: raum erstellen oder raum joinen
 ### ✔️ zugriffsbeschränkugen für räume
-### ⚒️ Chat Text Input Fixen es bleibt beim abschicken eine zeile bestehen
-### ⚒️ Dateien verschicken 
-### ⚒️ Auf Chat msg reagieren und antworten können.
 ### ✔️ Wechsel zwischen Kamera und Stream
-### ⚒️ Voice Chat
-### ⚒️ Hotkeys
-### ⚒️ Animationen
 ### ✔️ Verschwommenes Vorschaubild machen und in Raum senden, wenn Stream gestartet wird
 ### ✔️ Touch Gesten
-### ⚒️ Bilder uploaden in Chat (Bilder im Chat verschicken)
-### ⚒️ Senden Button für Chat für Mobile
-### ⚒️ Bot Bar verbessern 
-### ⚒️ 
-
-
-## Fehler:
-### ⚒️ Wenn der Initiator vom anderen Client keine SocketIO ID hat kommt es zu extrem hohen CPU-Lasten
+### ✔️ Kleine Infomodals für Fehlermeldungen (z.B. wenn User getDisplaMedia blockiert)
+### ✔️ Rechtsklick auf User soll eigenes Context menu anzeigen mit verschiedenen funktionen
+### ✔️ Oberfläche für verschiedene Größen anpassen bzw. verbessern
+### ✔️ stream starten button (mit auflösung und framerate) => Modal mit Animationen
+### ✔️ stream muten/fullscreen -> controls
+### ✔️ Chat UI verbessern
 
 
 # Links 
@@ -49,3 +67,5 @@
 https://stackoverflow.com/questions/57653899/how-to-increase-the-bitrate-of-webrtc
 
 https://github.com/bbc/videocontext
+
+https://developer.chrome.com/articles/fetch-streaming-requests/

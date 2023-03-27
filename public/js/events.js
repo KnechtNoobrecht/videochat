@@ -16,7 +16,6 @@ function initEvents() {
         document.getElementById('videoElement_' + socketid).remove();
         document.getElementById('userElement_' + socketid).remove();
         delete videoElemente[socketid];
-
     });
 
     room.addEventListener("memberChanged", function (e) {
@@ -34,14 +33,11 @@ function initEvents() {
         videoElement.querySelector('.avatar').src = identity.avatar
         // videoElement.querySelector('.thumbnail').src = identity.thumbnail;
 
-        if (identity.thumbnail != null) {
-            //var videoElement = document.getElementById('videoElement_' + identity.socket);
-            videoElement.querySelector('.thumbnail').src = identity.thumbnail;
-            videoElement.querySelector('.thumbnail').style.display = 'block';
-        } else {
-            //var videoElement = document.getElementById('videoElement_' + identity.socket);
-            videoElement.querySelector('.thumbnail').style.display = 'none';
-        }
+        if (identity.thumbnail == "data:," || identity.thumbnail == null){
+            videoElement.style.backgroundImage = `linear-gradient(180deg,${identity.color},${getDarkerAndMoreSaturatedColor(identity.color)})`;
+        } else if (identity.thumbnail != null) {
+            videoElement.style.backgroundImage = `url(${identity.thumbnail})`;
+        } 
 
         if (!isMe(socketid)) {
             videoElement.querySelector('.namePlaceholder').innerText = identity.username;
@@ -51,9 +47,21 @@ function initEvents() {
             isAdmin = e.detail.identity.isAdmin;
         }
 
-        userElement.getElementsByTagName('img')[0].src = identity.avatar;
+        userElement.querySelector(".myavatar").src = identity.avatar + '?r=' + Math.floor(Math.random() * 999999999);
+        videoElement.querySelector(".myavatar").src = identity.avatar + '?r=' + Math.floor(Math.random() * 999999999);
 
-        console.log(videoElement.querySelector('video'));
+
+        /*         userElement.querySelectorAll(".myavatar").forEach(element => {
+                    element.src = "/uploads/avatars/"+identitys[0].id+".png"
+                });        
+        
+                videoElement.querySelectorAll(".myavatar").forEach(element => {
+                    element.src = "/uploads/avatars/"+identitys[0].id+".png"
+                });
+         */
+
+
+        //console.log(videoElement.querySelector('video'));
 
         if (isMe(socketid)) {
             if (identity.isStreaming) {
@@ -73,24 +81,17 @@ function initEvents() {
             }
         }
 
-
-
-
-
         var userMsgs = Array.from(document.getElementsByName('msg_' + identity.id));
-        console.log("userMsgs", userMsgs);
 
         for (var i = 0; i < userMsgs.length; i++) {
-
-            userMsgs[i].querySelector('.connected-user').querySelector('.chat-message-username').innerText = identity.username;
-
-            userMsgs[i].querySelector('.connected-user').querySelector('img').src = identity.avatar
+            userMsgs[i].querySelector('.chat-message-username').innerText = identity.username;
+            userMsgs[i].querySelector('img').src = identity.avatar
         }
 
     });
 
 
-    document.getElementById('inputMsg').addEventListener('keyup', function (e) {
+    document.getElementById('inputMsg').addEventListener('keyup', async function (e) {
         //console.log("keydown", e);
         console.log(e.srcElement.value.match(/\n\r?/g));
 
@@ -105,13 +106,35 @@ function initEvents() {
 
         if (e.keyCode == 13 && !e.shiftKey) {
             //sendMessage();
+            var res
+            var attachments = [];
+
+
+
+            for (const key in fileHandle) {
+                if (Object.hasOwnProperty.call(fileHandle, key)) {
+                    const element = fileHandle[key];
+                    console.log('fileHandle elemnt: ',element);
+                    res = await uploadFile(element)
+                    
+                    attachments.push({ url: res.url, fileExt: res.fileExt })
+                }
+            }
+     
             var msg = e.srcElement.value
-            if (msg.trim() != "") {
+           
+
+            if (msg.trim() != '' || res.code == 'SUCCESS') {
                 e.preventDefault();
                 msg = msg.trimStart().trim()
                 msg = msg.replace(/\n\r?/g, ' <br />')
 
-                room.sendMsg(msg);
+                console.log(res);
+                //{code: 'SUCCESS', url: 'uploads/files/d4b16f89-917d-f6c7-4a45-da1f82d6c0b3/bg4.png'}
+
+                //msg +=  uploads/files/d4b16f89-917d-f6c7-4a45-da1f82d6c0b3/bg4.png
+
+                room.sendMsg(msg, attachments);
             }
             document.getElementById('chatInput').reset();
             e.srcElement.rows = 1
@@ -193,10 +216,6 @@ function initEvents() {
         //   setCssVar('primary_bg', '#234421')
     }
 
-    document.querySelector('.bot_bar').addEventListener('touchstart', function (e) {
-        //e.preventDefault()
-        // e.stopPropagation();
-    })
 
 
     var width_size_before = 0;

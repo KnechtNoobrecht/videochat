@@ -91,7 +91,7 @@ var localStreamOptions = {
         hint: 'detail'
     },
     mediaRecorderOptions: {
-        mimeType: 'video/webm;codecs=opus,vp8',
+        mimeType: 'video/webm;codecs="vp9,opus"', //av01.0.12M.08
         videoMaximizeFrameRate: true,
         videoBitsPerSecond: 5000000,
         audioBitsPerSecond: 128000
@@ -178,13 +178,27 @@ var peerServerOptions = {
 
 var streamThumbnail = null;
 var streamThumbnailTimer = null;
-var reloadTime = 5000;
+var streamPreviewImageReloadTime = 60000;
 
 var meString = 'Ich';
 
 var isAdmin = false;
 
 var shareType = "none"
+
+var colors = [
+    "#690375",
+    "#1984FE",
+    "#53B581",
+    "#FAA81A",
+    "#055864",
+    "#7B1FA2",
+    "#006064",
+    "#505F4E", //alpine green
+    "#690da7"  //deep purple
+]
+
+let fileHandle = {};
 
 /* var peerServerOptions = {
     iceServers: [{

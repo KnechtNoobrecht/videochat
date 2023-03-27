@@ -28,6 +28,10 @@
                 <div id="stage" class="stage"></div>
                 <div id="botStage" class="botStage"></div>
             </div>
+            <div id="startStreamBTN" class="bot_bar_item">
+                <img src="/svg/desktop.svg" />
+                <span>Start Stream</span>
+            </div>
             <!-- <span onclick="pm.changeStream()" class="startStream">Start Stream</span> -->
         </div>
 
@@ -49,7 +53,19 @@
                 </div>
 
                 <div class="chat-input">
+
+                    <div id="chatAttachments"></div>
+
+                    <div class="chatInputExtras">
+                        <!-- <input type="file" id="filePicker" name="filename"> -->
+                        <!-- <button onclick="uploadFile()">Upload</button> -->
+                    </div>
+                
+
+
+
                     <form id="chatInput">
+                        <button type="button" class="btn-addFile" onclick="openFiles()"><img src="/svg/plus-circle.svg" alt="Add File"></button>
                         <textarea type="text" id="inputMsg" autocomplete="off" placeholder="Nachricht" rows="1"></textarea>
                     </form>
                     <!-- <button onclick="sendMessage()" class="chat-send-button">
@@ -60,69 +76,52 @@
         </div>
     </div>
 
-    <div class="startStreamStepsWrapper" id="startStreamModal">
-        
-        <div class="startStreamStepOne" id="startStreamStepOne">
-            <div class="shareScreenWrapper" id="startScreenShare">
-                <img src="/svg/desktop.svg" alt="">
-                <p>Bildschirm teilen</p>
-            </div>
-            <div class="shareCameraWrapper" id="startCameraShare">
-                <img src="/svg/camera.svg" alt="">
-                <p>Kamera teilen</p>
-            </div>
-        </div>
-        
-        <div class="startStreamStepTwo" id="startStreamStepTwo">
-            <div class="button-back">
-                <img src="/svg/arrow-left.svg" alt="Back" id="startStreamGoBack">
-            </div>
-            <div class="startStreamResolutionWrapper">
-                <span>Auflösung</span>
-                <div name="resolution" id="resolutionSelector">
-                    <div data-value="1080">1080p</div>
-                    <div style="display: none;" data-value="720">720p</div>
-                    <div style="display: none;" data-value="1440">1440p</div>
-                    <div style="display: none;" data-value="2160">2160p</div>
-                </div>
-            </div>
-            <div class="startStreamFramerateWrapper">
-                <span>Bildrate</span>
-                <div class="fr-rs-wrapper" id="framerateDiv">
-                    <div class="slider-framerate" id="slider-fr" style="left: 51.5938px;"></div>
-                    <span data-value="15">15</span>
-                    <span data-value="30">30</span>
-                    <span data-value="60">60</span>
-                </div>
-            </div>
-            <div class="button-startStreaming" onclick="chooseStream()">
-                Start
-            </div>
-        </div>
-    </div>
+    <div class="startStreamBackground" id="startStreamBG">
+        <div class="startStreamStepsWrapper fadeInBottom" id="startStreamModal">
 
-    <div class="bot_bar_hover">
-        <div class="bot_bar">
-            <!--
-            <div id="stopStreamBTN" onclick="stopStream()" class="bot_bar_item">
-                <img src="/svg/stop.svg" />
-                <span>Stop</span>
+            <div class="startStreamStepOne" id="startStreamStepOne">
+                <div class="shareScreenWrapper" id="startScreenShare">
+                    <img src="/svg/desktop.svg" alt="">
+                    <p>Bildschirm teilen</p>
+                </div>
+                <div class="shareCameraWrapper" id="startCameraShare">
+                    <img src="/svg/camera.svg" alt="">
+                    <p>Kamera teilen</p>
+                </div>
             </div>
-            -->
-            <div id="startStreamBTN" class="bot_bar_item">
-                <img src="/svg/desktop.svg" />
-                <span>Start Stream</span>
+    
+            <div class="startStreamStepTwo" id="startStreamStepTwo">
+                <div class="button-back">
+                    <img src="/svg/arrow-left.svg" alt="Back" id="startStreamGoBack">
+                </div>
+                <div class="startStreamResolutionWrapper">
+                    <span>Auflösung</span>
+                    <div class="dropdown" name="resolution" id="resolutionSelector">
+                        <div class="dropdown-title">
+                            <button class="dropdown-title" name="resolutionSelectorTitle" type="button" data-value="1080">1080p</button>
+                            <img src="/svg/chevron-down.svg">
+                        </div>
+                        <div class="dropdown-content" name="resolutionSelector" style="display: none;">
+                            <div data-value="720"> 720p </div>
+                            <div data-value="1080" style="display: none"> 1080p </div>
+                            <div data-value="1440"> 1440p </div>
+                            <div data-value="2160"> 2160p </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="startStreamFramerateWrapper">
+                    <span>Bildrate</span>
+                    <div class="fr-rs-wrapper" id="framerateDiv">
+                        <div class="slider-framerate" id="slider-fr" style="left: 51.5938px;"></div>
+                        <span data-value="15">15</span>
+                        <span data-value="30">30</span>
+                        <span data-value="60">60</span>
+                    </div>
+                </div>
+                <div class="button-startStreaming" onclick="chooseStream()">
+                    Start
+                </div>
             </div>
-            <!--
-            <div id="" onclick="openProfileModal() " class="bot_bar_item">
-                <img src="/svg/cog.svg" />
-                <span>Change Profile</span>
-            </div>
-            <div id="" onclick="rcss()" class="bot_bar_item">
-                <img src="/svg/cog.svg" />
-                <span>Reload CSS</span>
-            </div>
-            -->
         </div>
     </div>
 
@@ -163,7 +162,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Modal Header</h2>
-                <button class="btn-secondary" onclick="modals.testmodal.close()">X</button>
+                <button class="btn-secondary" onclick="modals.testmodal.close()"><img src="svg/x-dismiss.svg" alt="close"></button>
             </div>
             <div class="modal-body">
                 <p>Some text in the Modal Body</p>
@@ -176,34 +175,50 @@
     </modal>
 
     <modal id="setIdent" class="hide">
-        <div class="modal-content">
-            <div class="modal-header col-6">
-                <h2>Set your Username</h2>
-                <button class="btn form-input" onclick="modals.setIdent.close()">X</button>
-            </div>
-            <div class="modal-body col-6">
-                <div class="row ">
-                    <div class="col-6">Username</div>
-
-                    <input class="col-6 form-input" id="username">
-                </div>
-                <div class="row">
-                    <div class="col-6">Avatar URL</div>
-
-                    <input class="col-6 form-input" id="avatar">
+        <div class="modal-content-custom">
+            <div class="modal-header-custom">
+                <h2>Edit Profile</h2>
+                <div class="button-wrapper">
+                    <button class="btn-close" onclick="modals.setIdent.close()"><img src="/svg/x-dismiss.svg" alt="close"></button>
                 </div>
             </div>
-            <div class="modal-footer col-6">
-                <button class="btn form-input" onclick="saveProfile()">Speichern</button>
+
+            <div class="modal-body-custom">
+                <div class="avatar-wrapper">
+                    <div class="avatar">
+                        <form id="imgsubmit">
+                            <div class="editavatar">
+                                <input onchange="previewAvatar()" type="file" id="avatarfileinput" name="avatar" accept=".png, .jpg, .jpeg" style="display: none;">
+                                <label id="label" for="avatarfileinput">
+                                    <div>
+                                        <svg style="width:100%;padding:4px;" fill="none" stroke="black" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                                        </svg>
+                                    </div>
+                                </label>
+                            </div>
+                        </form>
+                        <div class="userimgdiv shadow-dreamy">
+                            <img id="previewAvatar" src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png" alt="Profilbild" loading=lazy class="myavatar">
+                        </div>
+                    </div>
+                </div>
+
+                <input type="text" name="" id="username" placeholder="Username">
+                <input type="text" name="" id="avatar" style="display: none">
+            </div>
+            <div class="modal-footer-custom">
+                <button class="btn-confirm form-input" onclick="saveProfile()">Save</button>
             </div>
         </div>
+
     </modal>
 
     <modal id="userIdent" class="hide">
         <div class="modal-content">
             <div class="modal-header col-6">
                 <h2>Profile</h2>
-                <button class="btn form-input" onclick="modals.userIdent.close()">X</button>
+                <button class="btn form-input" onclick="modals.userIdent.close()"><img src="/svg/x-dismiss.svg" alt="close"></button>
             </div>
             <div class="modal-body col-6">
                 <div class="row ">
@@ -314,6 +329,14 @@
         </div>
     </modal>
 
+    <modal id="chatContentModal" class="hide">
+        <div class="modal-content col-10">
+            <div class="modal-body-msg-content col-10">
+                <p>Some text in the Modal Body</p>
+                <p>Some other text...</p>
+            </div>
+        </div>
+    </modal>
 
 
     <template id="testToast">
@@ -330,26 +353,29 @@
 
     <template id="videoElementTemplate">
         <div id="" class="videoElement">
-            <button class="fullscreenBTN">
-                <img src="/svg/fullscreen.svg" alt="">
-            </button>
-            <input class="streamVolumeSlider" type="range" min="0" max="100">
+
+            <div class="nameSlider">
+                <button class="fullscreenBTN">
+                    <img src="/svg/fullscreen.svg" alt="">
+                </button>
+                <input class="streamVolumeSlider" type="range" min="0" max="100" value="30" oninput="this.value=value">
+            </div>
             <div class="namePlaceholder">placeholder</div>
             <div class="infoData">
                 <div id="infoData_In" class="infoData"></div>
                 <div id="infoData_Out" class="infoData"></div>
             </div>
 
-            <img src="" class="avatar">
+            <img src="" class="avatar myavatar">
             <video></video>
-            <img id="" class="thumbnail">
+            <!-- <img id="" class="thumbnail"> -->
         </div>
     </template>
 
     <template id="connectedUserTemplate">
         <div class="connected-user-wrapper" id="">
             <div class="connected-user">
-                <img src="">
+                <img src="" class="myavatar">
                 <span>placeholder</span>
             </div>
             <div class="button-watch" style="display: none">
