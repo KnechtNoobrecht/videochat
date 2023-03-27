@@ -1,32 +1,46 @@
 ## 🚩 PRIO:
-### ⚒️ stream-starten-menü fertigstellen
+### ⚒️ fixen: stage mode funktioniert nicht, nachdem aus dem stage mode heraus angefangen wurde einem stream zuzuschauen
+### ⚒️ avatar upload toasts (file too large,etc.)
+### ⚒️ create room modal rework + create/join room rework
+### ⚒️ stream-starten-menü fertigstellen (start stream knopf zu starten umwandeln, wenn )
 ### ⚒️ (WIP) Dateien verschicken 
-### ⚒️ von grid in stage-mode wechseln (ein stream groß, andere klein/ausgeblendet)
-### ⚒️ Voice Chat
-### ⚒️ Login System (mit Discord/Google/Apple)
 
 ## UI:
 ### ⚒️ generelles UI-"re"work
-### ⚒️ Für chat emojis picker 
-### ⚒️ Sammlung aus Farben, aus denen Usern eine zufällige zugewiesen wird und/oder irgendwie aus Profilbild passende Farbe ziehen (random für user ohne PB, letzteres für user mit PB)
+### ⚒️ emojis picker für chat 
+### ⚒️ Attachments Picker Style (Leiste über Text Input mit icons für file picker und emote picker über der liste oder woander die derzeit ausgewählten files anzeigen)
+### ⚒️ Chat vergößern (Modal?) 
+### ⚒️ Attachments große Modal anzeige (dc like)
 
 
 ## Funktionen:
-### ⚒️ Chat Text Input Fixen es bleibt beim abschicken eine zeile bestehen
-### ⚒️ Auf Chat msg reagieren und antworten können.
+### ⚒️ Voice Chat
+### ⚒️ Login System (mit Discord/Google/Apple)
+### ⚒️ settings
+### ⚒️ Auf Chat msg reagieren und antworten können. kleine vorbereitung getroffen. jede Msg hat jetzt eine id sobalt sie beim server angekommen ist und verteilt wird 
+### ⚒️ upload progress
 ### ⚒️ Hotkeys
 ### ⚒️ Animationen
-### ⚒️ Bilder uploaden in Chat (Bilder im Chat verschicken)
 ### ⚒️ Senden Button für Chat für Mobile
 ### ⚒️ Bot Bar verbessern 
-### ⚒️ 
+### ⚒️ Attachments mehr Formate unterstützen derzeit nur png jpg webp mp4
+### ⚒️ Video beim Streamen deaktivieren oder thumbnail ausblenden (von einem selbst)
+### ⚒️ Discord Status interaktion mit link zum raum in dem man ist 
 
 
 ## Fehler:
+### ⚒️ komplett broken auf safari browsern
 ### ⚒️ Wenn der Initiator vom anderen Client keine SocketIO ID hat kommt es zu extrem hohen CPU-Lasten
 
 
 ## Fertig
+### ✔️ ein background image nutzen und src entweder farbe oder preview image, damit background color nicht an dem preview img vorbeischeint
+### ✔️ videoelement background leer wenn stream aufhört fixen (soll wieder farbig sein)
+### ✔️ bot_bar_hover entfernen
+### ✔️ Chat Text Input Fixen es bleibt beim abschicken eine zeile bestehen
+### ✔️ Sammlung aus Farben, aus denen Usern eine zufällige zugewiesen wird und/oder irgendwie aus Profilbild passende Farbe ziehen (random für user ohne PB, letzteres für user mit PB)
+### ✔️ Bilder uploaden in Chat (Bilder im Chat verschicken)
+### ✔️ neue farbe bei seitenreload
 ### ✔️ grundfuntionalität Chat
 ### ✔️ bitrate erhöhen Am client sdp settings anschauen
 ### ✔️ Stream zwischen Fenstern wechseln können 

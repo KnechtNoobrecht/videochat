@@ -79,13 +79,13 @@ function renderNewChatMsg(data) {
 }
 
 function renderMsgTemplate(msg) {
-    console.log("renderMsgTemplate", msg);
+    console.log("renderMsgTemplate:", msg);
     var chatBody = document.querySelector('.chat-body');
     var msgElement = document.getElementById('chatMsgTemplate').cloneNode(true).content.children[0];
-    msgElement.setAttribute("name", 'msg_' + msg.fromIdentity.id)
-    console.log("msgElement", msg);
+    msgElement.setAttribute("fromIdentity", 'msg_' + msg.fromIdentity.id);
+    msgElement.id = 'msg_' + msg.id;
+    //console.log("msgElement", msg);                         
     if (!isMe(msg.fromSocket)) {
-
         msgElement.querySelector('.chat-message-username').innerText = msg.fromIdentity.username;
     } else {
         msgElement.querySelector('.chat-message-username').innerText = meString;
@@ -118,6 +118,43 @@ function renderMsgTemplate(msg) {
     //msgElement.querySelector('.chat-message').querySelector('span').innerHTML = msg.msg;
     msgElement.querySelector('.chat-message-content').querySelector('span').innerHTML = msg.msg;
 
+    msg.attachments.forEach(attachment => {
+
+        //attachment.fileExt
+
+        console.log('attachment: ', attachment.fileExt.toUpperCase());
+
+        var attachmentElement = null
+
+        switch (attachment.fileExt.toUpperCase()) {
+            case '.PNG':
+            case '.JPG':
+            case '.WEBP':
+                attachmentElement = document.createElement('img')
+                break;
+
+            case '.MP4':
+                attachmentElement = document.createElement('video')
+                attachmentElement.controls = true;
+                break;
+
+            default:
+                break;
+        }
+        attachmentElement.classList.add('chat-Attachment');
+        attachmentElement.src = window.location.origin + '/' + attachment.url;
+
+        if (attachmentElement) {
+            msgElement.querySelector('.chat-message-content').querySelector('span').appendChild(attachmentElement)
+        }
+
+    });
+
+    if (msg.attachments) {
+
+    }
+
+
     chatBody.appendChild(msgElement);
     chatBody.scrollTop = chatBody.scrollHeight;
 }
@@ -127,6 +164,73 @@ function renderMsgTemplate(msg) {
     return urlregex.test(value);
 } */
 
+function handleRangeInputChange(e) {
+    let target = e.target
+    const val = target.value
+
+    target.style.backgroundSize = `${val}%`
+}
+
+function getDarkerAndMoreSaturatedColor(hexColor) {
+    // Konvertiere hex in HSL-Farbraum
+    let hslColor = hexToHsl(hexColor);
+
+    // Reduziere Helligkeit um 41%
+    hslColor[2] = Math.max(0, hslColor[2] - 0.15);
+
+    // Erhöhe Sättigung um 8%
+    hslColor[1] = Math.min(1, hslColor[1] + 0.05);
+
+    return `hsl(${hslColor[0]}, ${hslColor[1] * 100}%, ${hslColor[2] * 100}%)`;
+}
+
+// Hilfsfunktion zur Konvertierung von hex in HSL
+function hexToHsl(hex) {
+    // Entferne ggf. das "#" aus dem hex-String
+    try {
+        hex = hex.replace("#", "");
+    } catch (error) {
+        return
+    }
+    
+
+    // Konvertiere in RGB-Farbraum
+    let r = parseInt(hex.substring(0, 2), 16) / 255;
+    let g = parseInt(hex.substring(2, 4), 16) / 255;
+    let b = parseInt(hex.substring(4, 6), 16) / 255;
+
+    // Finde Maximal- und Minimalwert von RGB
+    let cmax = Math.max(r, g, b);
+    let cmin = Math.min(r, g, b);
+    let delta = cmax - cmin;
+
+    // Berechne Helligkeit
+    let lightness = (cmax + cmin) / 2;
+
+    // Berechne Sättigung
+    let saturation = 0;
+    if (delta != 0) {
+        saturation = delta / (1 - Math.abs(2 * lightness - 1));
+    }
+
+    // Berechne Farbton
+    let hue = 0;
+    if (delta != 0) {
+        if (cmax == r) {
+            hue = ((g - b) / delta) % 6;
+        } else if (cmax == g) {
+            hue = (b - r) / delta + 2;
+        } else {
+            hue = (r - g) / delta + 4;
+        }
+    }
+    hue = Math.round(hue * 60);
+
+    // Rückgabe der HSL-Farbe als Array
+    return [hue, saturation, lightness];
+}
+
+// center user elements/boxes
 function cloneVideoElement(identity, socketid) {
     var clone = document.getElementById('videoElementTemplate').cloneNode(true).content.children[0];
     clone.id = 'videoElement_' + socketid
@@ -135,16 +239,20 @@ function cloneVideoElement(identity, socketid) {
 
     if (!isMe(socketid)) {
         clone.querySelector('.namePlaceholder').innerText = identity.username;
+        //clone.classList = "videoElement-hover-slide"
     } else {
         clone.querySelector('.namePlaceholder').innerText = meString;
+        //clone.classList = "videoElement"
     }
 
     clone.querySelector('.avatar').src = identity.avatar
-    clone.querySelector('.thumbnail').src = identity.thumbnail;
+    clone.style.backgroundImage = `linear-gradient(180deg,${identity.color},${getDarkerAndMoreSaturatedColor(identity.color)})`
     //clone.querySelector('.videoElement').id = socketid + 'video';
-    clone.onclick = function () {
-        console.log("videoElement_" + socketid + " clicked");
-        toggleStageMode(clone.id)
+    clone.onclick = function (e) {
+        // only toggle when bottom bar is not clicked
+        if (e.target.localName == "video" || e.target.localName == "img") {
+            toggleStageMode(clone.id)
+        }
     }
     clone.querySelector('.fullscreenBTN').onclick = function () {
         clone.querySelector('video').requestFullscreen();
@@ -152,6 +260,7 @@ function cloneVideoElement(identity, socketid) {
     clone.querySelector('.streamVolumeSlider').oninput = function () {
         clone.querySelector('video').volume = clone.querySelector('.streamVolumeSlider').value / 100;
     }
+    clone.querySelector('.streamVolumeSlider').addEventListener('input', handleRangeInputChange)
     if (inStageMode) {
         document.querySelector('#stageWrapper').querySelector('#botStage').appendChild(clone);
     } else {
@@ -161,6 +270,8 @@ function cloneVideoElement(identity, socketid) {
     return clone;
 }
 
+
+// left sidebar user list entries
 function cloneUserElement(identity, socketid) {
     var clone = document.getElementById('connectedUserTemplate').cloneNode(true).content.children[0];
 
@@ -495,7 +606,8 @@ async function addIdentityToObjects(data) {
         addCookieObjectElement({
             id: data.id,
             username: data.username,
-            avatar: data.avatar
+            avatar: data.avatar,
+            color: data.color
         })
     }
 
@@ -504,7 +616,8 @@ async function addIdentityToObjects(data) {
         identitys.push({
             id: data.id,
             username: data.username,
-            avatar: data.avatar
+            avatar: data.avatar,
+            color: data.color
         })
     }
 }
@@ -561,7 +674,6 @@ function whatIsIt(object) {
 }
 
 async function chooseStream() {
-    console.log("shareType: ", shareType);
     if (shareType == 'screen') {
         await startStreaming()
     } else if (shareType == 'camera') {
@@ -620,6 +732,7 @@ function startStreaming() {
 
                 // console.log("localStream.getVideoTracks()[0].contentHint = ", localStream.getVideoTracks()[0].contentHint);
 
+                //append fake audio track to unlock bitrate (idk, don't ask)
                 if (localStream.getAudioTracks().length == 0) {
                     var AudioContext = window.AudioContext || window.webkitAudioContext;
                     var audioCtx = new AudioContext();
@@ -637,7 +750,7 @@ function startStreaming() {
 
                 localVideo.onloadedmetadata = (e) => {
                     console.log('onloadedmetadata');
-                    toggleStartStreamModal()
+                    closeStartStreamModal()
                     localVideo.play()
                     localVideo.volume = 0
                     socket.emit('memberStartStreaming', room.id);
@@ -654,7 +767,7 @@ function startStreaming() {
                     sendThumbnail()
                     streamThumbnailTimer = setInterval(() => {
                         sendThumbnail()
-                    }, reloadTime)
+                    }, streamPreviewImageReloadTime)
 
                     resolve(localStream);
                 };
@@ -725,7 +838,7 @@ function startCamStreaming() {
                         streamThumbnail = getFrame(1);
                     }, 1000)
 
-                    toggleStartStreamModal()
+                    closeStartStreamModal()
                     resolve(localStream);
                 })
                 .catch((err) => {
@@ -873,7 +986,8 @@ function initIdentity() {
                 identitys.push(new Identity({
                     id: ido[id].id,
                     username: ido[id].username,
-                    avatar: ido[id].avatar
+                    avatar: ido[id].avatar,
+                    color: ido[id].color
                 }))
             })
             resolve(false)
@@ -918,7 +1032,7 @@ var reloads = 0
 
 function reloadInterval() {
     loadRoomMemberThumbnails();
-    testTimer = setInterval(loadRoomMemberThumbnails, reloadTime);
+    testTimer = setInterval(loadRoomMemberThumbnails, streamPreviewImageReloadTime);
 }
 
 function loadRoomMemberThumbnails() {
@@ -929,11 +1043,10 @@ function loadRoomMemberThumbnails() {
                 //console.log('loadRoomMemberThumbnails', element);
                 if (element.thumbnail != null) {
                     var videoElement = document.getElementById('videoElement_' + element.socket);
-                    videoElement.querySelector('.thumbnail').src = element.thumbnail;
-                    videoElement.querySelector('.thumbnail').style.display = 'block';
+                    videoElement.style.backgroundImage = `url(${identity.thumbnail})`;
                 } else {
                     var videoElement = document.getElementById('videoElement_' + element.socket);
-                    videoElement.querySelector('.thumbnail').style.display = 'none';
+                    videoElement.style.backgroundImage = `linear-gradient(180deg,${identity.color},${getDarkerAndMoreSaturatedColor(identity.color)})`;
                 }
             }
         }
@@ -1027,9 +1140,9 @@ function handleJoinRoomCB(params) {
                 isAdmin = params.isAdmin;
                 addAdminUI();
             }
-            new Toast({
-                content: 'Raum beigetreten'
-            })
+            //new Toast({
+            //    content: 'Raum beigetreten'
+            //})
             break;
         case 1:
             console.log('joinRoom room not found', params);
@@ -1066,52 +1179,135 @@ function handleJoinRoomCB(params) {
     }
 }
 
-async function uploadFile() {
 
-    const { readable, writable } = new TransformStream();
+function uploadFile(file) {
+    return new Promise(async (resolve, reject) => {
+        if (file) {
+            const formData = new FormData();
+            formData.append("user", identitys[0].id);
+            formData.append("file", await file.getFile());
+            formData.append("filename", file.name);
 
+            var response = await fetch("/upload/file", {
+                method: "POST",
+                body: formData,
+            })
 
-    console.log(filePicker.value);
-    console.log(filePicker.files);
-    let fileReader = new FileReader(); // not a arguments
-    console.log(filePicker.files[0].stream());
+            var result = await response.json();
 
-
-
-    const stream = new ReadableStream({
-        async start(controller) {
-
-            fileReader.onloadstart = function (params) {
-                console.log('onloadstart', params);
+            if (response.ok) {
+                console.log(result);
+                //filePicker.value = null;
+            } else {
+                console.log(result);
             }
-
-            fileReader.onprogress = function (params) {
-                console.log('onprogress', params);
-                controller.enqueue(fileReader.result);
-            }
-
-            fileReader.onended = function (params) {
-                console.log('onended', params);
-                controller.close();
-            }
-
-            fileReader.readAsArrayBuffer(filePicker.files[0])
-            //controller.close();
-
-        },
+            resolve(result)
+        }
+        reject();
     })
+}
 
-  
-    
-        //filePicker.files[0].stream().pipeThrough(new CompressionStream('gzip')).pipeTo(writable);
-       // filePicker.files[0].stream().pipeTo(writable);
-    
-        const response = await fetch("/upload?roomid=wte&userid=userlol&file=test.mp4", {
-            method: "POST",
-            body: stream,
-            duplex: 'half'
+
+async function getFile() {
+
+    const pickerOpts = {
+        types: [
+            {
+                description: 'Images',
+                accept: {
+                    'image/*': ['.png', '.gif', '.jpeg', '.jpg']
+                }
+            },
+        ],
+        excludeAcceptAllOption: true,
+        multiple: false
+    };
+
+    //[fileHandle] = await window.showOpenFilePicker(pickerOpts);
+    var file = await window.showOpenFilePicker();
+    return file
+}
+
+async function openFiles() {
+
+    const pickerOpts = {
+        excludeAcceptAllOption: false,
+        multiple: true
+    };
+    var file = await window.showOpenFilePicker(pickerOpts)
+
+    file.forEach(element => {
+
+        fileHandle[uuid()] = element
+        //fileHandle.push(element);
+    });
+
+    renderPickedAttachments()
+}
+
+var i = 0
+function renderPickedAttachments() {
+    console.log('renderPickedAttachments');
+    chatAttachments.innerHTML = '';
+
+    for (const key in fileHandle) {
+        if (Object.hasOwnProperty.call(fileHandle, key)) {
+            const element = fileHandle[key];
+
+            var div1 = document.createElement('div')
+            div1.classList.add('attachmentLine');
+            div1.innerText = element.name
+            div1.id = key
+            div1.onclick = function (params) {
+                removePickedAttachments(key)
+            }
+            chatAttchaments.appendChild(div1)
+        }
+    }
+}
+
+function removePickedAttachments(key) {
+    delete fileHandle[key]
+    renderPickedAttachments()
+}
+
+
+function previewAvatar() {
+
+    var file = document.getElementById('avatarfileinput').files[0];
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        var image = document.getElementById("previewAvatar");
+        image.src = e.target.result;
+    }
+    reader.readAsDataURL(file);
+}
+
+async function uploadAvatar() {
+    let fileField = document.getElementById('avatarfileinput');
+    if (fileField.files[0]) {
+        const formData = new FormData();
+        formData.append("user", identitys[0].id);
+        formData.append("avatar", fileField.files[0]);
+
+        var response = await fetch("/upload/avatar", {
+            method: "PUT",
+            body: formData,
         })
-    
-        console.log(response); 
 
+        var result = await response.json();
+
+        if (response.ok) {
+            identitys[0].set({ avatar: "/uploads/avatars/" + identitys[0].id + ".png" });
+            var evt = document.createEvent("Event");
+            evt.initEvent("memberChanged", true, true);
+            evt.detail = {}
+            evt.detail.identity = identitys[0]
+            evt.detail.sid = socket.id
+            room.dispatchEvent(evt)
+            fileField.value = null;
+        } else {
+            console.log(result);
+        }
+    }
 }

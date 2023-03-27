@@ -12,17 +12,99 @@ function alignElement(targetElement) {
     targetElement.style.left = `${buttonSize.left - (targetElement.getBoundingClientRect().width - buttonSize.width) / 2}px`
 }
 
+// toggle start stream modal
 function toggleStartStreamModal(ctx) {
-    if (startStreamModal.style.display == "-webkit-box") {
-        startStreamModal.style.height = "190.667px"
-        startStreamModal.scrollTo(0, 0)
-        startStreamModal.style.display = "none"
+    //hide element
+    if (startStreamBG.style.display == "block" && (ctx.target.id == "startStreamBG" || ctx.srcElement.parentElement.id == "startStreamBTN" || ctx.srcElement.id == "startStreamBTN")) {
+        startStreamModal.classList = "startStreamStepsWrapper fadeOutBottom"
+        setTimeout(() => {
+            startStreamModal.style.height = "190.667px"
+            startStreamModal.scrollTo(0, 0)
+            startStreamBG.style.display = "none"
+            startStreamBTN.style.zIndex = "unset"
+            startStreamModal.classList = "startStreamStepsWrapper fadeInBottom"
+        },350)
+        resetStartStreamBTN()
         alignElement(startStreamModal)
+    //show element
     } else {
-        startStreamModal.style.display = "-webkit-box"
+        startStreamBG.style.display = "block"
+        startStreamBTN.style.zIndex = "100"
         alignElement(startStreamModal)
+        startStreamBTN.style.backgroundColor = "var(--red)"
+        startStreamBTN.style.height = `${startStreamBTN.getBoundingClientRect().height}px`
+        startStreamBTN.style.width = `${startStreamBTN.getBoundingClientRect().width}px`
+        startStreamBTN.querySelector("span").style.fontSize = "20px"
+        startStreamBTN.querySelector("span").style.fontWeight = "600"
+        startStreamBTN.querySelector("img").style.display = "none"
+        startStreamBTN.querySelector("span").innerHTML = "Abbrechen"
     }
+    return false
     //console.log(ctx.target.getBoundingClientRect().top);
+}
+
+function toggleResDropdown() {
+    if(document.getElementById('resolutionSelector').querySelector(".dropdown-content").style.display == "none") {
+        document.getElementById('resolutionSelector').querySelector(".dropdown-content").style.display = "block"
+        document.getElementById('resolutionSelector').style.borderRadius = "10px 10px 0 0"
+        document.querySelector(".dropdown-content[name=resolutionSelector]").onclick = chooseResolution
+    } else {
+        document.getElementById('resolutionSelector').querySelector(".dropdown-content").style.display = "none"
+        document.getElementById('resolutionSelector').style.borderRadius = "10px"
+        document.querySelector(".dropdown-content[name=resolutionSelector]").onclick = null
+    }
+}
+
+function chooseResolution(ctx) {
+    var currentVal = document.querySelector(".dropdown-title[type=button]").dataset.value
+    var targetVal = ctx.target.dataset.value
+    document.querySelector(".dropdown-title[type=button]").dataset.value = targetVal
+    localStreamOptions.resolution.height = Number(targetVal);
+    document.querySelector(".dropdown-title[name=resolutionSelectorTitle]").innerHTML = localStreamOptions.resolution.height+"p"
+    document.querySelector(`.dropdown-content[name=resolutionSelector]`).querySelector(`[data-value="${currentVal}"]`).style.display = "block"
+
+    switch (targetVal) {
+        case "720":
+            localStreamOptions.resolution.width = 1280
+            document.querySelector(`.dropdown-content[name=resolutionSelector]`).querySelector(`[data-value="${720}"]`).style.display = "none"
+            break;
+            
+        case "1080":
+            localStreamOptions.resolution.width = 1920
+            document.querySelector(`.dropdown-content[name=resolutionSelector]`).querySelector(`[data-value="${1080}"]`).style.display = "none"
+            break;
+        
+        case "1440":
+            localStreamOptions.resolution.width = 2560
+            document.querySelector(`.dropdown-content[name=resolutionSelector]`).querySelector(`[data-value="${1440}"]`).style.display = "none"
+            break;
+
+        case "2160":
+            localStreamOptions.resolution.width = 3840
+            document.querySelector(`.dropdown-content[name=resolutionSelector]`).querySelector(`[data-value="${2160}"]`).style.display = "none"
+            break;
+
+        default:
+            break;
+    }
+}
+
+function resetStartStreamBTN() {
+    startStreamBTN.style.backgroundColor = ""
+    startStreamBTN.style.height = ""
+    startStreamBTN.style.width = ""
+    startStreamBTN.querySelector("span").style.fontSize = ""
+    startStreamBTN.querySelector("span").style.fontWeight = ""
+    startStreamBTN.querySelector("img").style.display = ""
+    startStreamBTN.querySelector("span").innerHTML = "Start Stream"
+}
+
+function closeStartStreamModal() {
+    startStreamModal.style.height = "190.667px"
+    startStreamModal.scrollTo(0, 0)
+    startStreamBG.style.display = "none";
+    resetStartStreamBTN()
+    alignElement(startStreamModal)
 }
 
 function startStream(ctx) {
@@ -31,10 +113,9 @@ function startStream(ctx) {
     } else if (ctx.target.className == "shareCameraWrapper" || ctx.target.parentNode.className == "shareCameraWrapper") {
         shareType = "camera"
     }
-    console.log("shareType: ", shareType);
     targetElement = document.getElementById('startStreamModal')
     //startStreamModal.style.width = "150px"
-    startStreamModal.style.height = "228px"
+    startStreamModal.style.height = "238px"
     startStreamStepTwo.scrollIntoView({ behavior: "smooth" })
 
     alignElement(targetElement)
@@ -53,19 +134,20 @@ function framerateSliderSlide(ctx) {
     framerateDiv = document.getElementById('framerateDiv')
 
     slider.style.left = ctx.target.getBoundingClientRect().left - framerateDiv.getBoundingClientRect().left - 6 + 'px'
-    localStreamOptions.resolution.frameRate = ctx.target.dataset.value
+    localStreamOptions.resolution.frameRate = Number(ctx.target.dataset.value)
 }
 
 document.getElementById('startStreamBTN').onclick = toggleStartStreamModal
+document.getElementById('startStreamBG').onclick = toggleStartStreamModal
 document.getElementById('startScreenShare').onclick = startStream
 document.getElementById('startCameraShare').onclick = startStream
 document.getElementById('startStreamGoBack').onclick = goBack
+document.getElementById('resolutionSelector').onclick = toggleResDropdown
 document.getElementById('framerateDiv').childNodes.forEach(childNode => {
     childNode.nodeName == "SPAN" ? childNode.onclick = framerateSliderSlide : null
 })
 
 function toggleSlider(ctx) {
-    //console.log('toggleSlider(ctx)');
     switch (ctx.id) {
         case "framerateDiv":
             if (framerateSlider.classList.contains("slider-right")) {
@@ -137,9 +219,10 @@ class Tab {
     }
 }
 
-function escapeRegExp(string,) {
-    return string.replace(/(?<=\${).*(?=})/g, '\\$&'); // $& means the whole matched string
-}
+// breaks on safari
+//function escapeRegExp(string) {
+//    return string.replace(/(?<=\${).*(?=})/g, '\\$&'); // $& means the whole matched string
+//}
 
 class Toast extends EventTarget {
     #event;
@@ -218,7 +301,7 @@ function initModals() {
         modals[m.id] = m;
     }
 
-
+    document.querySelector("#setIdent").querySelector(".myavatar").src = identitys[0].avatar;
     document.getElementById('username').value = identitys[0].username;
     document.getElementById('avatar').value = identitys[0].avatar;
     if (identitys[0].username == 'Anonymous') {
@@ -255,6 +338,7 @@ function handleTabClick(elem, target) {
 }
 
 function openProfileModal(cb) {
+    this.querySelector("img").src = identitys[0].avatar;
     modals.setIdent.open()
     modals.setIdent.addEventListener("closed", function (e) {
         console.log('modals.setIdent.closed', e);
@@ -266,6 +350,8 @@ function openProfileModal(cb) {
 }
 
 function saveProfile() {
+    uploadAvatar()
+
     // document.getElementById('username').value = identitys[0].username;
     // document.getElementById('avatar').value = identitys[0].avatar;
     identitys[0].set({
@@ -298,6 +384,7 @@ function rightClick(e) {
     else {
         var id
         var path = e.composedPath ? e.composedPath() : e.path;
+        var msgid;
 
         console.log(path);
 
@@ -318,20 +405,37 @@ function rightClick(e) {
                 id = element.id.substring(element.id.indexOf('_') + 1);
                 break
             }
+            if (element.classList.contains('chat-message-wrapper')) {
+                console.log(element);
+                console.log('fromIdentity:', element.getAttribute("fromIdentity"));
+
+                id = element.id.substring(element.id.indexOf('_') + 1);
+                id = element.getAttribute("fromIdentity").substring(element.getAttribute("fromIdentity").indexOf('_') + 1);
+                msgid = element.id
+                if (room.isIIDInRoom(id)) {
+                    id = room.getUserByIID(id).sid
+                } else {
+                    id = null;
+                }
+
+
+                break
+
+            }
         }
 
         console.log(id);
 
+        var menu = document.getElementById("contextMenu")
+        var elementWrapper = document.querySelector('ul');
+        elementWrapper.innerHTML = ""
+
         if (id) {
 
+
             e.preventDefault();
-            var menu = document.getElementById("contextMenu")
-            var elementWrapper = document.querySelector('ul');
             var videoElement = document.getElementById('videoElement_' + id)
             var video = videoElement.querySelector('video');
-
-            elementWrapper.innerHTML = ""
-            room.members[id].identity.isStreaming
 
             if (room.members[id].identity.isStreaming) {
                 if (!video.srcObject) {
@@ -345,7 +449,6 @@ function rightClick(e) {
             } else {
                 elementWrapper.innerHTML += renderConMenuItem(id, 'Mute', 'toggle_mute_video')
             }
-
             if (isMe(room.members[id].sid)) {
                 elementWrapper.innerHTML += renderConMenuItem(id, 'Edit Profile', 'edit_profile')
             } else {
@@ -364,7 +467,28 @@ function rightClick(e) {
             menu.style.display = 'block';
             menu.style.left = e.pageX + "px";
             menu.style.top = e.pageY + "px";
+
+
         }
+
+
+
+        if (msgid) {
+            e.preventDefault();
+            console.log('msgid:', msgid);
+            elementWrapper.innerHTML += renderConMenuItem(msgid, 'React', 'make_react')
+            elementWrapper.innerHTML += renderConMenuItem(msgid, 'Open', 'open_Chat_Content')
+
+            menu.style.display = 'block';
+            menu.style.left = e.pageX + "px";
+            menu.style.top = e.pageY + "px";
+        }
+
+
+
+
+
+
     }
 }
 
@@ -417,6 +541,39 @@ handleConMenuItemClick = async function (id, type) {
             console.log('make_admin = ', room.members[id]);
             socket.emit('makeAdmin', id, roomID)
             break;
+        case 'make_react':
+            console.log('make_react = ', id);
+            //socket.emit('makeAdmin', id, roomID)
+            break;
+        case 'open_Chat_Content':
+
+            var msgElement = document.querySelector('#' + id)
+            console.log('open_Chat_Content id = ', id);
+            //console.log('open_Chat_Content = ', document.querySelector('#'+id));
+            console.log('open_Chat_Content = ', document.querySelector('#' + id));
+
+
+           // chatContentModal.querySelector('.modal-content')
+            //chatContentModal.querySelector('.modal-body-msg-content col-10')
+            chatContentModal.querySelector('.modal-body-msg-content').innerHTML = '';
+            var msg_element = document.querySelector('#' + id).cloneNode(true)
+
+            var closeBTN = document.createElement('div');
+            closeBTN.classList.add('btn-secondary')
+            closeBTN.classList.add('btn-close-modal')
+            closeBTN.innerText = 'X';
+            closeBTN.onclick = function () {
+                modals.chatContentModal.close()
+            }
+
+            msg_element.querySelector('.chat-message-info').appendChild(closeBTN)
+
+            chatContentModal.querySelector('.modal-body-msg-content').appendChild(msg_element)
+
+
+            modals.chatContentModal.open()
+            //socket.emit('makeAdmin', id, roomID)
+            break;
         default:
             break;
     }
@@ -425,3 +582,8 @@ handleConMenuItemClick = async function (id, type) {
 function renderConMenuItem(id, txt, type) {
     return `<li onclick="handleConMenuItemClick('${id}', '${type}')"><a href="#" >${txt}</a></li>`
 }
+
+
+
+
+//C:/Program Files/Google/Chrome/Application/chrome.exe

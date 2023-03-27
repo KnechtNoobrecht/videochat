@@ -8,6 +8,9 @@ const {
 } = require("uuid");
 var sass = require('node-sass');
 fs = require('fs');
+const multer = require('multer')
+const upload = multer({ dest: 'multerTemp/' })
+//const upload = multer({ dest: 'multerTemp/', limits: { fileSize: 10485760 } })
 
 const bcrypt = require('bcrypt'); //Importing the NPM bcrypt package.
 const saltRounds = 10; //We are setting salt rounds, higher is safer.
@@ -76,7 +79,8 @@ class Room {
 	sendMsg(msg) {
 		var data = {
 			room: this.id,
-			msg: msg
+			msg: msg,
+            attachments:attachments
 		}
 		socket.emit('chatMSG', data);
 	}
@@ -100,7 +104,7 @@ io.on("connection", (socket) => {
 		//identity.sid = socket.id;
 		try {
 			//console.log("joinRoom", roomID, identity.username);
-			console.log(`User ${identity.username} try to join room ${roomID}`);
+			console.log(`User ${identity.username} is trying to join room ${roomID}`);
 			identity.isStreaming = false;
 			identity.thumbnail = null;
 			var room = rooms[roomID]
@@ -121,7 +125,7 @@ io.on("connection", (socket) => {
 
 				identity.isAdmin = userIsAdmin;
 
-				console.log('User try join room is admin? = ', userIsAdmin, ' // is user blocked? = ', userIsBlocked);
+				console.log('User trying to join room is admin? = ', userIsAdmin, ' // is user blocked? = ', userIsBlocked);
 				console.log('!userIsAdmin && userIsBlocked = ', !userIsAdmin && userIsBlocked);
 
 				if (!userIsAdmin && userIsBlocked) {
@@ -238,8 +242,6 @@ io.on("connection", (socket) => {
 		cb(temp_rooms)
 	});
 
-
-
 	socket.on("getRoomMember", async (roomID, cb) => {
 		cb(await getSocketsOfRoom(roomID));
 	});
@@ -305,6 +307,7 @@ io.on("connection", (socket) => {
 
 		data.time = new Date().getTime();
 		data.msg = await parseText(data.msg)
+		data.id = uuidv4();
 		console.log("chatMSG made by", data);
 		if (roomChatMsgs[data.room]) {
 			roomChatMsgs[data.room].push(data);
@@ -433,6 +436,26 @@ io.of("/").adapter.on("leave-room", async (room, id) => {
 //use public folder
 app.use(express.static(__dirname + "/public/"));
 
+// parse application/json
+app.use(express.json({ limit: '20mb', parameterLimit: 50000 }))
+
+// parse application/x-www-form-urlencoded
+app.use(express.urlencoded({
+	extended: true,
+	limit: '20mb',
+	parameterLimit: 50000
+}));
+
+app.use((req, res, next) => {
+	req.rawBody = new Promise(resolve => {
+		buf = '';
+		req.on('data', x => buf += x);
+		req.on('end', () => {
+			resolve(buf);
+		});
+	});
+	next();
+});
 
 app.get("/", async function (req, res) {
 	console.log("get /");
@@ -472,8 +495,6 @@ app.get("/reference", function (req, res) {
 	res.redirect("/rooms/reference/" + uuidv4());
 });
 
-
-
 app.get("/rooms/:roomid/:file", function (req, res) {
 	const filePath = path.join(__dirname, 'public', 'uploads', req.params.roomid, req.params.file);
 
@@ -488,18 +509,90 @@ app.get("/rooms/:roomid/:file", function (req, res) {
 	reader.on('error', err => { res.sendStatus(500) });
 });
 
+var fileUpload = upload.single('file')
 
-app.post('/upload', (req, res) => {
-	console.log('/upload');
-	//console.log(req.params);
-	console.log(req.query);
+app.post('/upload/file', async (req, res) => {
 
-	const filePath = path.join(__dirname, 'public', 'uploads', req.query.roomid, req.query.file);
-	console.log(filePath);
-	uploadFile(req, filePath).then(path => res.sendStatus(201)).catch(err => res.sendStatus(500));
+	fileUpload(req, res, function (err) {
+		if (err instanceof multer.MulterError) {
+			// A Multer error occurred when uploading.
+			res.status(500)
+			res.send(JSON.stringify({ code: err.code }))
+			return
+		} else if (err) {
+			// An unknown error occurred when uploading.
+			console.log(err);
+			res.status(500)
+			res.send(JSON.stringify({ code: 'UNKNOWN_ERROR' }))
+			return
+		}
+
+		const file = req.file;
+		const userID = req.body.user;
+		const filename = req.body.filename;
+
+		console.log(file);
+
+		if (file) {
+			var oldPath = path.join(__dirname, file.path);
+			var dirPath = path.join(__dirname, 'public','uploads','files', userID);
+			var filePath = path.join(dirPath, filename);
+
+			if (!fs.existsSync(dirPath)) {
+				fs.mkdirSync(dirPath);
+			}
+
+			fs.rename(oldPath, filePath, (err) => {
+				if (err) console.error(err)
+			})
+			res.status(201)
+			res.send(JSON.stringify({ code: 'SUCCESS', url: path.join('uploads','files', userID, filename), fileExt: path.parse(filePath).ext }))
+		} else {
+			res.status(500)
+			res.send(JSON.stringify({ code: 'NO_FILE' }))
+		}
+
+	})
 	//res.end();
 });
 
+var avatarUpload = upload.single('avatar')
+app.put('/upload/avatar', (req, res) => {
+
+	avatarUpload(req, res, function (err) {
+		if (err instanceof multer.MulterError) {
+			// A Multer error occurred when uploading.
+			res.status(500)
+			res.send(JSON.stringify({ code: err.code }))
+			return
+		} else if (err) {
+			// An unknown error occurred when uploading.
+			console.log(err);
+			res.status(500)
+			res.send(JSON.stringify({ code: 'UNKNOWN_ERROR' }))
+			return
+		}
+
+		const file = req.file;
+		const userID = req.body.user;
+
+		if (file) {
+			var oldPath = path.join(__dirname, file.path);
+			var newPath = path.join(__dirname, 'public/uploads/avatars/') + userID + '.png';
+
+			fs.rename(oldPath, newPath, (err) => {
+				if (err) console.error(err)
+			})
+			res.status(201)
+			res.send(JSON.stringify({ code: 'SUCCESS', url: path.join('uploads/avatars/') + userID + '.png' }))
+		} else {
+			res.status(500)
+			res.send(JSON.stringify({ code: 'NO_FILE' }))
+		}
+
+	})
+
+})
 
 server.listen(PORT, () => {
 	if (process.env.NODE_ENV) {
@@ -542,7 +635,6 @@ function uploadFile(req, filePath) {
 		});
 	});
 };
-
 
 function getSocketsOfRoom(roomID) {
 	return new Promise(async (resolve, reject) => {
@@ -733,13 +825,15 @@ async function renderSCSS(reloadClients) {
 			try {
 				sass.render({
 					file: element,
+					outFile: path.join(__dirname, 'public', 'css', 'dist', sassFiles[key] + '.css'),
+					sourceMap: true
 				}, function (err, result) {
 					if (err) {
 						console.log("err", err.formatted);
 						//reject(err);
 					} else {
 
-						//console.log('SCSS compiled!');
+						console.log('SCSS compiled!', result);
 						fs.writeFile(path.join(__dirname, 'public', 'css', 'dist', sassFiles[key] + '.css'), result.css, function (err) {
 							//
 
@@ -750,7 +844,24 @@ async function renderSCSS(reloadClients) {
 
 									io.emit('reloadCSS');
 									duration = Date.now() - renderBegin;
-									console.log('duration', duration, 'ms');
+									console.log('CSS Reload - Compiled in ', duration, 'ms');
+								}
+								resolve(result);
+							}
+						});
+
+
+						fs.writeFile(path.join(__dirname, 'public', 'css', 'dist', sassFiles[key] + '.css.map'), result.map, function (err) {
+							//
+
+							if (err) {
+								console.log('SCSS File write to Disk Error = ', err);
+							} else {
+								if (reloadClients) {
+
+									io.emit('reloadCSS');
+									duration = Date.now() - renderBegin;
+									console.log('CSS Reload - Compiled in ', duration, 'ms');
 								}
 								resolve(result);
 							}
@@ -765,7 +876,7 @@ async function renderSCSS(reloadClients) {
 	})
 }
 
-renderSCSS()
+renderSCSS(true)
 
 var sassWatcherFiles = ['vars', 'main', 'mediaqueries'];
 

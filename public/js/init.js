@@ -8,6 +8,7 @@ window.onload = async function () {
     var isNewID = await initIdentity();
     console.log("Identity initalisiert");
     initModals();
+
     console.log("Modals initalisiert");
     initTabs()
     console.log("Tabs initalisiert");
