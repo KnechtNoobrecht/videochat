@@ -1,19 +1,27 @@
 ## 🚩 PRIO:
-### ⚒️ fixen: stage mode funktioniert nicht, nachdem aus dem stage mode heraus angefangen wurde einem stream zuzuschauen
+### ⚒️ fix "show profile" modal
+### ⚒️ chat scroll to bottom wenn man einem raum beitritt
 ### ⚒️ avatar upload toasts (file too large,etc.)
 ### ⚒️ create room modal rework + create/join room rework
-### ⚒️ stream-starten-menü fertigstellen (start stream knopf zu starten umwandeln, wenn )
 ### ⚒️ (WIP) Dateien verschicken 
+
+
+## Fixen:
+### ⚒️ camera streaming (auch auf handy)
+### ⚒️ mobile top navbar
+### ⚒️ Wenn der Initiator vom anderen Client keine SocketIO ID hat kommt es zu extrem hohen CPU-Lasten
+
 
 ## UI:
 ### ⚒️ generelles UI-"re"work
 ### ⚒️ emojis picker für chat 
 ### ⚒️ Attachments Picker Style (Leiste über Text Input mit icons für file picker und emote picker über der liste oder woander die derzeit ausgewählten files anzeigen)
-### ⚒️ Chat vergößern (Modal?) 
+### ⚒️ Chatnachricht vergößern (Modal?) 
 ### ⚒️ Attachments große Modal anzeige (dc like)
 
 
 ## Funktionen:
+### ⚒️ STRG+V Bilder versenden
 ### ⚒️ Voice Chat
 ### ⚒️ Login System (mit Discord/Google/Apple)
 ### ⚒️ settings
@@ -28,12 +36,10 @@
 ### ⚒️ Discord Status interaktion mit link zum raum in dem man ist 
 
 
-## Fehler:
-### ⚒️ komplett broken auf safari browsern
-### ⚒️ Wenn der Initiator vom anderen Client keine SocketIO ID hat kommt es zu extrem hohen CPU-Lasten
-
-
 ## Fertig
+### ✔️ fixed: loadRoomMemberThumbnails() konnte color nicht lesen, weil daten nicht vom server gesendet wurden
+### ✔️ fixed: stage mode funktioniert nicht, nachdem aus dem stage mode heraus angefangen wurde einem stream zuzuschauen
+### ✔️ stream-starten-menü 
 ### ✔️ ein background image nutzen und src entweder farbe oder preview image, damit background color nicht an dem preview img vorbeischeint
 ### ✔️ videoelement background leer wenn stream aufhört fixen (soll wieder farbig sein)
 ### ✔️ bot_bar_hover entfernen

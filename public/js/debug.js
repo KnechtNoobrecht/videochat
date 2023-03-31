@@ -24,7 +24,7 @@ function initDebug() {
             y: 15,
             width: 300,
             height: 300,
-            visible: true,
+            visible: false,
             bg_color: '#000000',
         }
         setCookie('debugSettings', JSON.stringify(debugSettings), 365)

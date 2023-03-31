@@ -68,35 +68,31 @@ socket.on('memberRemoved', (sockets, sid, identity) => {
 })
 
 socket.on('memberStreamingState', (sid, identity) => {
-    console.log('memberStreamingState = ', identity)
+    //console.log('memberStreamingState = ', identity)
     room.changeMember(sid, identity)
 })
 
 socket.on('getStream', async (indata) => {
-    console.log('getStream = ', indata);
-    console.log('localStream = ', localStream);
     if (!localStream) {
         await startStreaming()
     }
 
     var availablePeer = await pm.getPeerBySocketID(indata.fromSocket)
-    console.log('Available Peer = ', availablePeer)
     if (availablePeer && availablePeer.initiator) {
-        console.log('remove Available Peer = ')
         availablePeer.remove()
     }
-    console.log('pm.peers = ', pm.peers)
+
 
     let options = {
         initiator: true,
         remotesid: indata.fromSocket,
         type: 'video',
-        bitrate: indata.bitrate || 3000
+        bitrate: indata.bitrate || 3000,
+        targetBrowser: indata.browser
     }
     let peer = new Peer(options)
     var outdata = await peer.init(null, localStream);
     pm.addPeer(peer)
-
 })
 
 socket.on('chatMSG', async (data) => {

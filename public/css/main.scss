@@ -42,6 +42,11 @@ html {
   }
 }
 
+img {
+  user-select: none;
+  pointer-events: none;
+}
+
 a {
   text-decoration: none;
   color: rgb(115, 199, 255);
@@ -850,7 +855,7 @@ modal {
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 99999;
+  z-index: 998;
   justify-content: center;
   align-items: center;
   font-weight: 500;
@@ -879,8 +884,9 @@ modal {
     display: grid;
     width: 600px;
     height: 400px;
-    background-color: var(--modal_bg);
+    background-color: var(--primary_bg);
     border-radius: 15px;
+    grid-template-rows: 1fr 2fr 1fr;
     @extend .shadow-dreamy
   }
 }
@@ -894,7 +900,6 @@ modal {
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-  background-color: var(--primary_bg);
   border-radius: 10px 10px 0 0;
 
   &-custom {
@@ -907,6 +912,7 @@ modal {
       position: absolute;
       width: 600px;
       text-align: center;
+      font-size: 38px;
     }
 
     &>.button-wrapper {
@@ -926,14 +932,22 @@ modal {
   justify-content: center;
   align-items: center;
   padding: 10px;
-  background-color: var(--primary_bg);
   border-radius: 0 0 0px 0px;
 
   &-custom {
     //@extend .modal-body;
     display: grid;
     place-content: center;
+
+    &>span[name="joinRoomDescription"] {
+      margin-bottom: -0.5rem;
+      font-style: normal;
+      font-weight: 500;
+      font-size: 19px;
+      color: #F7F7F7;
+    }
   }  
+
   &-msg-content {
     //@extend .modal-body;
     display: block;
@@ -947,19 +961,35 @@ modal {
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-  background-color: var(--primary_bg);
   border-radius: 0 0 10px 10px;
 
   &-custom {
     //@extend .modal-footer;
-    display: flex;
-    align-items: end;
+    display: grid;
+    align-items: center;
+    justify-content: center;
     margin: 10px;
+    margin-bottom: 25px;
 
     &>.btn {
       height: 35px;
 
     }
+  }
+}
+
+.continue-alternative {
+  text-align: center;
+  color: #858585;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: default;
+
+  &>span:last-child {
+    text-decoration: underline;
+    cursor: pointer;
   }
 }
 
@@ -1004,6 +1034,23 @@ modal {
   &-confirm {
     @extend .btn;
     border-color: var(--green);
+  }
+
+  &-continue {
+    font-family: 'Inter';
+    cursor: pointer;
+    font-style: normal;
+    font-weight: 700;
+    font-size: 24px;
+    padding: 12px 90px;
+    border: none;
+    display: flex;
+    justify-content: center;
+    background-color: var(--blue);
+    line-height: 20px;
+    text-align: center;
+    color: #EDEDED;
+    border-radius: 15px;
   }
 
   &-close {
@@ -1197,11 +1244,9 @@ modal {
   padding: 5px;
   margin-top: 5px;
   transition: all 0.3s ease 0s;
-  box-shadow: -8px 13px 74px -20px rgba(0, 0, 0, 0.61);
-  -webkit-box-shadow: -8px 13px 74px -20px rgba(0, 0, 0, 0.61);
-  -moz-box-shadow: -8px 13px 74px -20px rgba(0, 0, 0, 0.61);
+  //@extend .shadow-dreamy;
   opacity: 1;
-  //transform: t ranslate(105%, 0px);
+  //transform: translate(105%, 0px);
 }
 
 .fade-out {
@@ -1282,7 +1327,10 @@ modal {
   background-color: #2F3136;
   border-radius: 10px;
   transition: height 0.2s ease 0s;
-  //transition: 0.4s cubic-bezier(0, 0.32, 0, 1.19);
+  
+  & > * {
+    user-select: none;
+  }
 }
 
 .shareScreenWrapper,
@@ -1296,6 +1344,23 @@ modal {
   cursor: pointer;
   user-select: none;
 }
+
+.shareScreenWrapper[disabled] > p,
+.shareCameraWrapper[disabled] > p {
+  color: #ccc;
+}
+
+.shareScreenWrapper[disabled] > img,
+.shareCameraWrapper[disabled] > img {
+  filter: brightness(0) saturate(100%) invert(87%) sepia(30%) saturate(0%) hue-rotate(137deg) brightness(93%) contrast(84%);
+}
+
+.shareScreenWrapper[disabled]:hover,
+.shareCameraWrapper[disabled]:hover {
+  cursor: default;
+  border: 1px solid transparent;
+}
+
 
 .shareScreenWrapper {
   margin-bottom: 10px;

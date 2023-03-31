@@ -22,7 +22,7 @@ function initEvents() {
         var identity = e.detail.identity;
         var socketid = e.detail.sid;
 
-        console.log(e.detail.identity, e.detail.sid);
+        //console.log(e.detail.identity, e.detail.sid);
         //console.log("memberChanged ", identity, socketid);
         //var videowrapper = document.getElementById('videowrapper');
 
@@ -33,11 +33,7 @@ function initEvents() {
         videoElement.querySelector('.avatar').src = identity.avatar
         // videoElement.querySelector('.thumbnail').src = identity.thumbnail;
 
-        if (identity.thumbnail == "data:," || identity.thumbnail == null){
-            videoElement.style.backgroundImage = `linear-gradient(180deg,${identity.color},${getDarkerAndMoreSaturatedColor(identity.color)})`;
-        } else if (identity.thumbnail != null) {
-            videoElement.style.backgroundImage = `url(${identity.thumbnail})`;
-        } 
+        videoElement.style.backgroundImage = getThumbnail(identity)
 
         if (!isMe(socketid)) {
             videoElement.querySelector('.namePlaceholder').innerText = identity.username;
@@ -173,7 +169,7 @@ function initEvents() {
         //console.log('disty = ', disty);
         //console.log('isLeftOpen = ', isLeftOpen);
         //console.log('isRightOpen = ', isRightOpen);
-        console.log('touch move event = ', eve);
+        //console.log('touch move event = ', eve);
         if (!slideing && !isLeftOpen) {
             if (isRightOpen) {
                 if (distx > 200) {

@@ -12,8 +12,8 @@
 
 <body>
     <div class="mobile-top-navbar">
-        <img src="/svg/user-group.svg" onclick="toggleSideBar('left')" alt="Users">
-        <img src="/svg/chat.svg" onclick="toggleSideBar('right')" alt="Chat">
+        <span onclick="toggleSideBar('left')"><img src="/svg/user-group.svg" alt="Users"></span>
+        <span onclick="toggleSideBar('right')"><img src="/svg/chat.svg" alt="Chat"></span>
     </div>
 
     <div id="grid-container" class="grid-container">
@@ -91,7 +91,7 @@
             </div>
     
             <div class="startStreamStepTwo" id="startStreamStepTwo">
-                <div class="button-back">
+                <div class="button-back" onclick="goBack()">
                     <img src="/svg/arrow-left.svg" alt="Back" id="startStreamGoBack">
                 </div>
                 <div class="startStreamResolutionWrapper">
@@ -158,22 +158,6 @@
         </div>
     </div>
 
-    <modal id="testmodal" class="hide">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Modal Header</h2>
-                <button class="btn-secondary" onclick="modals.testmodal.close()"><img src="svg/x-dismiss.svg" alt="close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Some text in the Modal Body</p>
-                <p>Some other text...</p>
-            </div>
-            <div class="modal-footer">
-                <h3>Modal Footer</h3>
-            </div>
-        </div>
-    </modal>
-
     <modal id="setIdent" class="hide">
         <div class="modal-content-custom">
             <div class="modal-header-custom">
@@ -234,30 +218,50 @@
         </div>
     </modal>
 
-    <modal id="joinRoom" class="hide">
-        <div class="modal-content">
-            <div class="modal-header col-6">
-                <h2>Join Room</h2>
-                <button class="btn form-input" onclick="modals.joinRoom.close(); modals.createRoom.open()">Create</button>
+    <modal id="joinRoom" class="show">
+        <div class="modal-content-custom">
+            <div class="modal-header-custom">
+                <h2>Raum beitreten</h2>
             </div>
-            <div class="modal-body col-6">
-                <div class="row">
-                    <div class="col-6">Room id</div>
 
-                    <input class="col-6 form-input" id="joinroomid">
-                </div>
-                <div class="row">
-                    <div class="col-6">Password</div>
-
-                    <input type="password" class="col-6 form-input" id="joinpassword">
-                </div>
+            <div class="modal-body-custom">
+                <span name="joinRoomDescription">Gib den Raumnamen ein, um ihm beizutreten</span>
+                <input type="text" name="joinRoomID" id="joinRoomID" placeholder="ID">
+                <input type="text" type="password" name="joinRoomPassword" id="joinRoomPassword" placeholder="Passwort" style="display: block">
             </div>
-            <div class="modal-footer col-6">
-                <button class="btn form-input" onclick="joinRoom()">Join</button>
+            <div class="modal-footer-custom">
+                <button class="btn-continue" onclick="joinRoom()"><span>Weiter</span></button>
+                <div class="continue-alternative">
+                    <span>oder </span><span onclick="modals.joinRoom.close(); modals.createRoom.open()">einen Raum erstellen</span>
+                </div>
             </div>
         </div>
+
     </modal>
 
+
+    <modal id="createRoom" class="hide">
+        <div class="modal-content-custom">
+            <div class="modal-header-custom">
+                <h2>Raum erstellen</h2>
+            </div>
+
+            <div class="modal-body-custom">
+                <span name="joinRoomDescription">Gib deinen gewünschten Raumnamen ein</span>
+                <input type="text" name="roomid" id="createRoomID" placeholder="ID">
+                <input type="text" type="password" name="password" id="password" placeholder="Passwort" style="display: block">
+            </div>
+            <div class="modal-footer-custom">
+                <button class="btn-continue" onclick="createRoom()()"><span>Weiter</span></button>
+                <div class="continue-alternative">
+                    <span>oder </span><span onclick="modals.createRoom.close(); modals.joinRoom.open()">einem Raum beitreten</span>
+                </div>
+            </div>
+        </div>
+
+    </modal>
+
+    <!--
     <modal id="createRoom" class="hide">
         <div class="modal-content">
             <div class="modal-header col-6">
@@ -273,7 +277,7 @@
                 <div class="row">
                     <div class="col-6">Room id</div>
 
-                    <input class="col-6 form-input" id="roomid">
+                    <input class="col-6 form-input" id="createRoomID">
                 </div>
                 <div class="row">
                     <div class="col-6">Password</div>
@@ -286,6 +290,7 @@
             </div>
         </div>
     </modal>
+    -->
 
     <modal id="chooseStream" class="hide">
         <div class="modal-content">

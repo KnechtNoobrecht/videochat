@@ -9,6 +9,8 @@ window.onload = async function () {
     console.log("Identity initalisiert");
     initModals();
 
+    document.getElementById('joinRoomID').value = roomID
+
     console.log("Modals initalisiert");
     initTabs()
     console.log("Tabs initalisiert");
@@ -19,7 +21,6 @@ window.onload = async function () {
     console.log("Sounds initalisiert");
     console.log('chrome://webrtc-internals/');
     initDebug()
-    console.log("Debug initalisiert");
 
     // initToasts()
     console.log("Toasts initalisiert");
@@ -27,7 +28,8 @@ window.onload = async function () {
     if (isNewID) {
         openProfileModal(() => {
             console.log("Profile Modal Closed");
-            initJoinRoom();
+            modals.joinRoom.open();
+            //initJoinRoom();
         })
     } else {
         initJoinRoom();

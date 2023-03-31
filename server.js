@@ -205,7 +205,7 @@ io.on("connection", (socket) => {
 					room: roomID,
 					created: false,
 					code: 1,
-					msg: 'Room already exist'
+					msg: 'Room name not available'
 				})
 			}
 
@@ -295,15 +295,18 @@ io.on("connection", (socket) => {
 	socket.on("chatMSG", async (data) => {
 		// data = { room: this.id, msg: msg }
 		//console.log("chatMSG made by", data);
-		data.fromSocket = socket.id;
-		data.fromIdentity = rooms[data.room].identitys[socket.id];
 
-		if (rooms[data.room].members.indexOf(data.fromSocket) > -1) {
-			console.log("from user is in room");
-		} else {
-			console.log("from user is not in room");
+		if(!rooms[data.room]) {
+			//console.log("room does not exist");
+			return
 		}
 
+		if (rooms[data.room].members.indexOf(data.fromSocket) == -1) {
+			//console.log("user is not in room");
+			return
+		}
+		data.fromSocket = socket.id;
+		data.fromIdentity = rooms[data.room].identitys[socket.id];
 
 		data.time = new Date().getTime();
 		data.msg = await parseText(data.msg)
@@ -317,6 +320,7 @@ io.on("connection", (socket) => {
 
 		//console.log(roomChatMsgs);
 		io.to(data.room).emit("chatMSG", data);
+		
 	});
 
 	socket.on("memberStartStreaming", (data) => {
@@ -662,7 +666,8 @@ function getSocketsThumbnailsOfRoom(roomID) {
 		for (let index = 0; index < sockets.length; index++) {
 			socketids.push({
 				socket: sockets[index].id,
-				thumbnail: rooms[roomID].identitys[sockets[index].id].thumbnail
+				thumbnail: rooms[roomID].identitys[sockets[index].id].thumbnail,
+				color: rooms[roomID].identitys[sockets[index].id].color
 			});
 		}
 		resolve(socketids);

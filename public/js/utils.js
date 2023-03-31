@@ -16,7 +16,6 @@ function setCssVar(variable, value) {
 function getCssVar(variable) {
     return getComputedStyle(document.documentElement).getPropertyValue('--' + variable).trim();
 }
-var testvw
 
 function setStreamToWindow(peer) {
     //console.log("setStreamToWindow", peer);
@@ -24,6 +23,7 @@ function setStreamToWindow(peer) {
     var remoteVideo = videoWrapper.getElementsByTagName('video')[0]
     remoteVideo.style.zIndex = "3";
     remoteVideo.style.opacity = "1";
+    inStageMode = false
 
 
     sortStreams()
@@ -187,12 +187,7 @@ function getDarkerAndMoreSaturatedColor(hexColor) {
 // Hilfsfunktion zur Konvertierung von hex in HSL
 function hexToHsl(hex) {
     // Entferne ggf. das "#" aus dem hex-String
-    try {
-        hex = hex.replace("#", "");
-    } catch (error) {
-        return
-    }
-    
+    hex = hex.replace("#", "");
 
     // Konvertiere in RGB-Farbraum
     let r = parseInt(hex.substring(0, 2), 16) / 255;
@@ -246,7 +241,7 @@ function cloneVideoElement(identity, socketid) {
     }
 
     clone.querySelector('.avatar').src = identity.avatar
-    clone.style.backgroundImage = `linear-gradient(180deg,${identity.color},${getDarkerAndMoreSaturatedColor(identity.color)})`
+    clone.style.backgroundImage = getThumbnail(identity)
     //clone.querySelector('.videoElement').id = socketid + 'video';
     clone.onclick = function (e) {
         // only toggle when bottom bar is not clicked
@@ -306,10 +301,11 @@ function isMe(socketid) {
 }
 
 function moveElement(target, destination) {
-    console.log("moveElement", target, destination);
     destination.appendChild(target);
 }
 
+
+// sortiert videoElemente/streams nach streamaktivität
 function sortStreams() {
     var videoelemente = document.getElementsByClassName('videoElement');
     var videoelementeArray = Array.from(videoelemente);
@@ -330,9 +326,9 @@ function sortStreams() {
         var vStreamObj = video.querySelector('video').srcObject
         if (vStreamObj || showVideoWithoutStream) {
             document.getElementById('videowrapper').appendChild(video);
-            video.style = "display:flex"
+            video.style.display = "flex"
         } else {
-            video.style = "display:none"
+            video.style.display = "none"
         }
     }
 }
@@ -341,10 +337,6 @@ function toggleStageMode(id) {
     var parent = document.getElementById(id).parentElement
     var stage = document.querySelector('#stageWrapper').querySelector('#stage');
     var botStage = document.querySelector('#stageWrapper').querySelector('#botStage');
-    console.log("toggleStageMode", id);
-    //document.getElementById('stageWrapper')
-    console.log(" document.getElementById(id).parentElement() = ",);
-    console.log('parent = ', parent.id);
 
     if (parent.id == 'videoWrapper' && inStageMode) {
 
@@ -355,7 +347,6 @@ function toggleStageMode(id) {
         for (const key in videoElemente) {
             if (Object.hasOwnProperty.call(videoElemente, key)) {
                 const element = videoElemente[key];
-                console.log(element);
                 if (element.id == id) {
                     moveElement(element, stage)
                 } else {
@@ -371,7 +362,6 @@ function toggleStageMode(id) {
         for (const key in videoElemente) {
             if (Object.hasOwnProperty.call(videoElemente, key)) {
                 const element = videoElemente[key];
-                console.log(element);
 
                 moveElement(element, document.getElementById('videowrapper'))
 
@@ -402,8 +392,6 @@ function getFrame(blur) {
     var b = blur || 0
     var canvas = document.createElement('canvas');
     var videoElement = document.querySelector('#videoElement_' + socket.id).querySelector('video');
-    console.log('videoElement', videoElement);
-    console.log('socket.id', socket.id);
     canvas.width = videoElement.videoWidth / 4;
     canvas.height = videoElement.videoHeight / 4;
     var ctx = canvas.getContext('2d');
@@ -411,7 +399,6 @@ function getFrame(blur) {
     ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
     var dataURL = canvas.toDataURL();
     canvas.remove();
-    console.log('getFrame', canvas);
     return dataURL
 }
 
@@ -686,8 +673,8 @@ function startStreaming() {
     return new Promise((resolve, reject) => {
         //console.log('startStreaming', localStreamOptions);
 
-        navigator.mediaDevices
-            .getDisplayMedia({
+        if(getBrowser() != "Safari") {
+            var mediaConstraints = {
                 audio: {
                     autoGainControl: false,
                     channelCount: 2,
@@ -700,12 +687,25 @@ function startStreaming() {
                 },
                 video: {
                     chromeMediaSource: 'desktop',
+                    surfaceSwitching: 'include',
                     width: localStreamOptions.resolution.width,
                     height: localStreamOptions.resolution.height,
                     frameRate: localStreamOptions.resolution.frameRate
-
+    
                 }
-            })
+            }
+        } else {
+            console.log("Current Browser is Safari, using different media constraints")
+            var mediaConstraints = {
+                //audio: true,
+                video: true
+            }
+        }
+
+        console.log(navigator)
+
+        navigator.mediaDevices
+            .getDisplayMedia(mediaConstraints)
             .then(async (stream) => {
                 //stopStream()
                 try {
@@ -745,7 +745,7 @@ function startStreaming() {
 
                 var videoWrapper = document.getElementById('videoElement_' + socket.id)
                 var localVideo = videoWrapper.getElementsByTagName('video')[0]
-                var icon = videoWrapper.getElementsByTagName('img')[0]
+                var avatarImage = videoWrapper.querySelector(".avatar.myavatar")
                 localVideo.srcObject = localStream;
 
                 localVideo.onloadedmetadata = (e) => {
@@ -754,7 +754,7 @@ function startStreaming() {
                     localVideo.play()
                     localVideo.volume = 0
                     socket.emit('memberStartStreaming', room.id);
-                    icon.style = "display:none"
+                    avatarImage.style = "display:none"
                     //modals.chooseStream.close()
 
                     localStream.getVideoTracks()[0].onended = function (e) {
@@ -780,7 +780,10 @@ function startStreaming() {
     })
 }
 
+
+
 function startCamStreaming() {
+    console.log("trying to start camera stream")
     return new Promise((resolve, reject) => {
 
         if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
@@ -800,7 +803,7 @@ function startCamStreaming() {
                         min: 5,
                         ideal: localStreamOptions.resolution.frameRate,
                         max: 60,
-                    }
+                    } 
 
                 })
                 .then(async (stream) => {
@@ -830,16 +833,46 @@ function startCamStreaming() {
 
                     localStream.getVideoTracks()[0].contentHint = localStreamOptions.resolution.hint;
 
+
+                    var videoWrapper = document.getElementById('videoElement_' + socket.id)
+                    var localVideo = videoWrapper.getElementsByTagName('video')[0]
+                    var avatarImage = videoWrapper.querySelector(".avatar.myavatar")
+                    
                     localVideo.srcObject = localStream;
 
-                    socket.emit('memberStartStreaming', room.id);
+
+                    localVideo.onloadedmetadata = (e) => {
+                        console.log('onloadedmetadata');
+                        closeStartStreamModal()
+                        localVideo.play()
+                        localVideo.volume = 0
+                        socket.emit('memberStartStreaming', room.id);
+                        avatarImage.style = "display:none"
+                        //modals.chooseStream.close()
+    
+                        localStream.getVideoTracks()[0].onended = function (e) {
+                            console.log('localStream.getVideoTracks()[0].onended', e);
+                            stopStream();
+                        };
+    
+                        //streamThumbnail = getFrame();
+                        sendThumbnail()
+                        streamThumbnailTimer = setInterval(() => {
+                            sendThumbnail()
+                        }, streamPreviewImageReloadTime)
+    
+                        resolve(localStream);
+                    };
+
+
+          /*           socket.emit('memberStartStreaming', room.id);
 
                     streamThumbnailTimer = setInterval(() => {
                         streamThumbnail = getFrame(1);
                     }, 1000)
 
                     closeStartStreamModal()
-                    resolve(localStream);
+                    resolve(localStream); */
                 })
                 .catch((err) => {
                     console.log('nay', err);
@@ -862,7 +895,8 @@ function getStream(remotesid) {
     socket.emit('getStream', {
         fromSocket: socket.id,
         toSocket: remotesid,
-        quality: remoteStreamOptions.bitrate
+        quality: remoteStreamOptions.bitrate,
+        browser: getBrowser()
     });
 }
 
@@ -1028,35 +1062,33 @@ function initSound() {
         },
     });
 }
-var reloads = 0
 
 function reloadInterval() {
     loadRoomMemberThumbnails();
     testTimer = setInterval(loadRoomMemberThumbnails, streamPreviewImageReloadTime);
 }
 
+function getThumbnail(identity) {
+    if (identity.thumbnail == "data:," || identity.thumbnail == null){
+        return `linear-gradient(180deg,${identity.color},${getDarkerAndMoreSaturatedColor(identity.color)})`;
+    } else if (identity.thumbnail != null) {
+        return `url(${identity.thumbnail})`
+    } 
+}
+
 function loadRoomMemberThumbnails() {
     socket.emit('getRoomMemberThumbnails', roomID, function (data) {
         for (const key in data) {
             if (Object.hasOwnProperty.call(data, key)) {
-                const element = data[key];
-                //console.log('loadRoomMemberThumbnails', element);
-                if (element.thumbnail != null) {
-                    var videoElement = document.getElementById('videoElement_' + element.socket);
-                    videoElement.style.backgroundImage = `url(${identity.thumbnail})`;
-                } else {
-                    var videoElement = document.getElementById('videoElement_' + element.socket);
-                    videoElement.style.backgroundImage = `linear-gradient(180deg,${identity.color},${getDarkerAndMoreSaturatedColor(identity.color)})`;
-                }
+                const identity = data[key];
+                var videoElement = document.getElementById('videoElement_' + identity.socket);
+                videoElement.style.backgroundImage = getThumbnail(identity)
             }
         }
-        //console.log('reloads = ', reloads);
-        reloads++;
     });
 }
 
 function sendThumbnail() {
-    console.log('sendThumbnail');
     streamThumbnail = getFrame(1);
     //console.log('streamThumbnail', streamThumbnail);
     var sendToServer = {
@@ -1070,23 +1102,23 @@ function sendThumbnail() {
 var testTimer;
 
 function initJoinRoom() {
-    //(roomID, identity, pw
     socket.emit('joinRoom', roomID, identitys[0], '', handleJoinRoomCB)
 }
 
 
 function createRoom() {
     var pw = document.getElementById('password').value
-    var rid = document.getElementById('roomid').value
-    var rn = document.getElementById('roomname').value
+    var rid = document.getElementById('createRoomID').value
+    var rn = rid//document.getElementById('roomname').value
     console.log('createRoom', rid);
     console.log('createRoom pw = ', pw);
     socket.emit('createRoom', rid, identitys[0], pw, rn, handleCreateRoomCB)
 }
 
 function joinRoom() {
-    var pw = document.getElementById('joinpassword').value
-    socket.emit('joinRoom', roomID, identitys[0], pw, handleJoinRoomCB)
+    var pw = document.getElementById('joinRoomPassword').value
+    var rid = document.getElementById('joinRoomID').value
+    socket.emit('joinRoom', rid, identitys[0], pw, handleJoinRoomCB)
 }
 
 function addAdminUI() {
@@ -1140,15 +1172,22 @@ function handleJoinRoomCB(params) {
                 isAdmin = params.isAdmin;
                 addAdminUI();
             }
+
+            history.pushState("", '', '/rooms/' + params.room)
+
             //new Toast({
             //    content: 'Raum beigetreten'
             //})
             break;
         case 1:
             console.log('joinRoom room not found', params);
-            document.getElementById('roomid').value = roomID
-            document.getElementById('joinroomid').value = roomID
-            modals.createRoom.open();
+            document.getElementById('createRoomID').value = roomID
+            document.getElementById('joinRoomID').value = roomID
+            //modals.createRoom.open();
+
+            // for dev purposes: remove!!!
+            modals.joinRoom.open();
+
             new Toast({
                 content: 'Raum wurde nicht gefunden, du kannst ihn erstellen'
             })
@@ -1166,7 +1205,7 @@ function handleJoinRoomCB(params) {
         case 4:
             console.log('joinRoom room password wrong', params);
             modals.joinRoom.open();
-            document.getElementById('joinroomid').value = roomID
+            document.getElementById('joinRoomID').value = roomID
             new Toast({
                 content: 'Das Passwort ist falsch'
             })

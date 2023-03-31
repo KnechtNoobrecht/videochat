@@ -28,6 +28,18 @@ function toggleStartStreamModal(ctx) {
         alignElement(startStreamModal)
     //show element
     } else {
+        //check for screen capture availability
+        if(!(navigator.mediaDevices && 'getDisplayMedia' in navigator.mediaDevices)) {
+            console.log("Sharing screen is not available")
+            startScreenShare.setAttribute("disabled", "true")
+            startScreenShare.onclick = ""
+        } 
+        if(!(navigator.mediaDevices && 'getUserMedia' in navigator.mediaDevices)) {
+            console.log("Sharing camera is not available")
+            startCameraShare.setAttribute("disabled", "true")
+            startCameraShare.onclick = ""
+        } 
+
         startStreamBG.style.display = "block"
         startStreamBTN.style.zIndex = "100"
         alignElement(startStreamModal)
@@ -295,18 +307,24 @@ function initModals() {
     //console.log(mods);
 
     for (var i = 0; i < mods.length; i++) {
-        // console.log('mods[', i, '] ', mods[i]);
-        // console.log('i ', i);
+        
+        // init setIdent modal
+        if(mods[i].id == "setIdent") {
+            mods[i].querySelector('#username').value = identitys[0].username
+            mods[i].querySelector('#avatar').value = identitys[0].avatar
+            mods[i].querySelector('#previewAvatar').src = identitys[0].avatar
+        }
+
         var m = new Modal(mods[i]);
         modals[m.id] = m;
     }
 
-    document.querySelector("#setIdent").querySelector(".myavatar").src = identitys[0].avatar;
+/*     document.querySelector("#setIdent").querySelector(".myavatar").src = identitys[0].avatar;
     document.getElementById('username').value = identitys[0].username;
     document.getElementById('avatar').value = identitys[0].avatar;
     if (identitys[0].username == 'Anonymous') {
         //  openProfileModal()
-    }
+    } */
 }
 
 function initTabs() {
@@ -338,11 +356,8 @@ function handleTabClick(elem, target) {
 }
 
 function openProfileModal(cb) {
-    this.querySelector("img").src = identitys[0].avatar;
     modals.setIdent.open()
     modals.setIdent.addEventListener("closed", function (e) {
-        console.log('modals.setIdent.closed', e);
-
         if (cb) {
             cb(e)
         }
@@ -386,18 +401,15 @@ function rightClick(e) {
         var path = e.composedPath ? e.composedPath() : e.path;
         var msgid;
 
-        console.log(path);
 
         for (let index = 0; index < path.length; index++) {
             const element = path[index];
 
-            console.log(element);
 
             if (element.tagName == 'HTML') {
                 break;
             }
             if (element.classList.contains('videoElement')) {
-                console.log('videoElement');
                 id = element.id.substring(element.id.indexOf('_') + 1);
                 break
             }
@@ -406,7 +418,6 @@ function rightClick(e) {
                 break
             }
             if (element.classList.contains('chat-message-wrapper')) {
-                console.log(element);
                 console.log('fromIdentity:', element.getAttribute("fromIdentity"));
 
                 id = element.id.substring(element.id.indexOf('_') + 1);
@@ -424,7 +435,6 @@ function rightClick(e) {
             }
         }
 
-        console.log(id);
 
         var menu = document.getElementById("contextMenu")
         var elementWrapper = document.querySelector('ul');
@@ -531,7 +541,7 @@ handleConMenuItemClick = async function (id, type) {
             break;
         case 'edit_profile':
             console.log('edit_profile = ', room.members[id]);
-            modals.setIdent.open()
+            openProfileModal()
             break;
         case 'remove_admin':
             console.log('remove_admin = ', room.members[id]);

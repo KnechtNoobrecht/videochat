@@ -46,7 +46,8 @@ class Peer extends EventTarget {
         connectionID: connectionID,
         identity: identity,
         type: type,
-        bitrate: bitrate
+        bitrate: bitrate,
+        targetBrowser: targetBrowser
     }) {
         super();
         if (initiator) {
@@ -65,15 +66,42 @@ class Peer extends EventTarget {
         this.initiator = initiator
         this.remotesid = remotesid
         this.localsid = socket.id
+        this.targetBrowser = targetBrowser
         this.connected = false
         this.type = type || 'video'
         this.tracks = []
         this.maxBitrate = bitrate || 30000
         this.sended = new BitrateObject()
         this.received = new BitrateObject()
+        this.negotiate = this.negotiate.bind(this)
 
         console.log('Peer Constructor = ', this);
     }
+
+    async negotiate() {
+        try {
+            if (this.peer.signalingState === 'stable') {
+                const offer = await this.peer.createOffer();
+                console.log("Created local offer:", offer);
+                
+                await this.peer.setLocalDescription(offer);
+                console.log("Local description set:", this.peer.localDescription);
+    
+                // Send the offer to the remote peer using your signaling mechanism
+                socket.emit('peerOffer', {
+                    fromSocket: this.localsid,
+                    toSocket: this.remotesid,
+                    connectionID: this.connectionID,
+                    data: {
+                        offer: offer
+                    }
+                });
+            }
+        } catch (err) {
+            console.error('Error handling negotiationneeded event:', err);
+        }
+    }
+    
 
     /**
      * @method init
@@ -85,6 +113,7 @@ class Peer extends EventTarget {
         return new Promise(async (resolve, reject) => {
             peers[this.connectionID] = this
             console.log('init peer start');
+            console.log("Received remote offer:", offer);
             var prevReport = null;
             var that = this;
             var infoDataIn = document.getElementById('videoElement_' + this.remotesid).querySelector('#infoData_In')
@@ -173,15 +202,16 @@ class Peer extends EventTarget {
                     this.remove();
                 }
             })
+
             // this.peer.addEventListener('icecandidate', (event) => {});
             this.peer.addEventListener('icecandidateerror', (event) => {
                 // console.log('onicecandidateerror')
                 // console.log(event)
             });
-            this.peer.addEventListener('negotiationneeded', (event) => {
-                console.log('negotiation needed')
-                console.log(event)
-            });
+
+            
+            this.peer.addEventListener('negotiationneeded', this.negotiate);
+
             this.peer.addEventListener('icecandidate', (event) => {
                 //console.log('icecandidate')
                 if (event.candidate) {
@@ -195,7 +225,29 @@ class Peer extends EventTarget {
                     })
                 }
             });
+
+
+
             this.peer.addEventListener('track', (event) => {
+
+
+                ///
+                const trackKind = event.track.kind;
+
+                let transceiver = this.peer.getTransceivers().find(t => t.receiver.track.kind === trackKind);
+                if (!transceiver) {
+                    transceiver = this.peer.addTransceiver(trackKind, {
+                        direction: 'sendrecv',
+                        streams: [event.streams[0]],
+                    });
+                }
+                transceiver.sender.replaceTrack(event.track);
+                
+                this.negotiate();
+                ///
+
+
+
                 //console.log('ontrack', event);
                 this.remoteStream = event.streams[0]
                 setStreamToWindow(this)
@@ -214,6 +266,7 @@ class Peer extends EventTarget {
                                }
                                remoteVideo.onloadedmetadata = (e) => remoteVideo.play(); */
             });
+
             this.peer.addEventListener('datachannel', (event) => {
                 //this.dataChannel = event.channel
                 //console.log('datachannel', event.channel);
@@ -253,20 +306,27 @@ class Peer extends EventTarget {
 
             if (this.initiator) {
                 this.peer.createOffer().then(sdp => {
-                    //var arr = sdp.sdp.split('\r\n');
-                    //arr.forEach((str, i) => {
-                    //    if (/^a=fmtp:\d*/.test(str)) {
-                    //        console.log('SDP Offer max bitrate : ', this.maxBitrate);
-                    //        arr[i] = str + ';x-google-max-bitrate=' + this.maxBitrate + ';x-google-min-bitrate=500;//x-google-start-bitrate=' + this.maxBitrate;
-                    //    } else if (/^a=mid:(1|video)/.test(str)) {
-                    //        console.log('SDP Offer max bitrate : ', this.maxBitrate);
-                    //        arr[i] += '\r\nb=AS:' + this.maxBitrate;
-                    //    }
-                    //});
-                    //sdp = new RTCSessionDescription({
-                    //    type: 'offer',
-                    //    sdp: arr.join('\r\n'),
-                    //})
+
+                    if (this.targetBrowser != 'Safari') {
+                        var arr = sdp.sdp.split('\r\n');
+                        arr.forEach((str, i) => {
+                            if (/^a=fmtp:\d*/.test(str)) {
+                                console.log('SDP Offer max bitrate : ', this.maxBitrate);
+                                arr[i] = str + ';x-google-max-bitrate=' + this.maxBitrate + ';x-google-min-bitrate=500;//x-google-start-bitrate=' + this.maxBitrate;
+                            } else if (/^a=mid:(1|video)/.test(str)) {
+                                console.log('SDP Offer max bitrate : ', this.maxBitrate);
+                                arr[i] += '\r\nb=AS:' + this.maxBitrate;
+                            }
+                        });
+                        sdp = new RTCSessionDescription({
+                            type: 'offer',
+                            sdp: arr.join('\r\n'),
+                        })
+
+                        sdp.sdp = sdp.sdp.replace('useinbandfec=1', 'useinbandfec=1; stereo=1; maxaveragebitrate=510000')
+                    } else {
+                        console.log("Target browser is Safari, not modifying SDP")
+                    }
 
                     //console.log('setLocalDescription', sdp);
 
@@ -301,23 +361,32 @@ class Peer extends EventTarget {
             } else {
 
                 await this.peer.setRemoteDescription(new RTCSessionDescription(offer))
+                console.log("Remote description set:", this.peer.remoteDescription);
                 this.peer.createAnswer().then(sdp => {
-                    var arr = sdp.sdp.split('\r\n');
-                    arr.forEach((str, i) => {
-                        if (/^a=fmtp:\d*/.test(str)) {
-                            arr[i] = str + ';x-google-max-bitrate=' + this.maxBitrate + ';x-google-min-bitrate=500;x-google-start-bitrate=' + this.maxBitrate;
-                        } else if (/^a=mid:(1|video)/.test(str)) {
-                            arr[i] += '\r\nb=AS:' + this.maxBitrate;
-                        }
-                    });
-                    sdp = new RTCSessionDescription({
-                        type: 'answer',
-                        sdp: arr.join('\r\n'),
-                    })
-                    sdp.sdp = sdp.sdp.replace('useinbandfec=1', 'useinbandfec=1; stereo=1; maxaveragebitrate=510000')
+
+                    if (getBrowser() != 'Safari') {
+                        var arr = sdp.sdp.split('\r\n');
+                        arr.forEach((str, i) => {
+                            if (/^a=fmtp:\d*/.test(str)) {
+                                arr[i] = str + ';x-google-max-bitrate=' + this.maxBitrate + ';x-google-min-bitrate=500;x-google-start-bitrate=' + this.maxBitrate;
+                            } else if (/^a=mid:(1|video)/.test(str)) {
+                                arr[i] += '\r\nb=AS:' + this.maxBitrate;
+                            }
+                        });
+                        sdp = new RTCSessionDescription({
+                            type: 'answer',
+                            sdp: arr.join('\r\n'),
+                        })
+                        sdp.sdp = sdp.sdp.replace('useinbandfec=1', 'useinbandfec=1; stereo=1; maxaveragebitrate=510000')
+                    } else {
+                        console.log("Current browser is Safari, not modifying SDP")
+                    }
+                    
                     //console.log('setRemoteDescription', offer);
                     //console.log('setLocalDescription', sdp);
                     this.peer.setLocalDescription(sdp);
+                    console.log("Created local answer:", sdp);
+                    console.log("Local description set:", this.peer.localDescription);
                     resolve(sdp)
                 });
 
@@ -361,12 +430,12 @@ class Peer extends EventTarget {
 
         //document.getElementById('videoElement_' + this.remotesid).getElementsByTagName('video')[0].srcObject = null;
 
-        if (!this.initiator) {
-            console.log('videoElement_' + this.remotesid)
-            console.log(document.getElementById('videoElement_' + this.remotesid))
-            console.log(document.getElementById('videoElement_' + this.remotesid).querySelector('video'))
-            //document.getElementById('videoElement_' + this.remotesid).querySelector('video').srcObject = null;
-        }
+        //if (!this.initiator) {
+        //    console.log('videoElement_' + this.remotesid)
+        //    console.log(document.getElementById('videoElement_' + this.remotesid))
+        //    console.log(document.getElementById('videoElement_' + this.remotesid).querySelector('video'))
+        //    //document.getElementById('videoElement_' + this.remotesid).querySelector('video').srcObject = null;
+        //}
 
         this.peer.close()
         delete peers[this.connectionID]
@@ -626,7 +695,7 @@ class Room extends EventTarget {
         }
     }
     changeMember(sid, identity) {
-        console.log('changeMember', sid, identity);
+        //console.log('changeMember', sid, identity);
         this.#event = new CustomEvent("memberChanged", {
             detail: {
                 sid: sid,
@@ -638,7 +707,7 @@ class Room extends EventTarget {
             sid: sid,
             identity: identity
         }
-        console.log('Member changed');
+        //console.log('Member changed');
     }
     sendMsg(msg, attachments) {
         var data = {

@@ -123,6 +123,10 @@ html {
   html :focus {
     outline: none; }
 
+img {
+  user-select: none;
+  pointer-events: none; }
+
 a {
   text-decoration: none;
   color: #73c7ff; }
@@ -748,7 +752,7 @@ modal {
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 99999;
+  z-index: 998;
   justify-content: center;
   align-items: center;
   font-weight: 500;
@@ -773,8 +777,9 @@ modal {
     display: grid;
     width: 600px;
     height: 400px;
-    background-color: var(--modal_bg);
-    border-radius: 15px; }
+    background-color: var(--primary_bg);
+    border-radius: 15px;
+    grid-template-rows: 1fr 2fr 1fr; }
 
 .chat-message-info {
   position: relative; }
@@ -784,7 +789,6 @@ modal {
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-  background-color: var(--primary_bg);
   border-radius: 10px 10px 0 0; }
   .modal-header-custom {
     display: flex;
@@ -793,7 +797,8 @@ modal {
     .modal-header-custom > h2 {
       position: absolute;
       width: 600px;
-      text-align: center; }
+      text-align: center;
+      font-size: 38px; }
     .modal-header-custom > .button-wrapper {
       display: grid;
       place-items: center;
@@ -808,11 +813,16 @@ modal {
   justify-content: center;
   align-items: center;
   padding: 10px;
-  background-color: var(--primary_bg);
   border-radius: 0 0 0px 0px; }
   .modal-body-custom {
     display: grid;
     place-content: center; }
+    .modal-body-custom > span[name="joinRoomDescription"] {
+      margin-bottom: -0.5rem;
+      font-style: normal;
+      font-weight: 500;
+      font-size: 19px;
+      color: #F7F7F7; }
   .modal-body-msg-content {
     display: block;
     overflow: auto;
@@ -823,14 +833,27 @@ modal {
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-  background-color: var(--primary_bg);
   border-radius: 0 0 10px 10px; }
   .modal-footer-custom {
-    display: flex;
-    align-items: end;
-    margin: 10px; }
+    display: grid;
+    align-items: center;
+    justify-content: center;
+    margin: 10px;
+    margin-bottom: 25px; }
     .modal-footer-custom > .btn, .modal-footer-custom > .btn-primary, .modal-footer-custom > .btn-secondary, .modal-footer-custom > .btn-confirm, .modal-footer-custom > .btn-close {
       height: 35px; }
+
+.continue-alternative {
+  text-align: center;
+  color: #858585;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: default; }
+  .continue-alternative > span:last-child {
+    text-decoration: underline;
+    cursor: pointer; }
 
 .editavatar {
   position: absolute;
@@ -862,6 +885,21 @@ modal {
     font-size: 20px; }
   .btn-confirm {
     border-color: var(--green); }
+  .btn-continue {
+    font-family: 'Inter';
+    cursor: pointer;
+    font-style: normal;
+    font-weight: 700;
+    font-size: 24px;
+    padding: 12px 90px;
+    border: none;
+    display: flex;
+    justify-content: center;
+    background-color: var(--blue);
+    line-height: 20px;
+    text-align: center;
+    color: #EDEDED;
+    border-radius: 15px; }
   .btn-close {
     padding: 2px;
     border-radius: 5px;
@@ -1023,9 +1061,6 @@ modal {
   padding: 5px;
   margin-top: 5px;
   transition: all 0.3s ease 0s;
-  box-shadow: -8px 13px 74px -20px rgba(0, 0, 0, 0.61);
-  -webkit-box-shadow: -8px 13px 74px -20px rgba(0, 0, 0, 0.61);
-  -moz-box-shadow: -8px 13px 74px -20px rgba(0, 0, 0, 0.61);
   opacity: 1; }
 
 .fade-out {
@@ -1093,6 +1128,8 @@ modal {
   background-color: #2F3136;
   border-radius: 10px;
   transition: height 0.2s ease 0s; }
+  .startStreamStepsWrapper > * {
+    user-select: none; }
 
 .shareScreenWrapper,
 .shareCameraWrapper {
@@ -1104,6 +1141,19 @@ modal {
   padding: 10px 15px 10px 15px;
   cursor: pointer;
   user-select: none; }
+
+.shareScreenWrapper[disabled] > p,
+.shareCameraWrapper[disabled] > p {
+  color: #ccc; }
+
+.shareScreenWrapper[disabled] > img,
+.shareCameraWrapper[disabled] > img {
+  filter: brightness(0) saturate(100%) invert(87%) sepia(30%) saturate(0%) hue-rotate(137deg) brightness(93%) contrast(84%); }
+
+.shareScreenWrapper[disabled]:hover,
+.shareCameraWrapper[disabled]:hover {
+  cursor: default;
+  border: 1px solid transparent; }
 
 .shareScreenWrapper {
   margin-bottom: 10px; }
