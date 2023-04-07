@@ -9,15 +9,15 @@ const {
 var sass = require('node-sass');
 fs = require('fs');
 const multer = require('multer')
-const upload = multer({ dest: 'multerTemp/' })
-//const upload = multer({ dest: 'multerTemp/', limits: { fileSize: 10485760 } })
+//const upload = multer({ dest: 'multerTemp/' })
+const fileUploader = multer({ dest: 'multerTemp/', limits: { fileSize: 100 * 1024 * 1024 } })
+const avatarUploader = multer({ dest: 'multerTemp/', limits: { fileSize: 10 * 1024 * 1024 } })
 
 const bcrypt = require('bcrypt'); //Importing the NPM bcrypt package.
 const saltRounds = 10; //We are setting salt rounds, higher is safer.
 
 const PORT = process.env.PORT || 6001;
 
-var roomChatMsgs = {};
 var rooms = {};
 
 class Room {
@@ -29,7 +29,7 @@ class Room {
 		this.blocked = []
 		this.identitys = {}
 		this.password = pw
-		this.msgs = []
+		this.msgs = {}
 	}
 	addMember(sid, identity) {
 		console.log('addMember');
@@ -80,7 +80,7 @@ class Room {
 		var data = {
 			room: this.id,
 			msg: msg,
-            attachments:attachments
+			attachments: attachments
 		}
 		socket.emit('chatMSG', data);
 	}
@@ -108,6 +108,15 @@ io.on("connection", (socket) => {
 			identity.isStreaming = false;
 			identity.thumbnail = null;
 			var room = rooms[roomID]
+
+			if (!roomID) {
+				cb({
+					room: roomID,
+					joined: false,
+					code: 2,
+					msg: 'No roomID supplied'
+				})
+			}
 
 			if (!room) {
 				cb({
@@ -138,6 +147,35 @@ io.on("connection", (socket) => {
 					return;
 				}
 
+				/* 			console.log('');
+							console.log('pw: ',pw);
+							console.log('room: ', rooms[roomID]);
+							console.log(''); */
+				//rooms[roomID].password
+				/* 				if(await bcrypt.compare(pw, room.password)) {
+									if (userIsAdmin || userIsMember) {
+										socket.join(roomID);
+										cb({
+											room: roomID,
+											joined: true,
+											code: 0,
+											msg: 'Room joined',
+											isAdmin: userIsAdmin
+										})
+					
+										rooms[roomID].addMember(socket.id, identity)
+										var sockets = await getSocketsOfRoom(roomID);
+										socket.emit("membersLoaded", sockets);
+										socket.emit("loadChatMsgs", roomChatMsgs[roomID]);
+									}
+									cb({
+										room: roomID,
+										joined: false,
+										code: 6,
+										msg: 'Room password empty'
+									})
+									return
+								} */
 
 				if (userIsAdmin || userIsMember || await bcrypt.compare(pw, room.password)) {
 					socket.join(roomID);
@@ -152,7 +190,8 @@ io.on("connection", (socket) => {
 					rooms[roomID].addMember(socket.id, identity)
 					var sockets = await getSocketsOfRoom(roomID);
 					socket.emit("membersLoaded", sockets);
-					socket.emit("loadChatMsgs", roomChatMsgs[roomID]);
+					socket.emit("loadChatMsgs", rooms[roomID].msgs);
+					//console.log(rooms[roomID].msgs);
 					console.log(`User ${identity.username} joined room ${roomID}`);
 				} else {
 					cb({
@@ -294,40 +333,72 @@ io.on("connection", (socket) => {
 
 	socket.on("chatMSG", async (data) => {
 		// data = { room: this.id, msg: msg }
-		//console.log("chatMSG made by", data);
-
-		if(!rooms[data.room]) {
-			//console.log("room does not exist");
+		if (!rooms[data.room]) {
+			console.log("chatMSG - room does not exist");
 			return
 		}
 
-		if (rooms[data.room].members.indexOf(data.fromSocket) == -1) {
-			//console.log("user is not in room");
-			return
-		}
 		data.fromSocket = socket.id;
 		data.fromIdentity = rooms[data.room].identitys[socket.id];
 
-		data.time = new Date().getTime();
-		data.msg = await parseText(data.msg)
-		data.id = uuidv4();
-		console.log("chatMSG made by", data);
-		if (roomChatMsgs[data.room]) {
-			roomChatMsgs[data.room].push(data);
-		} else {
-			roomChatMsgs[data.room] = [data];
+		if (!rooms[data.room].identitys[socket.id]) {
+			console.log("chatMSG - user is not in room");
+			return
 		}
 
-		//console.log(roomChatMsgs);
+		if (rooms[data.room].members.indexOf(data.fromIdentity.id) == -1) {
+			console.log("chatMSG - user is not in room");
+			return
+		}
+
+		data.time = new Date().getTime();
+		data.renderdMsg = await parseText(data.msg)
+
+		rooms[data.room].msgs[data.id] = data;
 		io.to(data.room).emit("chatMSG", data);
+	});
+	
+	socket.on("updateMsg", async (data) => {
+		// data = { room: this.id, msg: msg }
+		if (!rooms[data.room]) {
+			console.log("updateMsg - room does not exist");
+			return
+		}
 		
+		//console.log(data);
+		//if(data.sid != data.identity.sid) {
+		//	console.log("updateMsg - not allowed");
+		//	return
+		//}
+		//data.fromSocket = socket.id;
+		//data.fromIdentity = rooms[data.room].identitys[socket.id];
+
+		if (!rooms[data.room].identitys[socket.id]) {
+			console.log("updateMsg - user is not in room");
+			return
+		}
+
+		if (rooms[data.room].members.indexOf(data.fromIdentity.id) == -1) {
+			console.log("updateMsg - user is not in room");
+			return
+		}
+
+		data.renderdMsg = await parseText(data.msg)
+
+		rooms[data.room].msgs[data.id] = data;
+		io.to(data.room).emit("updateMsg", data);
 	});
 
-	socket.on("memberStartStreaming", (data) => {
+	socket.on("memberStartStreaming", (roomID) => {
 		// data = { offer: offer, initiatorsid: this.sid, connectionID: this.id }
-		console.log("To Room = ", data);
-		rooms[data].identitys[socket.id].isStreaming = true;
-		io.sockets.in(data).emit("memberStreamingState", socket.id, rooms[data].identitys[socket.id]);
+		console.log("To Room = ", roomID);
+
+		if (isIdentityInRoom(socket.id, roomID)) {
+			rooms[roomID].identitys[socket.id].isStreaming = true;
+			io.sockets.in(roomID).emit("memberStreamingState", socket.id, rooms[roomID].identitys[socket.id]);
+		} else {
+			console.log('memberStartStreaming room not existing or member not in room');
+		}
 	});
 
 	socket.on("memberChangeIdentity", (data) => {
@@ -463,8 +534,9 @@ app.use((req, res, next) => {
 
 app.get("/", async function (req, res) {
 	console.log("get /");
+	res.sendFile(path.join(__dirname + "/public/video.html"));
 	//await renderSCSS()
-	res.redirect("/rooms/" + uuidv4());
+	//res.redirect("/rooms/" + uuidv4());
 });
 
 app.get("/css/dist/main.css", async function (req, res) {
@@ -513,33 +585,45 @@ app.get("/rooms/:roomid/:file", function (req, res) {
 	reader.on('error', err => { res.sendStatus(500) });
 });
 
-var fileUpload = upload.single('file')
+var fileUpload = fileUploader.single('file')
 
 app.post('/upload/file', async (req, res) => {
 
 	fileUpload(req, res, function (err) {
 		if (err instanceof multer.MulterError) {
 			// A Multer error occurred when uploading.
+			console.log('Multer err: ', err);
 			res.status(500)
 			res.send(JSON.stringify({ code: err.code }))
 			return
 		} else if (err) {
 			// An unknown error occurred when uploading.
-			console.log(err);
+			console.log('Multer err: ', err);
 			res.status(500)
 			res.send(JSON.stringify({ code: 'UNKNOWN_ERROR' }))
 			return
 		}
 
+
+
 		const file = req.file;
 		const userID = req.body.user;
+		const roomid = req.body.roomid;
+		const msgid = req.body.msgid;
 		const filename = req.body.filename;
+		const fileid = req.body.fileid;
 
-		console.log(file);
+		console.log(`File form User ${userID} - Filename ${filename} - Fileid ${fileid} - Roomid ${roomid} - msgid ${msgid}`);
+
+		if (!rooms[roomid]) {
+			res.status(500)
+			res.send(JSON.stringify({ code: 'ROOM_NOT_EXIST' }))
+			return
+		}
 
 		if (file) {
 			var oldPath = path.join(__dirname, file.path);
-			var dirPath = path.join(__dirname, 'public','uploads','files', userID);
+			var dirPath = path.join(__dirname, 'public', 'uploads', 'files', userID);
 			var filePath = path.join(dirPath, filename);
 
 			if (!fs.existsSync(dirPath)) {
@@ -550,17 +634,25 @@ app.post('/upload/file', async (req, res) => {
 				if (err) console.error(err)
 			})
 			res.status(201)
-			res.send(JSON.stringify({ code: 'SUCCESS', url: path.join('uploads','files', userID, filename), fileExt: path.parse(filePath).ext }))
+			res.send(JSON.stringify({ code: 'SUCCESS', url: path.join('uploads', 'files', userID, filename), fileExt: path.parse(filePath).ext, fileid: fileid }))
+
+
+			console.log('rooms[roomid]: ', rooms[roomid]);
+			console.log('rooms[roomid][msgid]: ', rooms[roomid].msgs[msgid]);
+			rooms[roomid].msgs[msgid].attachments[fileid].fileExt = path.parse(filePath).ext
+			rooms[roomid].msgs[msgid].attachments[fileid].url = path.join('uploads', 'files', userID, filename)
+			console.log('rooms[roomid][msgid]: ', rooms[roomid].msgs[msgid].attachments[fileid]);
+
+			io.to(roomid).emit("updateMsgAttachment", rooms[roomid].msgs[msgid]);
 		} else {
 			res.status(500)
 			res.send(JSON.stringify({ code: 'NO_FILE' }))
 		}
-
 	})
 	//res.end();
 });
 
-var avatarUpload = upload.single('avatar')
+var avatarUpload = avatarUploader.single('avatar')
 app.put('/upload/avatar', (req, res) => {
 
 	avatarUpload(req, res, function (err) {
@@ -674,13 +766,17 @@ function getSocketsThumbnailsOfRoom(roomID) {
 	});
 }
 
+/* website https://duckduckgo.com/?q=javascript&atb=v370-2&ia=web
+
+yt video https://www.youtube.com/watch?v=02tEDwb8960&ab_channel=pwnisher */
+
 async function parseText(message) {
 	var urls = detectURLs(message)
-	console.log(urls);
+	console.log('detectURLs: ', urls);
 	if (urls) {
 		for (let index = 0; index < urls.length; index++) {
 			const element = urls[index];
-			console.log("element", element);
+
 			try {
 				var type = await getContentType(element)
 				var html = renderTypeHTML(type)
@@ -688,9 +784,6 @@ async function parseText(message) {
 			} catch (error) {
 				console.log("error for ", error);
 			}
-
-
-
 		}
 	}
 	return message
@@ -710,6 +803,13 @@ function renderTypeHTML(type) {
 		case 'text':
 			console.log("renderTypeHTML text");
 			ret = `<a href="${type.url}" target="_blank" rel="noopener noreferrer">${type.url}</a>`
+			break;		
+		case 'yt':
+			console.log("renderTypeHTML youtube", type);
+			//ret = `<div class="youtube-video-container"><iframe width="auto" height="auto" src="https://www.youtube.com/embed/${type.yt.id}?autoplay=0&amp;rel=0" frameborder="0" allowfullscreen="1" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"></iframe></div>`
+			ret = `<div class='embed-container'><iframe src='https://www.youtube.com/embed/${type.yt.id}' frameborder='0' allowfullscreen></iframe></div>`
+			//ret = `<iframe width="420" height="315" src="${type.url}" frameborder="0" allowfullscreen></iframe>`
+			//ret = `<div class="youtube-player" data-id="${type.yt.id}"></div>`
 			break;
 		default:
 			break;
@@ -720,6 +820,10 @@ function renderTypeHTML(type) {
 function detectURLs(message) {
 	var urlRegex = /(((https?:\/\/)|(www\.))[^\s]+)/g;
 	return message.match(urlRegex)
+}
+
+function isEmbeddable(urls) {
+
 }
 
 function isValidURL(str) {
@@ -782,6 +886,20 @@ async function getContentType(url) {
 		const res1 = await fetch(myURL, { method: 'HEAD' });
 		console.log("myURL", res1.headers.get("content-type")); */
 
+		var yturl = matchYoutubeUrl(url)
+
+		if (yturl) {
+			console.log('is youtube url');
+			var ret = {
+				url: url,
+				yt: youtubeUrlParser(url),
+				content: {
+					type: 'yt'
+				}
+			};
+			resolve(ret)
+			return 
+		}
 		var res;
 		try {
 			res = await fetch(url, {
@@ -789,6 +907,7 @@ async function getContentType(url) {
 			});
 			if (res.ok) {
 				var ct = res.headers.get("content-type");
+				console.log(ct);
 				var index = ct.indexOf(";");
 				var contentType
 				if (index > 0) {
@@ -820,6 +939,22 @@ async function getContentType(url) {
 	})
 }
 
+
+
+
+function isIdentityInRoom(sid, roomid) {
+	if (!rooms[roomid]) {
+		console.log("isIdentityInRoom - room does not exist");
+		return false
+	}
+	var fromIdentity = rooms[roomid].identitys[sid];
+	if (rooms[roomid].members.indexOf(fromIdentity.id) == -1) {
+		console.log("isIdentityInRoom - user is not in room");
+		return false
+	}
+	return true
+}
+
 // SCSS Compiler and Reloader 
 var mainCSS = ""
 var sassFiles = ['main'];
@@ -838,7 +973,7 @@ async function renderSCSS(reloadClients) {
 						//reject(err);
 					} else {
 
-						console.log('SCSS compiled!', result);
+						//console.log('SCSS compiled!', result);
 						fs.writeFile(path.join(__dirname, 'public', 'css', 'dist', sassFiles[key] + '.css'), result.css, function (err) {
 							//
 
@@ -883,12 +1018,12 @@ async function renderSCSS(reloadClients) {
 
 renderSCSS(true)
 
-var sassWatcherFiles = ['vars', 'main', 'mediaqueries'];
+var sassWatcherFiles = ['vars', 'main', 'mediaqueries', 'chat'];
 
 function watchSCSS() {
 	for (const key in sassWatcherFiles) {
 		const element = path.join(__dirname, 'public', 'css', sassWatcherFiles[key] + '.scss');
-		//console.log("watchSCSS", element);
+		console.log("watchSCSS", element);
 
 		fs.watchFile(element, function (curr, prev) {
 			renderBegin = new Date();

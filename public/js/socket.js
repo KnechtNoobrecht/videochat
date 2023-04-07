@@ -1,3 +1,23 @@
+// client-side
+
+var firstConnect = true;
+socket.on("connect", () => {
+    console.log('connect socket.io: ', socket.id);
+
+    if (!firstConnect) {
+        location.reload();
+    }
+    firstConnect = false
+});
+
+socket.on('reconnect', () => {
+    console.log('Reconnected socket.io: ', socket.id);
+})
+
+socket.on('disconnect', () => {
+    console.log('disconnect socket.io: ', socket.id);
+})
+
 socket.on('peerOffer', async (indata) => {
     console.log('incoming Peer offer = ', indata);
 
@@ -43,10 +63,6 @@ socket.on('peerAnswer', (indata) => {
     // console.log('peerAnswer = ', indata);
     // indata = { fromSocket: this.localsid, toSocket: this.remotesid, connectionID: this.connectionID, data: { candidate: candidate } }
     peers[indata.connectionID].peer.setRemoteDescription(new RTCSessionDescription(indata.data.answer))
-})
-
-socket.on('connect', () => { // console.log('connected to server');
-
 })
 
 socket.on('membersLoaded', (sockets) => {
@@ -96,25 +112,50 @@ socket.on('getStream', async (indata) => {
 })
 
 socket.on('chatMSG', async (data) => {
-    //console.log('chatMSG = ', data);
+    console.log('chatMSG = ', data);
+    console.log('room = ', room);
     //handleIncommingChatMSG(data);
-    renderMsgTemplate(data)
+    var msgElement = renderMsgTemplate(data)
+    pushNewChatMsgToChat(msgElement)
+
+    data.HTMLElement = msgElement
+    room.msgs[data.id] = data
     soundsPlayer.play('incomming_Msg')
+})
+socket.on('updateMsg', async (data) => {
+    console.log('updateMsg = ', data);
+    console.log('room = ', room);
+    //handleIncommingChatMSG(data);
+    var msgElement = updateChatMsg(data)
+    updateMsgAttachment(data)
+    //pushNewChatMsgToChat(msgElement)
+    
+    data.HTMLElement = msgElement
+    room.msgs[data.id] = data
+    //soundsPlayer.play('incomming_Msg')
 })
 
 socket.on('loadChatMsgs', async (data) => {
-    //console.log('loadChatMsgs = ', data);
     for (const key in data) {
         //handleIncommingChatMSG(data[key]);
-        renderMsgTemplate(data[key])
+        var msgElement = renderMsgTemplate(data[key])
+        pushNewChatMsgToChat(msgElement)
+        data[key].HTMLElement = msgElement
+        room.msgs[data[key].id] = data[key]
     }
+    console.log('room = ', room);
+    console.log("Successfully loaded chat messages")
+})
+
+socket.on('updateMsgAttachment', async (data) => {
+    console.log('updateMsgAttachment = ', data);
+    updateMsgAttachment(data)
 })
 
 socket.on('ban', async () => {
     //console.log('ban = ');
     window.location.href = '/';
 })
-
 
 socket.on('reloadCSS', async () => {
     if (reloadCSS) {

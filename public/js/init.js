@@ -3,13 +3,13 @@ window.onload = async function () {
     room = new Room();
     console.log("Room Created");
     pm = new PeersManager()
-    pma = new PeersManager()
+    pma = new PeersManager() // ?????
     console.log("PeersManager Created");
     var isNewID = await initIdentity();
     console.log("Identity initalisiert");
     initModals();
 
-    document.getElementById('joinRoomID').value = roomID
+    document.getElementById('joinRoomID').value = roomID 
 
     console.log("Modals initalisiert");
     initTabs()
@@ -36,25 +36,4 @@ window.onload = async function () {
         console.log("init Join Room");
     }
 
-    //reloadInterval()
-    //console.log("Reload Interval initalisiert");
-
-/*     new Toast({
-        content: 'Only Content'
-    })
-    new Toast({
-        content: 'Content',
-        header: 'Head',
-        footer: 'foot'
-    })
-    new Toast({
-        header: 'Head'
-    })
-    new Toast({
-        footer: 'Foot'
-    })
-    new Toast({
-        ms: 0,
-        header: 'muss geschlossen werden'
-    }) */
 }

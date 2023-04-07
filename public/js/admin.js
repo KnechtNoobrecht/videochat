@@ -30,8 +30,6 @@ function initModerator(params) {
 
 //initModerator();
 
-
-
 function openAdmin(params) {
     console.log('openAdmin');
     modals.AdminModal.open();

@@ -1,5 +1,5 @@
 function initEvents() {
-
+    document.getElementById('fileUploadInput').oninput = (e) => openFiles(e)
 
     room.addEventListener("memberAdded", function (e) {
         videoElemente[e.detail.sid] = cloneVideoElement(e.detail.identity, e.detail.sid)
@@ -59,22 +59,12 @@ function initEvents() {
 
         //console.log(videoElement.querySelector('video'));
 
-        if (isMe(socketid)) {
-            if (identity.isStreaming) {
-                userElement.getElementsByClassName('button-watch')[0].style = "display:flex !important";
-                userElement.getElementsByClassName('button-watch')[0].innerHTML = "Live"
-            } else {
-                userElement.getElementsByClassName('button-watch')[0].style = "display:none !important";
-                videoElement.querySelector('video').srcObject = null
-            }
+        if (identity.isStreaming) {
+            userElement.getElementsByClassName('button-watch')[0].style.display = "flex";
+            isMe(socketid) ? userElement.getElementsByClassName('button-watch')[0].innerHTML = "Live" : userElement.getElementsByClassName('button-watch')[0].innerHTML = "Watch"
         } else {
-            if (identity.isStreaming) {
-                userElement.getElementsByClassName('button-watch')[0].style = "display:flex !important";
-                userElement.getElementsByClassName('button-watch')[0].innerHTML = "Watch"
-            } else {
-                userElement.getElementsByClassName('button-watch')[0].style = "display:none !important";
-                videoElement.querySelector('video').srcObject = null
-            }
+            userElement.getElementsByClassName('button-watch')[0].style.display = "none";
+            videoElement.querySelector('video').srcObject = null
         }
 
         var userMsgs = Array.from(document.getElementsByName('msg_' + identity.id));
@@ -86,11 +76,14 @@ function initEvents() {
 
     });
 
+    document.getElementById('inputMsg').addEventListener('paste', async function (e) {
+        console.log(e);
+
+    });
 
     document.getElementById('inputMsg').addEventListener('keyup', async function (e) {
         //console.log("keydown", e);
-        console.log(e.srcElement.value.match(/\n\r?/g));
-
+        //console.log(e.srcElement.value.match(/\n\r?/g));
 
         if (e.srcElement.value.match(/\n\r?/g) != null) {
             rows = e.srcElement.value.match(/\n\r?/g).length + 1
@@ -103,34 +96,33 @@ function initEvents() {
         if (e.keyCode == 13 && !e.shiftKey) {
             //sendMessage();
             var res
-            var attachments = [];
-
-
+            var attachments = {};
+            var msgid = uuid()
 
             for (const key in fileHandle) {
                 if (Object.hasOwnProperty.call(fileHandle, key)) {
                     const element = fileHandle[key];
-                    console.log('fileHandle elemnt: ',element);
-                    res = await uploadFile(element)
-                    
-                    attachments.push({ url: res.url, fileExt: res.fileExt })
+                    //console.log('fileHandle elemnt: ', element);
+                    element.msgid = msgid
+                    element.roomid = room.id
+
+                    //res = await uploadFile(element)
+                    var fileid = FU.addFileToQueue(element)
+                    attachments[fileid] = { fileid: fileid }
+                    //attachments.push({ fileid: res.url, fileExt: res.fileExt })
                 }
             }
-     
-            var msg = e.srcElement.value
-           
 
-            if (msg.trim() != '' || res.code == 'SUCCESS') {
+            var msg = e.srcElement.value
+
+            if (msg.trim() != '' || Object.keys(fileHandle).length > 0) {
                 e.preventDefault();
                 msg = msg.trimStart().trim()
                 msg = msg.replace(/\n\r?/g, ' <br />')
 
-                console.log(res);
-                //{code: 'SUCCESS', url: 'uploads/files/d4b16f89-917d-f6c7-4a45-da1f82d6c0b3/bg4.png'}
-
-                //msg +=  uploads/files/d4b16f89-917d-f6c7-4a45-da1f82d6c0b3/bg4.png
-
-                room.sendMsg(msg, attachments);
+                room.sendMsg(msg, attachments, msgid);
+                chatAttachments.innerHTML = ''
+                fileHandle = {}
             }
             document.getElementById('chatInput').reset();
             e.srcElement.rows = 1
@@ -211,7 +203,6 @@ function initEvents() {
 
         //   setCssVar('primary_bg', '#234421')
     }
-
 
 
     var width_size_before = 0;
@@ -310,4 +301,24 @@ function initEvents() {
     });
 
     //document.getElementById('startStreamBTN').addEventListener('click', function (e) { })
+
+
+    document.getElementById('startStreamBTN').onclick = (e) => {
+        toggleStartStreamModal()
+    }
+    //document.getElementById('startStreamBG').onclick = (e) => {
+    //    if (e.target === e.currentTarget) {
+    //        toggleStartStreamModal();
+    //    }
+    //}
+    document.getElementById('startScreenShare').onclick = startStream
+    document.getElementById('startCameraShare').onclick = startStream
+    document.getElementById('startStreamGoBack').onclick = goBack
+    document.getElementById('resolutionSelector').onclick = toggleResDropdown
+    document.getElementById('framerateDiv').childNodes.forEach(childNode => {
+        childNode.nodeName == "SPAN" ? childNode.onclick = framerateSliderSlide : null
+    })
+
+    document.onclick = hideMenu;
+    document.oncontextmenu = rightClick;
 }

@@ -1,14 +1,19 @@
 ## 🚩 PRIO:
-### ⚒️ fix "show profile" modal
-### ⚒️ chat scroll to bottom wenn man einem raum beitritt
-### ⚒️ avatar upload toasts (file too large,etc.)
-### ⚒️ create room modal rework + create/join room rework
-### ⚒️ (WIP) Dateien verschicken 
+### ⚒️ nameslider rework (show native controls on safari)
+### ⚒️ start stream error toasts
+### ⚒️ loading spinner bauen (und an entsprechenden stellen einfügen, z.b. beim avatarupload)
+### ⚒️ Chat File Upload Progressbar (CSS) 
+### ⚒️ Bei Anderen Usern die eine Nachricht mit anhang bekommen der noch nicht hochgeladen ist ein Platzhalter einfügen
+### ⚒️ (WIP) Bearbeiten von Chat Msgs ( server check !!! )
+
+
+## Anmerkungen
+### Bearbeiten fast fertig nur noch kleine fixes 
+### beim upload von anhängen updatet der server die msg nicht richtig 
 
 
 ## Fixen:
-### ⚒️ camera streaming (auch auf handy)
-### ⚒️ mobile top navbar
+### ⚒️ "show profile" modal
 ### ⚒️ Wenn der Initiator vom anderen Client keine SocketIO ID hat kommt es zu extrem hohen CPU-Lasten
 
 
@@ -18,25 +23,43 @@
 ### ⚒️ Attachments Picker Style (Leiste über Text Input mit icons für file picker und emote picker über der liste oder woander die derzeit ausgewählten files anzeigen)
 ### ⚒️ Chatnachricht vergößern (Modal?) 
 ### ⚒️ Attachments große Modal anzeige (dc like)
+### ⚒️ Möglichkeit Streams und Chat wechseln zu können
 
 
 ## Funktionen:
-### ⚒️ STRG+V Bilder versenden
 ### ⚒️ Voice Chat
 ### ⚒️ Login System (mit Discord/Google/Apple)
 ### ⚒️ settings
 ### ⚒️ Auf Chat msg reagieren und antworten können. kleine vorbereitung getroffen. jede Msg hat jetzt eine id sobalt sie beim server angekommen ist und verteilt wird 
-### ⚒️ upload progress
 ### ⚒️ Hotkeys
 ### ⚒️ Animationen
 ### ⚒️ Senden Button für Chat für Mobile
 ### ⚒️ Bot Bar verbessern 
 ### ⚒️ Attachments mehr Formate unterstützen derzeit nur png jpg webp mp4
 ### ⚒️ Video beim Streamen deaktivieren oder thumbnail ausblenden (von einem selbst)
-### ⚒️ Discord Status interaktion mit link zum raum in dem man ist 
+### ⚒️ STRG+V Bilder versenden - scheinbar nicht möglich im Browser
+### ⚒️ Discord Status interaktion mit link zum raum in dem man ist (nur in eigener Electron App möglich)
 
 
 ## Fertig
+### ✔️ streamen auf safari fixen
+### ✔️ '/' landing page
+### ✔️ modals enter drücken zum weiter-button-clicken
+### ✔️ chat gestern/heute/datum
+### ✔️ random identity server crash fixen
+### ✔️ fixed stagewrapper padding
+### ✔️ chatnachrichten die weniger als 2min auseinanderliegen zusammenlegen (fertig, gab noch einen bug den ich nicht reproduzieren könnte)
+### ✔️ upload progress 
+### ✔️ chat scroll to bottom wenn man einem raum beitritt 
+### ✔️ Chat rework (Server Massages Handling) 
+### ✔️ Chat File Upload 
+### ✔️ context menu rework
+### ✔️ avatar upload toasts (file too large,etc.)
+### ✔️ joinRoom und createRoom
+### ✔️ Toasts
+### ✔️ fixed: mobile top navbar
+### ✔️ fixed: camera streaming
+### ✔️ fixed: start stream error messages
 ### ✔️ fixed: loadRoomMemberThumbnails() konnte color nicht lesen, weil daten nicht vom server gesendet wurden
 ### ✔️ fixed: stage mode funktioniert nicht, nachdem aus dem stage mode heraus angefangen wurde einem stream zuzuschauen
 ### ✔️ stream-starten-menü 

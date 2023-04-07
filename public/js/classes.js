@@ -1,8 +1,216 @@
-/*
-Steffen Reimann
-07.05.2022
-*/
+class FileUploader {
+    constructor() {
+        this.queue = {}
+        this.runningUploads = {}
+        this.maxSimultaneousUploads = 2;
+    }
+    addFileToQueue(file) {
 
+        var id = uuid()
+        file.id = id;
+        this.queue[id] = file
+        console.log('addFileToQueue: ', this.queue, this.runningUploads);
+        if (Object.keys(this.runningUploads).length < this.maxSimultaneousUploads) {
+            this.upload()
+        }
+        return id
+    }
+
+    async upload() {
+        return new Promise(async (resolve) => {
+            var that = this;
+            console.log('Start Upload File');
+
+            var currentUpload = this.queue[Object.keys(this.queue)[0]];
+            console.log(currentUpload);
+
+            this.runningUploads[currentUpload.id] = currentUpload
+            delete this.queue[currentUpload.id]
+
+            const formData = new FormData();
+            formData.append("user", identitys[0].id);
+            formData.append("file", currentUpload);
+            formData.append("filename", currentUpload.name);
+            formData.append("fileid", currentUpload.id);
+            formData.append("msgid", currentUpload.msgid);
+            formData.append("roomid", currentUpload.roomid);
+
+            function handleEvent(e) {
+                console.log(e);
+                delete that.runningUploads[currentUpload.id]
+                console.log('that.runningUploads: ', that.runningUploads);
+                if (Object.keys(that.runningUploads).length < that.maxSimultaneousUploads && Object.keys(that.queue).length > 0) {
+                    that.upload()
+                }
+                resolve()
+            }
+
+            const xhr = new XMLHttpRequest();
+            xhr.upload.onprogress = function (e) {
+                let percentUpload = Math.floor(100 * e.loaded / e.total);
+
+                var msgElement = document.querySelector('#attachment_' + currentUpload.id)
+                var progressbarElement = msgElement.querySelector('#progress_' + currentUpload.id)
+
+                if (progressbarElement) {
+                    progressbarElement.value = percentUpload
+                } else {
+                    var newProgressbarElement = document.createElement('progress')
+                    newProgressbarElement.id = 'progress_' + currentUpload.id
+                    newProgressbarElement.max = 100
+                    newProgressbarElement.value = percentUpload
+                    msgElement.appendChild(newProgressbarElement)
+                }
+            }
+
+            xhr.addEventListener('error', handleEvent);
+            xhr.addEventListener('abort', handleEvent);
+            xhr.addEventListener('loadend', handleEvent);
+
+            xhr.open("POST", "/upload/file");
+            xhr.send(formData);
+        })
+    }
+}
+
+class Modal extends EventTarget {
+    #event;
+    constructor(wrapper) {
+        super();
+        this.wrapper = wrapper
+        this.wrapper.classList.add('modal-wrapper');
+        this.wrapper.classList.add('hide');
+        this.id = this.wrapper.id;
+        document.body.appendChild(this.wrapper);
+    }
+
+    open() {
+        this.wrapper.classList.add('show');
+        this.wrapper.classList.remove('hide');
+        //this.#wrapper.style.display = "block";
+        this.#event = new CustomEvent('opened');
+        this.dispatchEvent(this.#event);
+    }
+
+    close() {
+        if (this.id == "createRoom") {
+            this.wrapper.querySelector('.modal-content-custom').querySelector('.modal-body-custom').querySelector('.subtitle').style.display = "block"
+            this.wrapper.querySelector('.modal-content-custom').querySelector('.modal-body-custom').querySelector('input[type="password"]').style.display = "none"
+            this.wrapper.querySelector('.modal-content-custom').querySelector('.modal-body-custom').querySelector('input[type="password"]').value = ""
+        }
+        if (this.id == "joinRoom") {
+            this.wrapper.querySelector('.modal-content-custom').querySelector('.modal-body-custom').querySelector('input[type="password"]').style.display = "none"
+            this.wrapper.querySelector('.modal-content-custom').querySelector('.modal-body-custom').querySelector('input[type="password"]').value = ""
+        }
+
+        this.wrapper.classList.remove('show');
+        this.wrapper.classList.add('hide');
+        //this.#wrapper.style.display = "none";
+        this.#event = new CustomEvent('closed');
+        this.dispatchEvent(this.#event);
+    }
+}
+
+class Tab {
+    constructor(tab) {
+        this.tab = tab;
+        this.bodys = {}
+    }
+    show(index) {
+        var keys = Object.keys(this.bodys)
+        for (let y = 0; y < keys.length; y++) {
+            const element = this.bodys[keys[y]];
+            element.classList.remove('active');
+        }
+        this.bodys[index].classList.add('active');
+    }
+}
+
+class Toast extends EventTarget {
+    #event;
+    constructor(data) {
+        super();
+        data = data || {};
+        if (!data.content) {
+            return
+        }
+
+        //extend timeout if same toast is already open
+        for (let el in toasts) {
+            if (toasts[el].content.innerHTML == data.content) {
+                clearTimeout(toasts[el].timeoutID)
+
+                toasts[el].element.classList.add("shake")
+                setTimeout(() => {
+                    toasts[el].element.classList.remove("fadeInTop")
+                    toasts[el].element.classList.remove("shake")
+                }, 240)
+
+                toasts[el].timeoutID = setTimeout(() => {
+                    toasts[el].close()
+                }, toasts[el].ms - 10)
+                return
+            }
+        }
+
+        this.element = cloneTemplate('toastTemplate')
+        this.content = this.element.querySelector('.toast-content');
+        this.content.innerHTML = data.content || '';
+        this.type = data.type
+        this.id = uuid();
+
+        switch (this.type) {
+            case "info":
+                this.element.querySelector('.toast-body').querySelector('.toast-content').classList = "toast-content-info"
+                this.element.querySelector('.toast-icon').style.display = "none"
+                break;
+
+            case "error":
+                this.element.querySelector('.toast-body').querySelector('.toast-content').classList = "toast-content-error"
+                break;
+
+            //case "warn":
+            //    this.element
+            //break;
+
+            default:
+                break;
+        }
+
+        if (typeof data.ms == 'undefined') {
+            this.ms = 5000;
+        } else if (data.ms <= 0) {
+            this.ms = 0;
+        } else {
+            this.ms = data.ms;
+        }
+        if (this.ms > 0) {
+            var inter = setTimeout(() => {
+                this.close();
+            }, this.ms - 10);
+
+            this.timeoutID = inter
+        }
+
+        toastContainer.appendChild(this.element);
+        toasts[this.id] = this
+        //this.element.classList.add('swipe-in');
+        //this.element.style.transform = 'translate(0%, 0%)';
+    }
+
+    close() {
+        this.element.classList.add('fadeOutTop');
+        var inter = setTimeout(() => {
+            this.element.remove();
+            delete toasts[this.id];
+            this.#event = new CustomEvent('closed');
+            this.dispatchEvent(this.#event);
+            clearInterval(inter)
+            delete this;
+        }, 340);
+
+    }
+}
 
 class BitrateObject {
     constructor() {
@@ -307,7 +515,7 @@ class Peer extends EventTarget {
             if (this.initiator) {
                 this.peer.createOffer().then(sdp => {
 
-                    if (this.targetBrowser != 'Safari') {
+                    if (!(getBrowser() == 'Safari' || this.targetBrowser == 'Safari')) {
                         var arr = sdp.sdp.split('\r\n');
                         arr.forEach((str, i) => {
                             if (/^a=fmtp:\d*/.test(str)) {
@@ -325,7 +533,7 @@ class Peer extends EventTarget {
 
                         sdp.sdp = sdp.sdp.replace('useinbandfec=1', 'useinbandfec=1; stereo=1; maxaveragebitrate=510000')
                     } else {
-                        console.log("Target browser is Safari, not modifying SDP")
+                        console.log("Target browser or current browser is Safari, not modifying SDP")
                     }
 
                     //console.log('setLocalDescription', sdp);
@@ -364,7 +572,7 @@ class Peer extends EventTarget {
                 console.log("Remote description set:", this.peer.remoteDescription);
                 this.peer.createAnswer().then(sdp => {
 
-                    if (getBrowser() != 'Safari') {
+                    if (!(getBrowser() == 'Safari' || this.targetBrowser == 'Safari')) {
                         var arr = sdp.sdp.split('\r\n');
                         arr.forEach((str, i) => {
                             if (/^a=fmtp:\d*/.test(str)) {
@@ -379,7 +587,7 @@ class Peer extends EventTarget {
                         })
                         sdp.sdp = sdp.sdp.replace('useinbandfec=1', 'useinbandfec=1; stereo=1; maxaveragebitrate=510000')
                     } else {
-                        console.log("Current browser is Safari, not modifying SDP")
+                        console.log("Target browser or current browser is Safari, not modifying SDP")
                     }
                     
                     //console.log('setRemoteDescription', offer);
@@ -546,7 +754,7 @@ class PeersManager {
 }
 
 /**
- * @var Identity
+ * @class Identity
  * @type {Object}
  * @description Holds all peer 2 peer connections
  * @prop
@@ -661,6 +869,7 @@ class Room extends EventTarget {
         super();
         this.id = window.location.pathname.split('/').pop()
         this.members = {}
+        this.msgs = {}
     }
     addMember(sid, identity) {
         if (!this.members[sid]) {
@@ -709,13 +918,18 @@ class Room extends EventTarget {
         }
         //console.log('Member changed');
     }
-    sendMsg(msg, attachments) {
+    sendMsg(msg, attachments, id) {
         var data = {
             room: this.id,
+            id: id,
             msg: msg,
             attachments: attachments
         }
         socket.emit('chatMSG', data);
+    }   
+    updateMsg(msg) {
+        console.log('update msg: ', msg);
+        socket.emit('updateMsg', msg);
     }
     isIIDInRoom(id) {
         var res = false;
@@ -743,7 +957,6 @@ class Room extends EventTarget {
     }
 }
 
-
 class HttpReq extends EventTarget {
     #event;
     constructor() {
@@ -764,103 +977,6 @@ class HttpReq extends EventTarget {
 
 }
 
-
-
-
-
-function XHRupload(files) {
-
-    var file = document.getElementById('file').files[0]
-
-
-    var formData = new FormData()
-
-    formData.append('file', file)
-    formData.append('enctype', 'multipart/form-data')
-
-    var xhr = new XMLHttpRequest()
-    xhr.open('post', '/upload', true)
-
-    ProgressDInterval = setInterval(() => {
-        ProgressD.innerHTML = ProgressDValue
-    }, 1000)
-
-    xhr.upload.onprogress = function (e) {
-        if (e.lengthComputable) {
-            // calc progress per second, then update lastprogressval
-            loadSpeed = (e.loaded - lastProgressVal) / (Date.now() - lastTimestamp)
-            lastProgressVal = e.loaded
-            lastTimestamp = Date.now()
-            //console.log(processLoadingSpeed(loadSpeed))
-            ArrowUp.classList.add('uploadAnimation')
-            var percentage = (e.loaded / e.total) * 100
-            percentage = Math.round(percentage)
-            //console.log(percentage)
-            ProgressForeground.style.width = percentage + '%'
-            timeRemaining = Math.round((e.total - e.loaded) / loadSpeed / 1000)
-            //console.log(loadSpeed)
-            if (loadSpeed > 1) {
-                ProgressD.style.visibility = "visible"
-                if (timeRemaining > 3600) {
-                    Math.round(timeRemaining / 3600) != 1 ? ProgressDValue = `${processLoadingSpeed(loadSpeed)} - ${Math.round(timeRemaining / 3600)} Stunden verbleibend` : ProgressDValue = `${processLoadingSpeed(loadSpeed)} - ${Math.round(timeRemaining / 3600)} Stunde verbleibend`
-                } else if (timeRemaining > 60) {
-                    Math.round(timeRemaining / 60) != 1 ? ProgressDValue = `${processLoadingSpeed(loadSpeed)} - ${Math.round(timeRemaining / 60)} Minuten verbleibend` : ProgressDValue = `${processLoadingSpeed(loadSpeed)} - ${Math.round(timeRemaining / 60)} Minute verbleibend`
-                } else {
-                    timeRemaining != 1 ? ProgressDValue = `${processLoadingSpeed(loadSpeed)} - ${timeRemaining} Sekunden verbleibend` : ProgressDValue = `${processLoadingSpeed(loadSpeed)} - ${timeRemaining} Sekunde verbleibend`
-                }
-            }
-        }
-    }
-
-    xhr.onerror = function (e) {
-        ProgressBackground.style.background = "#F92C47"
-        ProgressForeground.style.background = "#F92C47"
-        ProgressD.style.visibility = "visible"
-        clearInterval(ProgressDInterval)
-        ProgressD.innerHTML = "Ein Fehler ist aufgetreten"
-        setTimeout(() => {
-            resetUI()
-        }, 5000)
-    }
-
-    xhr.onload = function () {
-        console.log(this.status)
-        if (this.status == 500) {
-            ProgressBackground.style.background = "#F92C47"
-            ProgressForeground.style.background = "#F92C47"
-            ProgressD.style.visibility = "visible"
-            clearInterval(ProgressDInterval)
-            ProgressD.innerHTML = "Ein Fehler ist aufgetreten"
-            setTimeout(() => {
-                resetUI()
-            }, 5000)
-        } else if (this.statusText == 'OK') {
-            clearInterval(ProgressDInterval)
-            ProgressD.innerHTML = "Upload abgeschlossen"
-            var lastProgressVal = 0
-            var lastTimestamp = 0
-            ArrowUp.classList.remove('uploadAnimation')
-            setTimeout(() => {
-                ProgressWrapper.style.opacity = "1"
-                ProgressWrapper.classList.remove('fadeInProgress')
-                ProgressWrapper.classList.add('fadeOutProgress')
-            }, 2000)
-            setTimeout(() => {
-                Button.innerHTML = "weitere Datei hochladen"
-                Button.classList.add('fadeInButton')
-            }, 6000)
-            setTimeout(() => {
-                Button.style.opacity = "1"
-                Button.style.visibility = "visible"
-                Button.classList.remove('fadeInButton')
-            }, 7000)
-        }
-    }
-
-    xhr.send(formData)
-}
-
-
 class SoundsPlayer {
     constructor(options) {
         this.sounds = options
@@ -870,9 +986,10 @@ class SoundsPlayer {
         // console.log('this.sounds', this.sounds);
         var audio = new Audio(this.sounds[key].path);
         audio.volume = this.sounds[key].volume;
-        audio.play();
+        try {
+            audio.play();
+        } catch (error) {}
     }
-
 }
 
 class Once {

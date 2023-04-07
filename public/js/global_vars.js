@@ -9,8 +9,10 @@ const socket = io()
  * @var roomID
  * @type String
  * @description Holds the current Room ID
+ * Muss var sein, weil teilweise in joinRoom() nochmal überschrieben wird, z.B. wenn von '/' gestartet wurde
  */
-const roomID = window.location.pathname.split('/').pop()
+var roomID = window.location.pathname.split('/').pop()
+
 
 /**
  * @var localStream
@@ -199,6 +201,8 @@ var colors = [
 ]
 
 let fileHandle = {};
+
+var FU = new FileUploader();
 
 /* var peerServerOptions = {
     iceServers: [{
