@@ -1321,15 +1321,24 @@ modal {
 .fadeOutBottom {
   animation-name: fadeOutBottom;
   animation-duration: 0.35s;
-  animation-timing-function: cubic-bezier(0.37, 0.02, 1, 0.14); }
+  animation-timing-function: cubic-bezier(0.37, 0.02, 1, 0.14);
+  animation-fill-mode: forwards; }
 
 .fadeInTop {
   animation: fadeInTop 0.5s cubic-bezier(0.15, 0.2, 0, 0.99); }
 
+.fadeInScale {
+  animation: fadeInScale 0.3s cubic-bezier(0.15, 0.2, 0, 0.99); }
+
+.fadeOutScale {
+  animation: fadeOutScale 0.3s cubic-bezier(0.37, 0.02, 1, 0.14);
+  animation-fill-mode: forwards; }
+
 .fadeOutTop {
   animation-name: fadeOutTop;
   animation-duration: 0.35s;
-  animation-timing-function: cubic-bezier(0.37, 0.02, 1, 0.14); }
+  animation-timing-function: cubic-bezier(0.37, 0.02, 1, 0.14);
+  animation-fill-mode: forwards; }
 
 .shake {
   animation: shake 0.25s ease-out; }
@@ -1523,6 +1532,22 @@ modal {
   to {
     opacity: 1;
     transform: translateY(0); } }
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.8); }
+  to {
+    opacity: 1;
+    transform: scale(1); } }
+
+@keyframes fadeOutScale {
+  from {
+    opacity: 1;
+    transform: scale(1); }
+  to {
+    opacity: 0;
+    transform: scale(0.8); } }
 
 @keyframes fadeOutBottom {
   from {

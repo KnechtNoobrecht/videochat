@@ -142,13 +142,13 @@ class Toast extends EventTarget {
 
                 toasts[el].element.classList.add("shake")
                 setTimeout(() => {
-                    toasts[el].element.classList.remove("fadeInTop")
+                    toasts[el].element.classList.remove("fadeInScale")
                     toasts[el].element.classList.remove("shake")
                 }, 240)
 
                 toasts[el].timeoutID = setTimeout(() => {
                     toasts[el].close()
-                }, toasts[el].ms - 10)
+                }, toasts[el].ms)
                 return
             }
         }
@@ -199,7 +199,7 @@ class Toast extends EventTarget {
     }
 
     close() {
-        this.element.classList.add('fadeOutTop');
+        this.element.classList.add('fadeOutScale');
         var inter = setTimeout(() => {
             this.element.remove();
             delete toasts[this.id];
@@ -207,7 +207,7 @@ class Toast extends EventTarget {
             this.dispatchEvent(this.#event);
             clearInterval(inter)
             delete this;
-        }, 340);
+        }, 300);
 
     }
 }

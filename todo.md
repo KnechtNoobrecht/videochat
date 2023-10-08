@@ -1,4 +1,5 @@
 ## 🚩 PRIO:
+### ⚒️ custom context menu öffnet sich bei jedem rechtsklick, unabhänig vom kontext
 ### ⚒️ nameslider rework (show native controls on safari)
 ### ⚒️ start stream error toasts
 ### ⚒️ loading spinner bauen (und an entsprechenden stellen einfügen, z.b. beim avatarupload)

@@ -209,10 +209,8 @@ function renderMsgTemplate(msg) {
         timeBetweenMsgsInSec = (msg.time - lastMsgElement.getAttribute('sendTime')) / 1000
 
         if (timeBetweenMsgsInSec < 120) {
-            msgElement.querySelector('.chat-message-time').style.display = 'none'
-            //msgElement.querySelector('.chat-message-avatar').style.display = 'none'
-            msgElement.querySelector('.chat-message-avatar').style.opacity = 0
-            msgElement.querySelector('.chat-message-username').style.display = 'none'
+            msgElement.querySelector('.chat-message-avatar').style.opacity = '0'
+            msgElement.querySelector('.chat-message-info').style.display = 'none'
 
             lastMsgElement.style.marginBottom = '0px'
             lastMsgElement.style.paddingBottom = '0px'
