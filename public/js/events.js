@@ -321,4 +321,10 @@ function initEvents() {
 
     document.onclick = hideMenu;
     document.oncontextmenu = rightClick;
+
+    document.getElementById('joinRoomID').onkeyup = (e) => submitOnEnter(e)
+    document.getElementById('joinRoomPassword').onkeyup = (e) => submitOnEnter(e)
+    document.getElementById('createRoomPassword').onkeyup = (e) => submitOnEnter(e)
+    document.getElementById('createRoomID').onkeyup = (e) => submitOnEnter(e)
+    document.getElementById('username').onkeyup = (e) => submitOnEnter(e)
 }

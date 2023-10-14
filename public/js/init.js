@@ -32,7 +32,7 @@ window.onload = async function () {
             //initJoinRoom();
         })
     } else {
-        initJoinRoom();
+        joinRoom();
         console.log("init Join Room");
     }
 
