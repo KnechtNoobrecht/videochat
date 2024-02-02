@@ -159,7 +159,7 @@ io.on("connection", (socket) => {
 				})
 				return
 			}
-
+      
 			var userIsAdmin = room.isAdmin(identity.id);
 			var userIsBlocked = room.isBlocked(identity.id);
 			var userIsMember = room.isMember(identity.id);
@@ -691,9 +691,9 @@ app.post('/upload/file', async (req, res) => {
 		const msgid = req.body.msgid;
 		const filename = req.body.filename;
 		const fileid = req.body.fileid;
-
+    
 		console.log(`File form User ${userID} - Filename ${filename} - Fileid ${fileid} - Roomid ${roomid} - msgid ${msgid}`);
-
+    
 		if (!rooms[roomid]) {
 			res.status(500)
 			res.send(JSON.stringify({ code: 'ROOM_NOT_EXIST' }))
