@@ -37,7 +37,16 @@ class Room {
 		console.log('addMember');
 		console.log(sid, identity);
 		this.identitys[sid] = identity;
-		this.members.push(identity.id);
+
+
+		//Neue Code der dazu führt das man keinen Stream ansehen kann.
+		if (this.members.indexOf(identity.id) == -1) {
+			this.members.push(identity.id);
+		}
+		// Altrer Code der Zwar funktioniert aber zb. die "ist Live" anzeigt wird nicht mehr angezeigt 
+		/* 		if (this.members.indexOf(sid) == -1) {
+					this.members.push(sid);
+				} */
 	}
 	removeMember(sid) {
 		console.log('removeMember');
@@ -150,13 +159,13 @@ io.on("connection", (socket) => {
 				})
 				return
 			}
+      
+			var userIsAdmin = room.isAdmin(identity.id);
+			var userIsBlocked = room.isBlocked(identity.id);
+			var userIsMember = room.isMember(identity.id);
 
-			console.log("room member count: ")
-			console.log(room.identitys[identity.sid])
-			console.log(Object.keys(room.identitys).length)
-			console.log(room.identitys[identity.sid])
 
-			if (Object.keys(room.identitys).length >= 2 && room.type == "share") {
+			if (Object.keys(room.identitys).length >= 2 && room.type == "share" && !isMember) {
 				cb({
 					room: roomID,
 					joined: false,
@@ -166,9 +175,6 @@ io.on("connection", (socket) => {
 				return
 			}
 
-			var userIsAdmin = room.isAdmin(identity.id);
-			var userIsBlocked = room.isBlocked(identity.id);
-			var userIsMember = room.isMember(identity.id);
 
 			identity.isAdmin = userIsAdmin;
 
@@ -198,9 +204,25 @@ io.on("connection", (socket) => {
 				rooms[roomID].addMember(socket.id, identity)
 				var sockets = await getSocketsOfRoom(roomID);
 				socket.emit("membersLoaded", sockets);
-				socket.emit("loadChatMsgs", rooms[roomID].msgs);
+				if (room.type == "video") {
+					socket.emit("loadChatMsgs", rooms[roomID].msgs);
+				}
+				if (room.type == "share") {
+					var targetSocketID = ""
+					if (room.admins.length) {
+						for (const key in room.identitys) {
+							if (room.identitys[key].id == room.admins[0]) {
+								targetSocketID = key
+								console.log(targetSocketID + " is admin");
+								console.log("Telling " + targetSocketID + " to send the file name...");
+								io.to(targetSocketID).emit('triggerShareUpdate', { remoteSocketID: socket.id })
+								return
+							}
+						}
+					}
+				}
 				//console.log(rooms[roomID].msgs);
-				console.log(`User ${identity.username} joined room ${roomID}`);
+				console.log(`User ${identity.username} joined room ${roomID} of type ${room.type}`)
 			} else {
 				cb({
 					room: roomID,
@@ -589,7 +611,11 @@ app.get("/share", async function (req, res) {
 });
 
 app.get("/share/:id", async function (req, res) {
-	//await renderSCSS()
+	if (req.params.id == "getID") {
+		res.setHeader('Content-Type', 'application/json')
+		res.end(JSON.stringify({ ID: uuidv4() }));
+		return
+	}
 
 	res.sendFile(path.join(__dirname + "/public/video.html"));
 });
@@ -665,9 +691,9 @@ app.post('/upload/file', async (req, res) => {
 		const msgid = req.body.msgid;
 		const filename = req.body.filename;
 		const fileid = req.body.fileid;
-
+    
 		console.log(`File form User ${userID} - Filename ${filename} - Fileid ${fileid} - Roomid ${roomid} - msgid ${msgid}`);
-
+    
 		if (!rooms[roomid]) {
 			res.status(500)
 			res.send(JSON.stringify({ code: 'ROOM_NOT_EXIST' }))

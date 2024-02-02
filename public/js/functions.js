@@ -1255,10 +1255,22 @@ function handleJoinRoomCB(params) {
     switch (params.code) {
         case 0:
             roomID = params.room
-            if(operatingMode == "share") {
-                history.pushState("", '', '/share/' + params.room)
+            if (operatingMode == "share") {
+                history.pushState("", '', '/share/' + roomID)
+                if (params.isAdmin) {
+                    modals.shareFile.open()
+                    return;
+                }
+                modals.shareFileDownload.open()
             } else {
-                history.pushState("", '', '/rooms/' + params.room)
+                modals.joinRoom.close();
+                modals.createRoom.close();
+                showUI();
+                if (params.isAdmin) {
+                    isAdmin = params.isAdmin;
+                    addAdminUI();
+                }
+                history.pushState("", '', '/rooms/' + roomID)
             }
             break;
         case 1:
