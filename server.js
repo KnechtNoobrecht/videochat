@@ -31,15 +31,22 @@ class Room {
 		this.identitys = {}
 		this.password = pw
 		this.msgs = {}
+		this.files = []
 	}
 	addMember(sid, identity) {
 		console.log('addMember');
 		console.log(sid, identity);
 		this.identitys[sid] = identity;
 
-		if(this.members.indexOf(identity.id) == -1) {
+
+		//Neue Code der dazu führt das man keinen Stream ansehen kann.
+		if (this.members.indexOf(identity.id) == -1) {
 			this.members.push(identity.id);
 		}
+		// Altrer Code der Zwar funktioniert aber zb. die "ist Live" anzeigt wird nicht mehr angezeigt 
+		/* 		if (this.members.indexOf(sid) == -1) {
+					this.members.push(sid);
+				} */
 	}
 	removeMember(sid) {
 		console.log('removeMember');
@@ -55,10 +62,16 @@ class Room {
 	}
 	changeMember(sid, identity) { }
 	isMember(id) {
+		console.log(id);
+		console.log(this.members);
+		console.log(this.members.indexOf(id));
 
-		if (this.members.indexOf(id) > -1) {
-			console.log(id, 'isMember');
-			return true
+
+		if (this.identitys[id]) {
+			if (this.members.indexOf(this.identitys[id].id) > -1) {
+				console.log(id, 'isMember');
+				return true
+			}
 		}
 		console.log(id, 'is not member');
 		return false
@@ -88,6 +101,19 @@ class Room {
 			attachments: attachments
 		}
 		socket.emit('chatMSG', data);
+	}
+	getRoomMedia() {
+		fs.readdir(`${__dirname}/public/uploads/files/${this.id}`, (err, files) => {
+			if (err)
+				console.log(err);
+			else {
+				filelist = files
+				console.log("\nCurrent directory filenames:");
+				files.forEach(file => {
+					console.log(file);
+				})
+			}
+		})
 	}
 }
 
@@ -134,12 +160,12 @@ io.on("connection", (socket) => {
 				return
 			}
 
-			console.log("room member count: ")
-			console.log(room.identitys[identity.sid])
-			console.log(Object.keys(room.identitys).length)
-			console.log(room.identitys[identity.sid])
+			var userIsAdmin = room.isAdmin(identity.id);
+			var userIsBlocked = room.isBlocked(identity.id);
+			var userIsMember = room.isMember(identity.id);
 
-			if (Object.keys(room.identitys).length >= 2 && room.type == "share") {
+
+			if (Object.keys(room.identitys).length >= 2 && room.type == "share" && !isMember) {
 				cb({
 					room: roomID,
 					joined: false,
@@ -149,9 +175,6 @@ io.on("connection", (socket) => {
 				return
 			}
 
-			var userIsAdmin = room.isAdmin(identity.id);
-			var userIsBlocked = room.isBlocked(identity.id);
-			var userIsMember = room.isMember(identity.id);
 
 			identity.isAdmin = userIsAdmin;
 
@@ -181,9 +204,25 @@ io.on("connection", (socket) => {
 				rooms[roomID].addMember(socket.id, identity)
 				var sockets = await getSocketsOfRoom(roomID);
 				socket.emit("membersLoaded", sockets);
-				socket.emit("loadChatMsgs", rooms[roomID].msgs);
+				if (room.type == "video") {
+					socket.emit("loadChatMsgs", rooms[roomID].msgs);
+				}
+				if (room.type == "share") {
+					var targetSocketID = ""
+					if (room.admins.length) {
+						for (const key in room.identitys) {
+							if (room.identitys[key].id == room.admins[0]) {
+								targetSocketID = key
+								console.log(targetSocketID + " is admin");
+								console.log("Telling " + targetSocketID + " to send the file name...");
+								io.to(targetSocketID).emit('triggerShareUpdate', { remoteSocketID: socket.id })
+								return
+							}
+						}
+					}
+				}
 				//console.log(rooms[roomID].msgs);
-				console.log(`User ${identity.username} joined room ${roomID}`);
+				console.log(`User ${identity.username} joined room ${roomID} of type ${room.type}`)
 			} else {
 				cb({
 					room: roomID,
@@ -318,8 +357,12 @@ io.on("connection", (socket) => {
 
 	socket.on("getStream", (data) => {
 		// data = { offer: offer, initiatorsid: this.sid, connectionID: this.id }
-		console.log("getStream made by", data.fromSocket, " -> ", data.toSocket);
-		io.to(data.toSocket).emit("getStream", data);
+		console.log("getStream", data);
+		//console.log("getStream made by", data.fromSocket, " -> ", data.toSocket);
+
+		if (rooms[data.roomID].isMember(data.fromSocket)) {
+			io.to(data.toSocket).emit("getStream", data);
+		}
 	});
 
 	socket.on("chatMSG", async (data) => {
@@ -348,14 +391,14 @@ io.on("connection", (socket) => {
 		rooms[data.room].msgs[data.id] = data;
 		io.to(data.room).emit("chatMSG", data);
 	});
-	
+
 	socket.on("updateMsg", async (data) => {
 		// data = { room: this.id, msg: msg }
 		if (!rooms[data.room]) {
 			console.log("updateMsg - room does not exist");
 			return
 		}
-		
+
 		//console.log(data);
 		//if(data.sid != data.identity.sid) {
 		//	console.log("updateMsg - not allowed");
@@ -380,9 +423,19 @@ io.on("connection", (socket) => {
 		io.to(data.room).emit("updateMsg", data);
 	});
 
+	socket.on("shareRoomUpdate", (data) => {
+		socket.to(data.roomID).emit("shareRoomUpdate", data)
+	})
+
+	socket.on("getP2PFile", (data) => {
+		socket.to(data.roomID).emit("getP2PFile", {
+			requestorID: socket.id
+		})
+	})
+
 	socket.on("memberStartStreaming", (roomID) => {
 		// data = { offer: offer, initiatorsid: this.sid, connectionID: this.id }
-		console.log("To Room = ", roomID);
+		console.log("roomID = ", roomID, ' SocketId:', socket.id);
 
 		if (isIdentityInRoom(socket.id, roomID)) {
 			rooms[roomID].identitys[socket.id].isStreaming = true;
@@ -399,10 +452,12 @@ io.on("connection", (socket) => {
 			console.log();
 			rooms[data.room].identitys[socket.id].username = data.username;
 			rooms[data.room].identitys[socket.id].avatar = data.avatar;
-			if (roomChatMsgs[data.room]) {
-				for (let index = 0; index < roomChatMsgs[data.room].length; index++) {
-					if (roomChatMsgs[data.room][index].fromSocket == socket.id) {
-						roomChatMsgs[data.room][index].fromIdentity = rooms[data.room].identitys[socket.id];
+			rooms[data.room].identitys[socket.id].avatarRingColor = data.avatarRingColor;
+
+			if (rooms[data.room].msgs) {
+				for (let index = 0; index < rooms[data.room].msgs.length; index++) {
+					if (rooms[data.room].msgs[index].fromSocket == socket.id) {
+						rooms[data.room].msgs[index].fromIdentity = rooms[data.room].identitys[socket.id];
 					}
 				}
 			}
@@ -416,8 +471,14 @@ io.on("connection", (socket) => {
 	socket.on("memberStopStreaming", (data) => {
 		// data = { offer: offer, initiatorsid: this.sid, connectionID: this.id }
 		//console.log("To Room = ", data);
-		rooms[data].identitys[socket.id].isStreaming = false;
-		io.sockets.in(data).emit("memberStreamingState", socket.id, rooms[data].identitys[socket.id]);
+
+		try {
+			rooms[data].identitys[socket.id].isStreaming = false;
+			io.sockets.in(data).emit("memberStreamingState", socket.id, rooms[data].identitys[socket.id]);
+		} catch (error) {
+			console.log("memberStopStreaming", error);
+		}
+
 	});
 
 	socket.on("streamThumbnail", (data) => {
@@ -436,10 +497,16 @@ io.on("connection", (socket) => {
 		var isA = room.isAdmin(room.identitys[socket.id].id);
 		console.log("kickMember = ", room.identitys[sid]);
 		if (isA) {
+			io.to(sid).emit("kick");
 			console.log(io.sockets.sockets.get(sid));
 			io.sockets.sockets.get(sid).leave(roomID)
-			rooms[roomID].members.splice(rooms[roomID].members.indexOf(sid), 1);
-			rooms[roomID].admins.splice(rooms[roomID].admins.indexOf(sid), 1);
+
+			if (rooms[roomID].members.indexOf(sid) != -1) {
+				rooms[roomID].members.splice(rooms[roomID].members.indexOf(sid), 1);
+			}
+			if (rooms[roomID].admins.indexOf(sid) != -1) {
+				rooms[roomID].admins.splice(rooms[roomID].admins.indexOf(sid), 1);
+			}
 		}
 	});
 
@@ -449,10 +516,15 @@ io.on("connection", (socket) => {
 		console.log("banMember = ", room.identitys[sid]);
 		if (isA) {
 			io.to(sid).emit("ban");
-			io.sockets.sockets.get(sid).leave(roomID)
-			rooms[roomID].members.splice(rooms[roomID].members.indexOf(sid), 1);
-			rooms[roomID].admins.splice(rooms[roomID].admins.indexOf(sid), 1);
 			rooms[roomID].blocked.push(rooms[roomID].identitys[sid].id);
+			io.sockets.sockets.get(sid).leave(roomID)
+			if (rooms[roomID].members.indexOf(sid) != -1) {
+				rooms[roomID].members.splice(rooms[roomID].members.indexOf(sid), 1);
+			}
+
+			if (rooms[roomID].admins.indexOf(sid) != -1) {
+				rooms[roomID].admins.splice(rooms[roomID].admins.indexOf(sid), 1);
+			}
 		}
 	});
 
@@ -539,7 +611,11 @@ app.get("/share", async function (req, res) {
 });
 
 app.get("/share/:id", async function (req, res) {
-	//await renderSCSS()
+	if (req.params.id == "getID") {
+		res.setHeader('Content-Type', 'application/json')
+		res.end(JSON.stringify({ ID: uuidv4() }));
+		return
+	}
 
 	res.sendFile(path.join(__dirname + "/public/video.html"));
 });
@@ -609,8 +685,6 @@ app.post('/upload/file', async (req, res) => {
 			return
 		}
 
-
-
 		const file = req.file;
 		const userID = req.body.user;
 		const roomid = req.body.roomid;
@@ -638,6 +712,16 @@ app.post('/upload/file', async (req, res) => {
 			fs.rename(oldPath, filePath, (err) => {
 				if (err) console.error(err)
 			})
+
+			var userfiles = rooms[roomid].files[userID]
+			var userFileObj = { path: filePath, userID: userID }
+
+			if (!userfiles) {
+				userfiles = [userFileObj]
+			} else {
+				userfiles.push(userFileObj)
+			}
+
 			res.status(201)
 			res.send(JSON.stringify({ code: 'SUCCESS', url: path.join('uploads', 'files', userID, filename), fileExt: path.parse(filePath).ext, fileid: fileid }))
 
@@ -697,8 +781,10 @@ app.put('/upload/avatar', (req, res) => {
 
 server.listen(PORT, () => {
 	if (process.env.NODE_ENV) {
+		console.log("Hello World!")
 		console.log('https://vs-dev.h2899502.stratoserver.net/');
 	} else {
+		console.log("Hello World!")
 		console.log('https://vs.h2899502.stratoserver.net/');
 	}
 });
@@ -808,7 +894,7 @@ function renderTypeHTML(type) {
 		case 'text':
 			console.log("renderTypeHTML text");
 			ret = `<a href="${type.url}" target="_blank" rel="noopener noreferrer">${type.url}</a>`
-			break;		
+			break;
 		case 'yt':
 			console.log("renderTypeHTML youtube", type);
 			//ret = `<div class="youtube-video-container"><iframe width="auto" height="auto" src="https://www.youtube.com/embed/${type.yt.id}?autoplay=0&amp;rel=0" frameborder="0" allowfullscreen="1" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"></iframe></div>`
@@ -903,7 +989,7 @@ async function getContentType(url) {
 				}
 			};
 			resolve(ret)
-			return 
+			return
 		}
 		var res;
 		try {
@@ -946,13 +1032,14 @@ async function getContentType(url) {
 
 
 
-
+// TODO isIdentityInRoom
 function isIdentityInRoom(sid, roomid) {
 	if (!rooms[roomid]) {
 		console.log("isIdentityInRoom - room does not exist");
 		return false
 	}
 	var fromIdentity = rooms[roomid].identitys[sid];
+	console.log(rooms[roomid].identitys);
 	if (rooms[roomid].members.indexOf(fromIdentity.id) == -1) {
 		console.log("isIdentityInRoom - user is not in room");
 		return false

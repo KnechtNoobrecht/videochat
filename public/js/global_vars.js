@@ -112,7 +112,7 @@ var localStreamOptions = {
 }
 
 var remoteStreamOptions = {
-    bitrate: 3000
+    bitrate: 10000
 }
 
 /**

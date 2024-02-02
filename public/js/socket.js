@@ -19,7 +19,12 @@ socket.on('disconnect', () => {
 })
 
 socket.on('peerOffer', async (indata) => {
+    if(indata.type == "share") {
+        console.log("skipping peerOffer because it came from share room");
+        return
+    }
     console.log('incoming Peer offer = ', indata);
+    
 
     var currentPeer = await pm.getPeerByConnectionID(indata.connectionID)
     if (currentPeer) {
@@ -37,6 +42,7 @@ socket.on('peerOffer', async (indata) => {
     let peer = new Peer(options)
     var outdata = await peer.init(indata.data.offer)
     pm.addPeer(peer)
+    console.log("emitting peer answer");
     socket.emit('peerAnswer', {
         fromSocket: indata.toSocket,
         toSocket: indata.fromSocket,
@@ -84,7 +90,7 @@ socket.on('memberRemoved', (sockets, sid, identity) => {
 })
 
 socket.on('memberStreamingState', (sid, identity) => {
-    //console.log('memberStreamingState = ', identity)
+    console.log('memberStreamingState = ', identity)
     room.changeMember(sid, identity)
 })
 
@@ -129,7 +135,7 @@ socket.on('updateMsg', async (data) => {
     var msgElement = updateChatMsg(data)
     updateMsgAttachment(data)
     //pushNewChatMsgToChat(msgElement)
-    
+
     data.HTMLElement = msgElement
     room.msgs[data.id] = data
     //soundsPlayer.play('incomming_Msg')
@@ -153,6 +159,11 @@ socket.on('updateMsgAttachment', async (data) => {
 })
 
 socket.on('ban', async () => {
+    //console.log('ban = ');
+    window.location.href = '/';
+})
+
+socket.on('kick', async () => {
     //console.log('ban = ');
     window.location.href = '/';
 })

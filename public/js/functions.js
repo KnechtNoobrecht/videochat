@@ -23,15 +23,16 @@ function setStreamToWindow(peer) {
     var remoteVideo = videoWrapper.getElementsByTagName('video')[0]
     remoteVideo.style.zIndex = "3";
     remoteVideo.style.opacity = "1";
+    //remoteVideo.controls = true;
     inStageMode = false
 
 
     videoWrapper.addEventListener('mouseover', () => {
-        videoWrapper.querySelector('.sliderWrapper').style.width = "calc(100% - 20px)"
+        //videoWrapper.querySelector('.sliderWrapper').style.width = "calc(100% - 20px)"
     })
 
     videoWrapper.addEventListener('mouseout', () => {
-        videoWrapper.querySelector('.sliderWrapper').style.width = videoWrapper.querySelector('.namePlaceholder').getBoundingClientRect().width + "px"
+        //videoWrapper.querySelector('.sliderWrapper').style.width = videoWrapper.querySelector('.namePlaceholder').getBoundingClientRect().width + "px"
     })
 
     sortStreams()
@@ -47,6 +48,7 @@ function resetVideoWrapperElement(remotesid) {
     var remoteVideo = videoWrapper.getElementsByTagName('video')[0]
     remoteVideo.style.zIndex = "0";
     remoteVideo.style.opacity = "0";
+    //remoteVideo.controls = false;
 }
 
 function pushNewChatMsgToChat(msgElement) {
@@ -146,6 +148,7 @@ function renderMsgTemplate(msg) {
     }
     //msgElement.querySelector('.chat-message-username').innerText = msg.fromIdentity.username;
     msgElement.querySelector('.chat-message-avatar').querySelector('img').src = msg.fromIdentity.avatar;
+    msgElement.querySelector('.chat-message-avatar').querySelector('img').style.border = `2px solid rgb(${msg.fromIdentity.avatarRingColor.r},${msg.fromIdentity.avatarRingColor.g},${msg.fromIdentity.avatarRingColor.b})`
 
     //msgElement.querySelector('.connected-user').querySelector('.chat-message-username').innerText = msg.fromIdentity.username;
     //msgElement.querySelector('.connected-user').querySelector('img').src = msg.fromIdentity.avatar;
@@ -307,6 +310,7 @@ function cloneVideoElement(identity, socketid) {
     }
 
     clone.querySelector('.avatar').src = identity.avatar
+    clone.querySelector('.avatar').style.border = `2px solid rgb(${identity.avatarRingColor.r},${identity.avatarRingColor.g},${identity.avatarRingColor.b})`
     clone.style.backgroundImage = getThumbnail(identity)
     //clone.querySelector('.videoElement').id = socketid + 'video';
     clone.onclick = function (e) {
@@ -334,8 +338,45 @@ function cloneVideoElement(identity, socketid) {
 
     clone.querySelector('.sliderWrapper').style.width = clone.querySelector('.namePlaceholder').getBoundingClientRect().width + "px"
 
+    console.log(clone);
+    if (identity.isStreaming) {
+        //clone.querySelector('.button-watch').style = "display:flex !important";
+
+        console.log(!isMe(socketid));
+        if (!isMe(socketid)) {
+            clone.querySelector('.watchBtnOnVideoElement').style.display = "flex";
+            clone.querySelector('.watchBtnOnVideoElement').onclick = (event) => {
+                console.log(event);
+                getStream(socketid)
+            }
+        } else {
+            clone.querySelector('.watchBtnOnVideoElement').style.display = "none";
+        }
+    } else {
+        clone.querySelector('.watchBtnOnVideoElement').style.display = "none";
+    }
+
+    /* 
+        clone.querySelector('.videoElement').addEventListener("click", checkboxClick, false);
+    
+        function checkboxClick(event) {
+            let warn = "preventDefault() won't let you check this!<br>";
+            //document.getElementById("output-box").innerHTML += warn;
+            console.log(warn);
+            event.preventDefault();
+        } */
 
 
+    /*     // OnClick - Toggle between play and pause
+        vjs.PlayToggle.prototype.onClick = function () {
+            if (this.player_.paused()) {
+                this.player_.play();
+            } else {
+                this.player_.pause();
+            }
+        }; */
+    /*  function() { this.a.controls() && (this.a.paused() ? this.a.play() : this.a.pause()) }
+  */
     //clone.querySelector('.nameSlider').style.display = "block"
 
     return clone;
@@ -349,30 +390,35 @@ function cloneUserElement(identity, socketid) {
     clone.id = 'userElement_' + socketid
 
     clone.querySelector('.connected-user').querySelector('img').src = identity.avatar;
+    clone.querySelector('.connected-user').querySelector('img').style.border = `2px solid rgb(${identity.avatarRingColor.r},${identity.avatarRingColor.g},${identity.avatarRingColor.b})`
+
     //clone.querySelector('.button-watch').onclick = () => getStream(socketid)
     if (!isMe(socketid)) {
         //clone.querySelector('.button-watch').style.display = 'none';
-        clone.onclick = () => getStream(socketid)
         clone.querySelector('.connected-user').querySelector('span').innerText = identity.username;
+        clone.onclick = () => getStream(socketid)
+        clone.querySelector('.button-watch').innerText = 'Watch'
     } else {
         clone.querySelector('.connected-user').querySelector('span').innerText = meString;
+        clone.onclick = () => stopStream();
     }
 
     document.getElementById('connected-users-list').appendChild(clone);
+
     if (identity.isStreaming) {
-        clone.querySelector('.button-watch').style = "display:flex !important";
+        //clone.querySelector('.button-watch').style = "display:flex !important";
+        clone.querySelector('avatarstatusindicator').style.display = "flex";
     } else {
         clone.querySelector('.button-watch').style = "display:none !important";
+        clone.querySelector('avatarstatusindicator').style.display = "none";
     }
-    if (!isMe(socketid)) {
-        clone.querySelector('.button-watch').innerText = 'Watch'
-    } else {
-        clone.querySelector('.button-watch').innerText = 'Stop'
-    }
+
+
+
 }
 
 function isMe(socketid) {
-    //console.log("isMe: " + socketid + " == " + socket.id);
+    console.log("isMe ? : " + socketid + " ==? " + socket.id);
     return socketid == socket.id;
 }
 
@@ -566,7 +612,7 @@ function uuid() {
 
 // { id: this.id, username: this.username, avatar: this.avatar }
 function addCookieObjectElement(params) {
-    //console.log('addCookieObjectElement', params);
+    console.log('addCookieObjectElement params:', params);
     var iCookie = getCookie('ep_Identitys')
     if (iCookie == '') {
         iCookie = JSON.stringify({})
@@ -574,7 +620,10 @@ function addCookieObjectElement(params) {
 
     var iCookieObj = JSON.parse(iCookie)
     iCookieObj[params.id] = params
+    console.log('iCookie:', iCookie);
+    console.log('iCookieObj:', iCookieObj);
     setCookie('ep_Identitys', JSON.stringify(iCookieObj), 365)
+    console.log('getCookieObject(ep_Identitys):', getCookieObject('ep_Identitys'));
     return getCookieObject('ep_Identitys')
 }
 
@@ -769,7 +818,7 @@ function startStreaming() {
 
                 var videoWrapper = document.getElementById('videoElement_' + socket.id)
                 var localVideo = videoWrapper.querySelector('video')
-                var avatarImage = videoWrapper.querySelector(".avatar.myavatar")
+                var avatarImage = videoWrapper.querySelector(".avatar")
                 localVideo.srcObject = localStream;
 
                 localVideo.onloadedmetadata = (e) => {
@@ -860,7 +909,7 @@ function startCamStreaming() {
 
                     var videoWrapper = document.getElementById('videoElement_' + socket.id)
                     var localVideo = videoWrapper.getElementsByTagName('video')[0]
-                    var avatarImage = videoWrapper.querySelector(".avatar.myavatar")
+                    var avatarImage = videoWrapper.querySelector(".avatar .myavatar")
 
                     localVideo.srcObject = localStream;
 
@@ -920,7 +969,8 @@ function getStream(remotesid) {
         fromSocket: socket.id,
         toSocket: remotesid,
         quality: remoteStreamOptions.bitrate,
-        browser: getBrowser()
+        browser: getBrowser(),
+        roomID: roomID
     });
 }
 
@@ -1031,7 +1081,7 @@ function getRoomList() {
 function initIdentity() {
     return new Promise((resolve, reject) => {
         var ido = getCookieObject('ep_Identitys')
-        //console.log('ido ', ido);
+        console.log('ido ', ido);
         if (ido) {
             Object.keys(ido).forEach((id) => {
                 //console.log('Identity = ', id, ido[id])
@@ -1040,7 +1090,8 @@ function initIdentity() {
                     id: ido[id].id,
                     username: ido[id].username,
                     avatar: ido[id].avatar,
-                    color: ido[id].color
+                    color: ido[id].color,
+                    avatarRingColor: ido[id].avatarRingColor
                 }))
             })
             resolve(false)
@@ -1127,9 +1178,9 @@ var testTimer;
 //}
 
 
-function createRoom() {
+function createRoom(ID) {
     var pw = document.getElementById('createRoomPassword').value
-    var rid = document.getElementById('createRoomID').value
+    var rid = document.getElementById('createRoomID').value || ID
     var rn = rid//document.getElementById('roomname').value
     console.log('createRoom ID: ', rid);
     console.log('createRoom pw: ', pw);
@@ -1139,7 +1190,11 @@ function createRoom() {
 function joinRoom(roomID) {
     var pw = document.getElementById('joinRoomPassword').value
     var rid = document.getElementById('joinRoomID').value || roomID
-    socket.emit('joinRoom', rid, identitys[0], pw, handleJoinRoomCB)
+    if (rid) {
+        socket.emit('joinRoom', rid, identitys[0], pw, handleJoinRoomCB)
+    } else {
+        modals.joinRoom.open();
+    }
 }
 
 function addAdminUI() {
@@ -1186,24 +1241,36 @@ function showUI() {
     document.querySelector('#grid-container').style.opacity = "1"
 }
 
+function processLoadingSpeed(input) {
+    if (input > 1000) {
+        return Math.round(input / 1000) + 'MB/s'
+    } else {
+        return Math.round(input) + 'kB/s'
+    }
+}
+
 function handleJoinRoomCB(params) {
     var joinRoom = document.querySelector('#joinRoom')
 
     switch (params.code) {
         case 0:
-            modals.joinRoom.close();
-            modals.createRoom.close();
-            showUI();
-            if (params.isAdmin) {
-                isAdmin = params.isAdmin;
-                addAdminUI();
-            }
-
             roomID = params.room
-            if(operatingMode == "share") {
-                history.pushState("", '', '/share/' + params.room)
+            if (operatingMode == "share") {
+                history.pushState("", '', '/share/' + roomID)
+                if (params.isAdmin) {
+                    modals.shareFile.open()
+                    return;
+                }
+                modals.shareFileDownload.open()
             } else {
-                history.pushState("", '', '/rooms/' + params.room)
+                modals.joinRoom.close();
+                modals.createRoom.close();
+                showUI();
+                if (params.isAdmin) {
+                    isAdmin = params.isAdmin;
+                    addAdminUI();
+                }
+                history.pushState("", '', '/rooms/' + roomID)
             }
             break;
         case 1:
@@ -1360,58 +1427,6 @@ function renderPickedAttachments() {
 function removePickedAttachments(key) {
     delete fileHandle[key]
     renderPickedAttachments()
-}
-
-
-function previewAvatar() {
-
-    var file = document.getElementById('avatarfileinput').files[0];
-    var reader = new FileReader();
-    reader.onload = function (e) {
-        if (e.loaded > 10 * 1024 * 1024) {
-            new Toast({
-                type: "error",
-                content: "Dateigröße darf 10MB nicht überschreiten"
-            })
-            file = undefined
-            return
-        }
-        var image = document.getElementById("previewAvatar");
-        image.src = e.target.result;
-    }
-    reader.readAsDataURL(file);
-}
-
-async function uploadAvatar() {
-    let fileField = document.getElementById('avatarfileinput');
-    if (fileField.files[0]) {
-        const formData = new FormData();
-        formData.append("user", identitys[0].id);
-        formData.append("avatar", fileField.files[0]);
-
-        var response = await fetch("/upload/avatar", {
-            method: "PUT",
-            body: formData,
-        })
-
-        var result = await response.json();
-
-        if (response.ok) {
-            identitys[0].set({ avatar: "/uploads/avatars/" + identitys[0].id + ".png" });
-            var evt = document.createEvent("Event");
-            evt.initEvent("memberChanged", true, true);
-            evt.detail = {}
-            evt.detail.identity = identitys[0]
-            evt.detail.sid = socket.id
-            room.dispatchEvent(evt)
-            fileField.value = null;
-            return true
-        } else {
-            console.log(result);
-            return false
-        }
-    }
-    return true
 }
 
 function showPasswordInput(ctx) {
@@ -1669,27 +1684,221 @@ function openProfileModal(cb) {
 
 async function saveProfile() {
 
-    // insert loading spinner
-    if (await uploadAvatar()) {
-        identitys[0].set({
-            username: document.getElementById('username').value,
-            avatar: document.getElementById('avatar').value
-        });
-        socket.emit('memberChangeIdentity', {
-            username: identitys[0].username,
-            avatar: identitys[0].avatar,
-            room: room.id
-        });
-        modals.setIdent.close()
-        if (identitys[0].username != 'Anonymous') {
-            modals.setIdent.close()
-        }
-    } else {
+    let fileField = document.getElementById('avatarfileinput');
+
+    if (fileField.files[0]) {
+        var result = await uploadAvatar(fileField)
+        identitys[0].set({ avatar: '/' + result.url });
+        var rgb = getAverageRGB(document.querySelector('#previewAvatar'))
+        identitys[0].set({ avatarRingColor: rgb });
         new Toast({
-            type: "error",
-            content: "Beim Hochladen des Avatars ist ein Fehler aufgetreten"
+            type: "success",
+            content: "Avatar hochgeladen"
         })
     }
+
+    identitys[0].set({ username: document.querySelector('#username').value });
+
+    socket.emit('memberChangeIdentity', {
+        username: identitys[0].username,
+        avatar: identitys[0].avatar,
+        room: room.id,
+        avatarRingColor: rgb
+    });
+
+    modals.setIdent.close()
+
+    if (identitys[0].username != 'Anonymous') {
+        modals.setIdent.close()
+    }
+}
+
+
+
+async function uploadAvatar(fileField) {
+    //let fileField = document.getElementById('avatarfileinput');
+    console.log('uploadAvatar', fileField);
+    if (fileField.files[0]) {
+        const formData = new FormData();
+        formData.append("user", identitys[0].id);
+        formData.append("avatar", fileField.files[0]);
+
+        var response = await fetch("/upload/avatar", {
+            method: "PUT",
+            body: formData,
+        })
+
+        if (!response.ok) {
+            new Toast({
+                type: "error",
+                content: "Beim Hochladen des Avatars ist ein Fehler aufgetreten"
+            })
+        }
+
+        var result = await response.json();
+
+        return result
+
+        if (response.ok) {
+            //identitys[0].set({ avatar: "/uploads/avatars/" + identitys[0].id + ".png" });
+
+            /*             var evt = document.createEvent("Event");
+                        evt.initEvent("memberChanged", true, true);
+                        evt.detail = {}
+                        evt.detail.identity = identitys[0]
+                        evt.detail.sid = socket.id
+                        room.dispatchEvent(evt)
+                        fileField.value = null; */
+            return true
+        } else {
+            return false
+        }
+    }
+    return null
+}
+
+function previewAvatar() {
+
+    var file = document.getElementById('avatarfileinput').files[0];
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        if (e.loaded > 10 * 1024 * 1024) {
+            new Toast({
+                type: "error",
+                content: "Dateigröße darf 10MB nicht überschreiten"
+            })
+            file = undefined
+            return
+        }
+        var image = document.getElementById("previewAvatar");
+        image.src = e.target.result;
+    }
+    reader.readAsDataURL(file);
+}
+
+function getAverageRGB(imgEl) {
+
+    var blockSize = 5, // only visit every 5 pixels
+        defaultRGB = { r: 0, g: 0, b: 0 }, // for non-supporting envs
+        canvas = document.createElement('canvas'),
+        context = canvas.getContext && canvas.getContext('2d'),
+        data, width, height,
+        i = -4,
+        length,
+        rgb = { r: 0, g: 0, b: 0 },
+        count = 0
+
+    if (!context) {
+        return defaultRGB;
+    }
+
+    height = canvas.height = imgEl.naturalHeight || imgEl.offsetHeight || imgEl.height;
+    width = canvas.width = imgEl.naturalWidth || imgEl.offsetWidth || imgEl.width;
+
+    context.drawImage(imgEl, 0, 0);
+
+    try {
+        data = context.getImageData(0, 0, width, height);
+    } catch (e) {
+        /* security error, img on diff domain */
+        return defaultRGB;
+    }
+
+    length = data.data.length;
+
+    while ((i += blockSize * 4) < length) {
+        ++count;
+        rgb.r += data.data[i];
+        rgb.g += data.data[i + 1];
+        rgb.b += data.data[i + 2];
+
+    }
+
+    // ~~ used to floor values
+    rgb.r = ~~(rgb.r / count);
+    rgb.g = ~~(rgb.g / count);
+    rgb.b = ~~(rgb.b / count);
+    console.log(rgb);
+    // ~~ used to floor values
+    rgb.r = getRandomInRangeAroundValue(rgb.r)
+    rgb.g = getRandomInRangeAroundValue(rgb.g)
+    rgb.b = getRandomInRangeAroundValue(rgb.b)
+
+    console.log(rgb);
+
+    return rgb;
+
+}
+
+function getRandomInRangeAroundValue(value) {
+    // Generiere einen zufälligen Wert zwischen -20 und +20
+    const randomOffset = Math.floor(Math.random() * 61) - 30;
+
+    // Berechne das Ergebnis und stelle sicher, dass es zwischen 0 und 255 liegt
+    const result = value + randomOffset;
+    return Math.max(0, Math.min(255, result));
+}
+
+
+
+
+function getAverageRGB2(imgEl) {
+
+    var blockSize = 5, // only visit every 5 pixels
+        defaultRGB = { r: 0, g: 0, b: 0 }, // for non-supporting envs
+        canvas = document.createElement('canvas'),
+        context = canvas.getContext && canvas.getContext('2d'),
+        data, width, height,
+        i = -4,
+        length,
+        rgb = { r: 0, g: 0, b: 0 },
+        countR = 0,
+        countG = 0,
+        countB = 0
+
+    if (!context) {
+        return defaultRGB;
+    }
+
+    height = canvas.height = imgEl.naturalHeight || imgEl.offsetHeight || imgEl.height;
+    width = canvas.width = imgEl.naturalWidth || imgEl.offsetWidth || imgEl.width;
+
+    context.drawImage(imgEl, 0, 0);
+
+    try {
+        data = context.getImageData(0, 0, width, height);
+    } catch (e) {
+        /* security error, img on diff domain */
+        return defaultRGB;
+    }
+
+    length = data.data.length;
+
+
+    //TODO Fabe anpassen
+
+    while ((i += blockSize * 4) < length) {
+        if (data.data[i] - data.data[i + 1] - data.data[i + 2] > 90) {
+            ++countR;
+            rgb.r += data.data[i];
+        }
+        if (data.data[i + 1] - data.data[i] - data.data[i + 2] > 90) {
+            ++countG;
+            rgb.g += data.data[i + 1];
+        }
+        if (data.data[i + 2] - data.data[i] - data.data[i + 1] > 90) {
+            ++countB;
+            rgb.b += data.data[i + 2];
+        }
+    }
+
+    // ~~ used to floor values
+    rgb.r = ~~(rgb.r / countR);
+    rgb.g = ~~(rgb.g / countG);
+    rgb.b = ~~(rgb.b / countB);
+
+    return rgb;
+
 }
 
 function hideMenu() {
@@ -1800,7 +2009,7 @@ function rightClick(e) {
             menu.style.top = e.pageY + "px";
             console.log("e.pageX + menuMinWidth ", e.pageX + menuMinWidth);
             console.log("window.innerWidth ", window.innerWidth);
-            if(e.pageX + menuMinWidth + 10 > window.innerWidth) {
+            if (e.pageX + menuMinWidth + 10 > window.innerWidth) {
                 menu.style.left = e.pageX - menuMinWidth - 10 + "px";
             } else {
                 menu.style.left = e.pageX + "px";
@@ -1988,10 +2197,10 @@ function handleChatMsgEdit(id) {
                 console.log(attachment);
                 console.log(document.querySelector(`[attachmentid="${attachmentid}"]`));
                 document.querySelector(`[attachmentid="${attachmentid}"]`).style.display = 'block';
-                
+
             }
         }
-        removeAllListItem() 
+        removeAllListItem()
         room.updateMsg(msg)
     }
 
@@ -2014,7 +2223,7 @@ function handleChatMsgEdit(id) {
                 document.querySelector(`[attachmentid="${attachmentid}"]`).style.display = 'block';
             }
         }
-        removeAllListItem() 
+        removeAllListItem()
     }
 
 
@@ -2039,7 +2248,7 @@ function handleChatMsgEdit(id) {
 
             var attachmentWrapperElement = document.createElement('div')
             attachmentWrapperElement.innerHTML = attachment.url;
-            attachmentWrapperElement.setAttribute('removeListItem','')
+            attachmentWrapperElement.setAttribute('removeListItem', '')
             var attachmentRemoveBtnElement = document.createElement('button')
             attachmentRemoveBtnElement.innerHTML = 'Remove'
             attachmentRemoveBtnElement.onclick = (e) => {
@@ -2058,7 +2267,7 @@ function handleChatMsgEdit(id) {
     }
 
     function removeAllListItem() {
-       var listItems = document.querySelectorAll('[removeListItem]')
+        var listItems = document.querySelectorAll('[removeListItem]')
         for (const key in listItems) {
             if (Object.hasOwnProperty.call(listItems, key)) {
                 msg_element.querySelector('.chat-message-attachments').removeChild(listItems[key])
@@ -2161,7 +2370,7 @@ function XHRupload(files) {
 }
 
 function submitOnEnter(e) {
-    if(e.key != "Enter") {
+    if (e.key != "Enter") {
         return
     } else {
         console.log(e.srcElement);
@@ -2169,7 +2378,7 @@ function submitOnEnter(e) {
             case "username":
                 saveProfile()
                 break;
-             
+
             case "joinRoomID":
             case "joinRoomPassword":
                 joinRoom()
@@ -2179,7 +2388,7 @@ function submitOnEnter(e) {
             case "createRoomPassword":
                 createRoom()
                 break;
-        
+
             default:
                 break;
         }
