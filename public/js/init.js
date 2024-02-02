@@ -32,12 +32,7 @@ window.onload = async function () {
             //initJoinRoom();
         })
     } else {
-        if (operatingMode == "video") {
-            joinRoom();
-        } else if (operatingMode == "share") {
-            modals.shareFile.open()
-            joinRoom();
-        }
+        initJoinRoom();
         console.log("init Join Room");
     }
 

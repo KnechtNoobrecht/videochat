@@ -11,19 +11,8 @@ const socket = io()
  * @description Holds the current Room ID
  * Muss var sein, weil teilweise in joinRoom() nochmal überschrieben wird, z.B. wenn von '/' gestartet wurde
  */
+var roomID = window.location.pathname.split('/').pop()
 
-var roomID = ""
-var operatingMode = "video"
-
-if(window.location.pathname.split('/').pop() != "share") {
-    roomID = window.location.pathname.split('/').pop()
-} 
-
-if(window.location.pathname.split('/').indexOf("share") != -1 && window.location.pathname.split('/').indexOf("rooms") == -1) {
-    operatingMode = "share"
-}
-
-console.log('share:', roomID, operatingMode);
 
 /**
  * @var localStream

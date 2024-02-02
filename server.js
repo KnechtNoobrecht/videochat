@@ -10,8 +10,8 @@ var sass = require('node-sass');
 fs = require('fs');
 const multer = require('multer')
 //const upload = multer({ dest: 'multerTemp/' })
-const fileUploader = multer({ dest: 'multerTemp/', limits: { fileSize: 100 * 1024 * 1024 } })	//100MB
-const avatarUploader = multer({ dest: 'multerTemp/', limits: { fileSize: 10 * 1024 * 1024 } })	//10MB
+const fileUploader = multer({ dest: 'multerTemp/', limits: { fileSize: 100 * 1024 * 1024 } })
+const avatarUploader = multer({ dest: 'multerTemp/', limits: { fileSize: 10 * 1024 * 1024 } })
 
 const bcrypt = require('bcrypt'); //Importing the NPM bcrypt package.
 const saltRounds = 10; //We are setting salt rounds, higher is safer.
@@ -21,8 +21,7 @@ const PORT = process.env.PORT || 6001;
 var rooms = {};
 
 class Room {
-	constructor(id, name, pw, mode) {
-		this.type = mode || "video"
+	constructor(id, name, pw) {
 		this.id = id
 		this.name = name
 		this.admins = []
@@ -37,25 +36,15 @@ class Room {
 		console.log('addMember');
 		console.log(sid, identity);
 		this.identitys[sid] = identity;
-
-
-		//Neue Code der dazu führt das man keinen Stream ansehen kann.
-		if (this.members.indexOf(identity.id) == -1) {
-			this.members.push(identity.id);
-		}
-		// Altrer Code der Zwar funktioniert aber zb. die "ist Live" anzeigt wird nicht mehr angezeigt 
-		/* 		if (this.members.indexOf(sid) == -1) {
-					this.members.push(sid);
-				} */
+		this.members.push(identity.id);
 	}
 	removeMember(sid) {
 		console.log('removeMember');
 		console.log(sid);
-		console.log(this.identitys[sid])
-		if (this.identitys[sid]) {
-			//this.members.splice(this.members.indexOf(sid), 1);
+		if (this.members[sid]) {
+			delete this.members[this.identitys[sid].id];
 			delete this.identitys[sid];
-			console.log('Member removed')
+
 		} else {
 			console.log('Member not in room')
 		}
@@ -122,14 +111,14 @@ class Room {
 
 // 0 beigetreten
 // 1 room not found
-// 2 room id not supplied
+// 2 
 // 3 room blocked you 
 // 4 room password wrong
 // 5 error
-// 6 share room full
 
 
 io.on("connection", (socket) => {
+	//socket.emit("ID", socket.id);
 
 	socket.on("joinRoom", async (roomID, identity, pw, cb) => {
 		//identity.sid = socket.id;
@@ -147,7 +136,6 @@ io.on("connection", (socket) => {
 					code: 2,
 					msg: 'No roomID supplied'
 				})
-				return
 			}
 
 			if (!room) {
@@ -157,82 +145,84 @@ io.on("connection", (socket) => {
 					code: 1,
 					msg: 'Room not found'
 				})
-				return
-			}
 
-			var userIsAdmin = room.isAdmin(identity.id);
-			var userIsBlocked = room.isBlocked(identity.id);
-			var userIsMember = room.isMember(identity.id);
-
-
-			if (Object.keys(room.identitys).length >= 2 && room.type == "share" && !isMember) {
-				cb({
-					room: roomID,
-					joined: false,
-					code: 6,
-					msg: 'Share room full'
-				})
-				return
-			}
-
-
-			identity.isAdmin = userIsAdmin;
-
-			console.log('User trying to join room is admin? = ', userIsAdmin, ' // is user blocked? = ', userIsBlocked);
-			console.log('!userIsAdmin && userIsBlocked = ', !userIsAdmin && userIsBlocked);
-
-			if (!userIsAdmin && userIsBlocked) {
-				cb({
-					room: roomID,
-					joined: false,
-					code: 3,
-					msg: 'You are blocked from this room'
-				})
-				return;
-			}
-
-			if (userIsAdmin || userIsMember || await bcrypt.compare(pw, room.password)) {
-				socket.join(roomID);
-				cb({
-					room: roomID,
-					joined: true,
-					code: 0,
-					msg: 'Room joined',
-					isAdmin: userIsAdmin
-				})
-
-				rooms[roomID].addMember(socket.id, identity)
-				var sockets = await getSocketsOfRoom(roomID);
-				socket.emit("membersLoaded", sockets);
-				if (room.type == "video") {
-					socket.emit("loadChatMsgs", rooms[roomID].msgs);
-				}
-				if (room.type == "share") {
-					var targetSocketID = ""
-					if (room.admins.length) {
-						for (const key in room.identitys) {
-							if (room.identitys[key].id == room.admins[0]) {
-								targetSocketID = key
-								console.log(targetSocketID + " is admin");
-								console.log("Telling " + targetSocketID + " to send the file name...");
-								io.to(targetSocketID).emit('triggerShareUpdate', { remoteSocketID: socket.id })
-								return
-							}
-						}
-					}
-				}
-				//console.log(rooms[roomID].msgs);
-				console.log(`User ${identity.username} joined room ${roomID} of type ${room.type}`)
 			} else {
-				cb({
-					room: roomID,
-					joined: false,
-					code: 4,
-					msg: 'Room password incorrect'
-				})
+
+				var userIsAdmin = room.isAdmin(identity.id);
+				var userIsBlocked = room.isBlocked(identity.id);
+				var userIsMember = room.isMember(identity.id);
+
+				identity.isAdmin = userIsAdmin;
+
+				console.log('User trying to join room is admin? = ', userIsAdmin, ' // is user blocked? = ', userIsBlocked);
+				console.log('!userIsAdmin && userIsBlocked = ', !userIsAdmin && userIsBlocked);
+
+				if (!userIsAdmin && userIsBlocked) {
+					cb({
+						room: roomID,
+						joined: false,
+						code: 3,
+						msg: 'You are blocked from this room'
+					})
+					return;
+				}
+
+				/* 			console.log('');
+							console.log('pw: ',pw);
+							console.log('room: ', rooms[roomID]);
+							console.log(''); */
+				//rooms[roomID].password
+				/* 				if(await bcrypt.compare(pw, room.password)) {
+									if (userIsAdmin || userIsMember) {
+										socket.join(roomID);
+										cb({
+											room: roomID,
+											joined: true,
+											code: 0,
+											msg: 'Room joined',
+											isAdmin: userIsAdmin
+										})
+					
+										rooms[roomID].addMember(socket.id, identity)
+										var sockets = await getSocketsOfRoom(roomID);
+										socket.emit("membersLoaded", sockets);
+										socket.emit("loadChatMsgs", roomChatMsgs[roomID]);
+									}
+									cb({
+										room: roomID,
+										joined: false,
+										code: 6,
+										msg: 'Room password empty'
+									})
+									return
+								} */
+
+				if (userIsAdmin || userIsMember || await bcrypt.compare(pw, room.password)) {
+					socket.join(roomID);
+					cb({
+						room: roomID,
+						joined: true,
+						code: 0,
+						msg: 'Room joined',
+						isAdmin: userIsAdmin
+					})
+
+					rooms[roomID].addMember(socket.id, identity)
+					var sockets = await getSocketsOfRoom(roomID);
+					socket.emit("membersLoaded", sockets);
+					socket.emit("loadChatMsgs", rooms[roomID].msgs);
+					//console.log(rooms[roomID].msgs);
+					console.log(`User ${identity.username} joined room ${roomID}`);
+				} else {
+					cb({
+						room: roomID,
+						joined: false,
+						code: 4,
+						msg: 'Room password incorrect'
+					})
+				}
 			}
 		} catch (error) {
-			console.log(room)
 			console.log("JOIN ROOM error = ", error);
 			cb({
 				room: roomID,
@@ -251,14 +241,14 @@ io.on("connection", (socket) => {
 	// 4 
 	// 5 error
 
-	socket.on("createRoom", async (roomID, identity, pw, roomname, type, cb) => {
+	socket.on("createRoom", async (roomID, identity, pw, roomname, cb) => {
 		//identity.sid = socket.id;
 		try {
 			console.log(`User ${identity.username} try to create room ${roomID}`);
 
 			if (!rooms[roomID]) {
 				var hpw = await bcrypt.hash(pw, saltRounds);
-				rooms[roomID] = new Room(roomID, roomname, hpw, type)
+				rooms[roomID] = new Room(roomID, roomname, hpw)
 				rooms[roomID].admins.push(identity.id)
 
 				cb({
@@ -565,7 +555,6 @@ io.of("/").adapter.on("join-room", async (room, id) => {
 
 io.of("/").adapter.on("leave-room", async (room, id) => {
 	if (rooms[room]) {
-		console.log(id + ' got disconnected');
 		rooms[room].removeMember(id)
 		var sockets = await getSocketsOfRoom(room);
 		io.to(room).emit('memberRemoved', sockets, id, rooms[room].identitys[id]);
@@ -601,23 +590,6 @@ app.get("/", async function (req, res) {
 	res.sendFile(path.join(__dirname + "/public/video.html"));
 	//await renderSCSS()
 	//res.redirect("/rooms/" + uuidv4());
-});
-
-app.get("/share", async function (req, res) {
-	console.log("get /share");
-	res.sendFile(path.join(__dirname + "/public/video.html"));
-	//await renderSCSS()
-	//res.redirect("/rooms/" + uuidv4());
-});
-
-app.get("/share/:id", async function (req, res) {
-	if (req.params.id == "getID") {
-		res.setHeader('Content-Type', 'application/json')
-		res.end(JSON.stringify({ ID: uuidv4() }));
-		return
-	}
-
-	res.sendFile(path.join(__dirname + "/public/video.html"));
 });
 
 app.get("/css/dist/main.css", async function (req, res) {

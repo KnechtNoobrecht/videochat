@@ -1171,11 +1171,9 @@ function sendThumbnail() {
 
 var testTimer;
 
-
-// 
-//function initJoinRoom() {
-//    socket.emit('joinRoom', roomID, identitys[0], '', handleJoinRoomCB)
-//}
+function initJoinRoom() {
+    socket.emit('joinRoom', roomID, identitys[0], '', handleJoinRoomCB)
+}
 
 
 function createRoom(ID) {
@@ -1184,7 +1182,7 @@ function createRoom(ID) {
     var rn = rid//document.getElementById('roomname').value
     console.log('createRoom ID: ', rid);
     console.log('createRoom pw: ', pw);
-    socket.emit('createRoom', rid, identitys[0], pw, rn, operatingMode, handleCreateRoomCB)
+    socket.emit('createRoom', rid, identitys[0], pw, rn, handleCreateRoomCB)
 }
 
 function joinRoom(roomID) {
@@ -1255,23 +1253,7 @@ function handleJoinRoomCB(params) {
     switch (params.code) {
         case 0:
             roomID = params.room
-            if (operatingMode == "share") {
-                history.pushState("", '', '/share/' + roomID)
-                if (params.isAdmin) {
-                    modals.shareFile.open()
-                    return;
-                }
-                modals.shareFileDownload.open()
-            } else {
-                modals.joinRoom.close();
-                modals.createRoom.close();
-                showUI();
-                if (params.isAdmin) {
-                    isAdmin = params.isAdmin;
-                    addAdminUI();
-                }
-                history.pushState("", '', '/rooms/' + roomID)
-            }
+            history.pushState("", '', '/rooms/' + params.room)
             break;
         case 1:
             console.log('joinRoom room not found', params);
@@ -1292,7 +1274,7 @@ function handleJoinRoomCB(params) {
             console.log('joinRoom room blocked you ', params);
             new Toast({
                 type: "info",
-                content: 'Du kannst diesem Raum nicht beitreten'
+                content: 'Du kannst diesem Raum nicht beiteten'
             })
             break;
         case 4:
@@ -1314,17 +1296,6 @@ function handleJoinRoomCB(params) {
             break;
         case 5:
             console.log('joinRoom error', params);
-            break;
-        case 6:
-            console.log('joinRoom capacity reached', params);
-            document.getElementById('createRoomID').value = ""
-            document.getElementById('joinRoomID').value = ""
-            modals.joinRoom.open()
-
-            new Toast({
-                type: "info",
-                content: 'Du kannst diesem Raum nicht beitreten'
-            })
             break;
         default:
             break;
@@ -1943,12 +1914,15 @@ function rightClick(e) {
                 } else {
                     id = null;
                 }
+
+
                 break
+
             }
         }
 
         var menu = document.getElementById("contextMenu")
-        var elementWrapper = menu.querySelector('ul');
+        var elementWrapper = document.querySelector('ul');
         elementWrapper.innerHTML = ""
 
         if (id) {
@@ -2368,6 +2342,12 @@ function XHRupload(files) {
 
     xhr.send(formData)
 }
+
+document.getElementById('joinRoomID').onkeyup = (e) => submitOnEnter(e)
+document.getElementById('joinRoomPassword').onkeyup = (e) => submitOnEnter(e)
+document.getElementById('createRoomPassword').onkeyup = (e) => submitOnEnter(e)
+document.getElementById('createRoomID').onkeyup = (e) => submitOnEnter(e)
+document.getElementById('username').onkeyup = (e) => submitOnEnter(e)
 
 function submitOnEnter(e) {
     if (e.key != "Enter") {

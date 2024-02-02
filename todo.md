@@ -26,7 +26,6 @@
 ### ⚒️ Chatnachricht vergößern (Modal?) 
 ### ⚒️ Attachments große Modal anzeige (dc like)
 ### ⚒️ Möglichkeit Streams und Chat wechseln zu können
-### ⚒️ Fehlermeldung für joinRoom error code 5 erstellen
 
 
 ## Funktionen:
