@@ -3,11 +3,13 @@ window.onload = async function () {
     room = new Room();
     console.log("Room Created");
     pm = new PeersManager()
-    pma = new PeersManager()
+    pma = new PeersManager() // ????? War eine Vorbereitung für Voice Chat 
     console.log("PeersManager Created");
     var isNewID = await initIdentity();
     console.log("Identity initalisiert");
     initModals();
+
+    document.getElementById('joinRoomID').value = roomID
 
     console.log("Modals initalisiert");
     initTabs()
@@ -19,40 +21,24 @@ window.onload = async function () {
     console.log("Sounds initalisiert");
     console.log('chrome://webrtc-internals/');
     initDebug()
-    console.log("Debug initalisiert");
 
     // initToasts()
     console.log("Toasts initalisiert");
 
-    if (isNewID) {
+    if (isNewID && operatingMode != "share") {
         openProfileModal(() => {
             console.log("Profile Modal Closed");
-            initJoinRoom();
+            modals.joinRoom.open();
+            //initJoinRoom();
         })
     } else {
-        initJoinRoom();
+        if (operatingMode == "video") {
+            joinRoom();
+        } else if (operatingMode == "share") {
+            modals.shareFile.open()
+            joinRoom();
+        }
         console.log("init Join Room");
     }
 
-    //reloadInterval()
-    //console.log("Reload Interval initalisiert");
-
-/*     new Toast({
-        content: 'Only Content'
-    })
-    new Toast({
-        content: 'Content',
-        header: 'Head',
-        footer: 'foot'
-    })
-    new Toast({
-        header: 'Head'
-    })
-    new Toast({
-        footer: 'Foot'
-    })
-    new Toast({
-        ms: 0,
-        header: 'muss geschlossen werden'
-    }) */
 }

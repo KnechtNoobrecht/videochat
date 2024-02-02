@@ -3,10 +3,11 @@
     --secondary_bg: #2f3136;
     --tertiary_bg: #36393F;
     --modal_header_bg: #36393F;
+    --contextMenuBG: #2c2c2c;
     --modal_bg: #2C2D31;
     --red: #f92c47;
     --green: #53B581;
-    --blue:  #1984FE;
+    --blue: #1984FE;
 
     --text_primary_size: 10px;
     --text_secondary_size: 12px;
@@ -15,5 +16,9 @@
     --text_tertiary_color: #000;
     --text_primary_weight: 400;
     --text_secondary_weight: 600;
-    --avatar_size: 20px;
+    --avatar_size: 36px;
+    --spinner-timing-delay: -83.333ms;
+    --spinner-width: 2px;
+
+    --avatar-ring-color: rgb(250, 250, 250);
 }

@@ -1,6 +1,36 @@
 <!DOCTYPE html>
 <html lang="de">
 
+<!--loading spinner -->
+<!--
+<div class="loading-spinner">
+    <div class="nib-group">
+        <div class="spinner-nib"></div>
+        <div class="spinner-nib"></div>
+    </div>
+    <div class="nib-group">
+        <div class="spinner-nib"></div>
+        <div class="spinner-nib"></div>
+    </div>
+    <div class="nib-group">
+        <div class="spinner-nib"></div>
+        <div class="spinner-nib"></div>
+    </div>
+    <div class="nib-group">
+        <div class="spinner-nib"></div>
+        <div class="spinner-nib"></div>
+    </div>
+    <div class="nib-group">
+        <div class="spinner-nib"></div>
+        <div class="spinner-nib"></div>
+    </div>
+    <div class="nib-group">
+        <div class="spinner-nib"></div>
+        <div class="spinner-nib"></div>
+    </div>
+</div>
+-->
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -12,11 +42,11 @@
 
 <body>
     <div class="mobile-top-navbar">
-        <img src="/svg/user-group.svg" onclick="toggleSideBar('left')" alt="Users">
-        <img src="/svg/chat.svg" onclick="toggleSideBar('right')" alt="Chat">
+        <span onclick="toggleSideBar('left')"><img src="/svg/user-group.svg" alt="Users"></span>
+        <span onclick="toggleSideBar('right')"><img src="/svg/chat.svg" alt="Chat"></span>
     </div>
 
-    <div id="grid-container" class="grid-container">
+    <div id="grid-container" class="grid-container" style="opacity: 0; transition: .5s;">
         <div id="ls" class="left-sidebar">
             <div class="list-connected-users" id="connected-users-list">
             </div>
@@ -28,9 +58,65 @@
                 <div id="stage" class="stage"></div>
                 <div id="botStage" class="botStage"></div>
             </div>
-            <div id="startStreamBTN" class="bot_bar_item">
-                <img src="/svg/desktop.svg" />
-                <span>Start Stream</span>
+
+            <div class="bottom-buttons">
+
+                <div class="bottom-buttons-top" id="startStreamBG">
+                    <div class="startStreamStepsWrapper" id="startStreamModal">
+
+                        <div class="startStreamStepOne" id="startStreamStepOne">
+                            <div class="shareScreenWrapper" id="startScreenShare">
+                                <img src="/svg/desktop.svg" alt="">
+                                <p>Bildschirm teilen</p>
+                            </div>
+                            <div class="shareCameraWrapper" id="startCameraShare">
+                                <img src="/svg/camera.svg" alt="">
+                                <p>Kamera teilen</p>
+                            </div>
+                        </div>
+
+                        <div class="startStreamStepTwo" id="startStreamStepTwo">
+                            <div class="button-back" onclick="goBack()">
+                                <img src="/svg/arrow-left.svg" alt="Back" id="startStreamGoBack">
+                            </div>
+                            <div class="startStreamResolutionWrapper">
+                                <span>Auflösung</span>
+                                <div class="dropdown" name="resolution" id="resolutionSelector">
+                                    <div class="dropdown-title">
+                                        <button class="dropdown-title" name="resolutionSelectorTitle" type="button" data-value="1080">1080p</button>
+                                        <img src="/svg/chevron-down.svg">
+                                    </div>
+                                    <div class="dropdown-content" name="resolutionSelector" style="display: none;">
+                                        <div data-value="720"> 720p </div>
+                                        <div data-value="1080" style="display: none"> 1080p </div>
+                                        <div data-value="1440"> 1440p </div>
+                                        <div data-value="2160"> 2160p </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="startStreamFramerateWrapper">
+                                <span>Bildrate</span>
+                                <div class="fr-rs-wrapper" id="framerateDiv">
+                                    <div class="slider-framerate" id="slider-fr" style="left: 51.5938px;"></div>
+                                    <span data-value="15">15</span>
+                                    <span data-value="30">30</span>
+                                    <span data-value="60">60</span>
+                                </div>
+                            </div>
+                            <div class="button-startStreaming" onclick="chooseStream()">
+                                Start
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="bottom-buttons-bottom">
+                    <div id="startStreamBTN" class="bot_bar_item">
+                        <img src="/svg/desktop.svg" />
+                        <span>Start Stream</span>
+                    </div>
+                </div>
             </div>
             <!-- <span onclick="pm.changeStream()" class="startStream">Start Stream</span> -->
         </div>
@@ -60,12 +146,13 @@
                         <!-- <input type="file" id="filePicker" name="filename"> -->
                         <!-- <button onclick="uploadFile()">Upload</button> -->
                     </div>
-                
+
 
 
 
                     <form id="chatInput">
-                        <button type="button" class="btn-addFile" onclick="openFiles()"><img src="/svg/plus-circle.svg" alt="Add File"></button>
+                        <label for="fileUploadInput" class="btn-addFile"><img src="/svg/plus-circle.svg" alt="Add File"></label>
+                        <input multiple="true" type="file" name="fileUploadInput" id="fileUploadInput" style="display:none">
                         <textarea type="text" id="inputMsg" autocomplete="off" placeholder="Nachricht" rows="1"></textarea>
                     </form>
                     <!-- <button onclick="sendMessage()" class="chat-send-button">
@@ -76,58 +163,9 @@
         </div>
     </div>
 
-    <div class="startStreamBackground" id="startStreamBG">
-        <div class="startStreamStepsWrapper fadeInBottom" id="startStreamModal">
-
-            <div class="startStreamStepOne" id="startStreamStepOne">
-                <div class="shareScreenWrapper" id="startScreenShare">
-                    <img src="/svg/desktop.svg" alt="">
-                    <p>Bildschirm teilen</p>
-                </div>
-                <div class="shareCameraWrapper" id="startCameraShare">
-                    <img src="/svg/camera.svg" alt="">
-                    <p>Kamera teilen</p>
-                </div>
-            </div>
-    
-            <div class="startStreamStepTwo" id="startStreamStepTwo">
-                <div class="button-back">
-                    <img src="/svg/arrow-left.svg" alt="Back" id="startStreamGoBack">
-                </div>
-                <div class="startStreamResolutionWrapper">
-                    <span>Auflösung</span>
-                    <div class="dropdown" name="resolution" id="resolutionSelector">
-                        <div class="dropdown-title">
-                            <button class="dropdown-title" name="resolutionSelectorTitle" type="button" data-value="1080">1080p</button>
-                            <img src="/svg/chevron-down.svg">
-                        </div>
-                        <div class="dropdown-content" name="resolutionSelector" style="display: none;">
-                            <div data-value="720"> 720p </div>
-                            <div data-value="1080" style="display: none"> 1080p </div>
-                            <div data-value="1440"> 1440p </div>
-                            <div data-value="2160"> 2160p </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="startStreamFramerateWrapper">
-                    <span>Bildrate</span>
-                    <div class="fr-rs-wrapper" id="framerateDiv">
-                        <div class="slider-framerate" id="slider-fr" style="left: 51.5938px;"></div>
-                        <span data-value="15">15</span>
-                        <span data-value="30">30</span>
-                        <span data-value="60">60</span>
-                    </div>
-                </div>
-                <div class="button-startStreaming" onclick="chooseStream()">
-                    Start
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="toast_wrapper" id="toastContainer"></div>
 
-    <div id="infoDataWrapper" class="infoDataWrapper">
+    <div id="infoDataWrapper" class="infoDataWrapper" style="display: none;">
         <div id="infoDataTabs" class="tabsWrapper">
             <div class="tabsHeader row">
                 <div class="tabsHeaderItem" onclick="handleTabClick(this, 'tabbody1')">Peer Connections</div>
@@ -158,29 +196,15 @@
         </div>
     </div>
 
-    <modal id="testmodal" class="hide">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Modal Header</h2>
-                <button class="btn-secondary" onclick="modals.testmodal.close()"><img src="svg/x-dismiss.svg" alt="close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Some text in the Modal Body</p>
-                <p>Some other text...</p>
-            </div>
-            <div class="modal-footer">
-                <h3>Modal Footer</h3>
-            </div>
-        </div>
-    </modal>
-
     <modal id="setIdent" class="hide">
         <div class="modal-content-custom">
             <div class="modal-header-custom">
-                <h2>Edit Profile</h2>
+                <h2>Profil bearbeiten</h2>
+
                 <div class="button-wrapper">
                     <button class="btn-close" onclick="modals.setIdent.close()"><img src="/svg/x-dismiss.svg" alt="close"></button>
                 </div>
+
             </div>
 
             <div class="modal-body-custom">
@@ -208,7 +232,7 @@
                 <input type="text" name="" id="avatar" style="display: none">
             </div>
             <div class="modal-footer-custom">
-                <button class="btn-confirm form-input" onclick="saveProfile()">Save</button>
+                <button class="btn-confirm form-input" onclick="saveProfile()">Speichern</button>
             </div>
         </div>
 
@@ -235,54 +259,146 @@
     </modal>
 
     <modal id="joinRoom" class="hide">
-        <div class="modal-content">
-            <div class="modal-header col-6">
-                <h2>Join Room</h2>
-                <button class="btn form-input" onclick="modals.joinRoom.close(); modals.createRoom.open()">Create</button>
+        <div class="modal-content-custom">
+            <div class="modal-header-custom">
+                <h2>Raum beitreten</h2>
             </div>
-            <div class="modal-body col-6">
-                <div class="row">
-                    <div class="col-6">Room id</div>
 
-                    <input class="col-6 form-input" id="joinroomid">
-                </div>
-                <div class="row">
-                    <div class="col-6">Password</div>
-
-                    <input type="password" class="col-6 form-input" id="joinpassword">
-                </div>
+            <div class="modal-body-custom">
+                <span name="joinRoomDescription">Gib den Raumnamen ein, um ihm beizutreten</span>
+                <input type="text" name="joinRoomID" id="joinRoomID" placeholder="ID" autocomplete="off">
+                <input class="fadeInTop" type="password" name="joinRoomPassword" id="joinRoomPassword" placeholder="Passwort" style="display:none;">
             </div>
-            <div class="modal-footer col-6">
-                <button class="btn form-input" onclick="joinRoom()">Join</button>
+            <div class="modal-footer-custom">
+                <button class="btn-continue" onclick="joinRoom()"><span>Weiter</span></button>
+                <div class="continue-alternative">
+                    <span>oder </span><span onclick="modals.joinRoom.close(); modals.createRoom.open()">einen Raum erstellen</span>
+                </div>
             </div>
         </div>
     </modal>
 
+    <modal id="shareFile" class="hide">
+        <div class="modal-content-custom">
+            <div class="modal-header-custom">
+                <h2>Datei teilen</h2>
+            </div>
+
+            <div class="modal-body-custom">
+                <input multiple="false" type="file" name="shareFileInput" id="shareFileInput" style="display:none" onchange="InitShare()">
+                <label for="shareFileInput" class="btn-shareFile"><img class="shareFileBlank" src="/svg/folder-plus.svg" alt="Add File"></label>
+            </div>
+            <div class="modal-footer-custom">
+                <div class="continue-alternative">
+                    <span>Wähle eine Datei, die Du teilen möchtest</span><span></span>
+                </div>
+            </div>
+        </div>
+    </modal>
+
+    <modal id="shareFileDownload" class="hide">
+        <div class="modal-content-custom">
+            <div class="modal-header-custom">
+                <h2>Datei bereit</h2>
+            </div>
+
+            <div class="modal-body-custom">
+                <div class="fileDescriptionWrapper">
+                    <img class="shareFileBlank" id="shareIconFileBlank" src="/svg/file-blank.svg" alt="File Icon">
+                    <div class="continue-alternative">
+                        <span id="sharedFileDescription"></span><span></span>
+                    </div>
+                </div>
+                <div class="progresswrapper" id="progresswrapper">
+                    <!-- loading bar -->
+                    <label>
+                        <progress determinate id="progressbar" role="progressbar" aria-describedby="loading-zone" tabindex="-1" value="0.01" aria-valuenow="1%">1%</progress>
+                    </label>
+
+                    <!-- remaining time info -->
+                    <div class="progressdwrapper">
+                        <span id="progressdialogue">sehr viele Minuten verbleibend</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <div class="continue-alternative">
+                    <button class="btn-continue" onclick="downloadSharedFile()"><span>Datei herunterladen</span></button>
+                    <a style="display: none" id="shareFileDownloadAnchor"></a>
+                </div>
+            </div>
+        </div>
+    </modal>
+
+    <modal id="shareFileUpload" class="hide">
+        <div class="modal-content-custom">
+            <div class="modal-header-custom">
+                <h2>Datei bereit</h2>
+            </div>
+
+            <div class="modal-body-custom">
+                <div class="fileDescriptionWrapper">
+                    <img class="shareFileBlank" id="shareIconFileBlank" src="/svg/file-blank.svg" alt="File Icon">
+                    <div class="continue-alternative">
+                        <span id="shareFileDescription"></span><span></span>
+                    </div>
+                </div>
+                <div class=" progresswrapper" id="progresswrapperhost">
+                    <!-- loading bar -->
+                    <label>
+                        <progress determinate id="progressbarhost" role="progressbar" aria-describedby="loading-zone" tabindex="-1" value="0.01" aria-valuenow="1%">1%</progress>
+                    </label>
+
+                    <!-- remaining time info -->
+                    <div class="progressdwrapper">
+                        <span id="progressdialoguehost">sehr viele Minuten verbleibend</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <div class="continue-alternative">
+                    <button class="btn-tertiary" onclick="copyToClipboard(window.location.href)"><span>Link kopieren</span><img class="shareFileBlank" src="/svg/copy.svg" alt=""></button>
+                </div>
+            </div>
+        </div>
+    </modal>
+
+    <modal id="shareFileRepick" class="hide">
+        <div class="modal-content-custom">
+            <div class="modal-header-custom">
+                <h2>Datei erneut auswählen</h2>
+            </div>
+
+            <div class="modal-body-custom">
+                <input multiple="false" type="file" name="shareFileInput" id="shareFileInput" style="display:none" onchange="InitShare()">
+                <label for="shareFileInput" class="btn-shareFile"><img class="shareFileBlank" src="/svg/folder-plus.svg" alt="Add File"></label>
+            </div>
+            <div class="modal-footer-custom">
+                <div class="continue-alternative">
+                    <span>Wähle eine Datei, die Du teilen möchtest</span><span></span>
+                </div>
+            </div>
+        </div>
+    </modal>
+
+
     <modal id="createRoom" class="hide">
-        <div class="modal-content">
-            <div class="modal-header col-6">
-                <h2>Create Room</h2>
-                <button class="btn form-input" onclick="modals.createRoom.close(); modals.joinRoom.open()">Join</button>
+        <div class="modal-content-custom">
+            <div class="modal-header-custom">
+                <h2>Raum erstellen</h2>
             </div>
-            <div class="modal-body col-6">
-                <div class="row ">
-                    <div class="col-6">Room name</div>
 
-                    <input class="col-6 form-input" id="roomname">
-                </div>
-                <div class="row">
-                    <div class="col-6">Room id</div>
-
-                    <input class="col-6 form-input" id="roomid">
-                </div>
-                <div class="row">
-                    <div class="col-6">Password</div>
-
-                    <input type="password" class="col-6 form-input" id="password">
-                </div>
+            <div class="modal-body-custom">
+                <span name="joinRoomDescription">Gib deinen gewünschten Raumnamen ein</span>
+                <input type="text" name="roomid" id="createRoomID" placeholder="ID" autocomplete="off">
+                <span class="subtitle">Passwort vergeben</span>
+                <input class="fadeInTop" type="password" name="createRoomPassword" id="createRoomPassword" placeholder="Passwort" style="display:none;" autocomplete="off">
             </div>
-            <div class="modal-footer col-6">
-                <button class="btn form-input" onclick="createRoom()">Create</button>
+            <div class="modal-footer-custom">
+                <button class="btn-continue" onclick="createRoom()"><span>Weiter</span></button>
+                <div class="continue-alternative">
+                    <span>oder </span><span onclick="modals.createRoom.close(); modals.joinRoom.open()">einem Raum beitreten</span>
+                </div>
             </div>
         </div>
     </modal>
@@ -339,14 +455,14 @@
     </modal>
 
 
-    <template id="testToast">
-        <div class="toast ">
-            <div class="toast-header row">Head</div>
-            <div class="toast-content row">
-                <p>Toast</p>
+    <template id="toastTemplate">
+        <div class="toast fadeInScale">
+            <div class="toast-icon">
+                <img id="toast-icon-info" src="/svg/info-circle.svg" alt="Info">
+                <img id="toast-icon-check" src="/svg/check-circle.svg" alt="Check">
             </div>
-            <div class="toast-footer row">
-                <button class="btn form-input" onclick="">Close</button>
+            <div class="toast-body">
+                <span class="toast-content"></span>
             </div>
         </div>
     </template>
@@ -354,13 +470,18 @@
     <template id="videoElementTemplate">
         <div id="" class="videoElement">
 
-            <div class="nameSlider">
+            <div class="sliderWrapper" style="width: 100%;">
+                <div class="nameSlider" style="display: none;">
+
+                </div>
+                <div class="namePlaceholder">name</div>
+            </div>
+            <div class="controlsWrapper">
                 <button class="fullscreenBTN">
                     <img src="/svg/fullscreen.svg" alt="">
                 </button>
                 <input class="streamVolumeSlider" type="range" min="0" max="100" value="30" oninput="this.value=value">
             </div>
-            <div class="namePlaceholder">placeholder</div>
             <div class="infoData">
                 <div id="infoData_In" class="infoData"></div>
                 <div id="infoData_Out" class="infoData"></div>
@@ -368,6 +489,7 @@
 
             <img src="" class="avatar myavatar">
             <video></video>
+            <div class="watchBtnOnVideoElement">Watch</div>
             <!-- <img id="" class="thumbnail"> -->
         </div>
     </template>
@@ -376,6 +498,7 @@
         <div class="connected-user-wrapper" id="">
             <div class="connected-user">
                 <img src="" class="myavatar">
+                <avatarstatusindicator>LIVE</avatarstatusindicator>
                 <span>placeholder</span>
             </div>
             <div class="button-watch" style="display: none">
@@ -385,7 +508,7 @@
     </template>
 
     <template id="chatMsgTemplate">
-        <div class="chat-message-wrapper" name="" id="">
+        <div class="chat-message-wrapper" name="" id="" sendTime="">
             <div class="chat-message-avatar">
                 <img src="">
             </div>
@@ -397,9 +520,14 @@
                 <div class="chat-message-content">
                     <span></span>
                 </div>
+                <div class="chat-message-attachments">
+                    <span></span>
+                </div>
             </div>
         </div>
     </template>
+
+
 
     <template id="chatMsgTemplate-old">
         <div class="chat-message-wrapper" name="" id="">
@@ -460,13 +588,13 @@
 
 </body>
 <script src="/socket.io/socket.io.js"></script>
+<script src="/js/classes.js"></script>
 <script src="/js/global_vars.js"></script>
-<script src="/js/easy-peer.js"></script>
-<script src="/js/utils.js"></script>
+<script src="/js/functions.js"></script>
 <script src="/js/events.js"></script>
-<script src="/js/uifw.js"></script>
 <script src="/js/socket.js"></script>
 <script src="/js/debug.js"></script>
 <script src="/js/init.js"></script>
+<script src="/js/share.js"></script>
 
 </html>

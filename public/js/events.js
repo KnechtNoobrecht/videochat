@@ -1,11 +1,13 @@
 function initEvents() {
-
+    document.getElementById('fileUploadInput').oninput = (e) => openFiles(e)
 
     room.addEventListener("memberAdded", function (e) {
         videoElemente[e.detail.sid] = cloneVideoElement(e.detail.identity, e.detail.sid)
+        console.log(e.detail.identity);
         cloneUserElement(e.detail.identity, e.detail.sid)
-
-        soundsPlayer.play('newMember')
+        if (operatingMode == "video") {
+            soundsPlayer.play('newMember')
+        }
     });
 
     room.addEventListener("memberRemoved", function (e) {
@@ -22,8 +24,8 @@ function initEvents() {
         var identity = e.detail.identity;
         var socketid = e.detail.sid;
 
-        console.log(e.detail.identity, e.detail.sid);
-        //console.log("memberChanged ", identity, socketid);
+        //console.log(e.detail.identity, e.detail.sid);
+        console.log("memberChanged ", identity, socketid);
         //var videowrapper = document.getElementById('videowrapper');
 
         var userElement = document.getElementById('userElement_' + socketid);
@@ -33,11 +35,7 @@ function initEvents() {
         videoElement.querySelector('.avatar').src = identity.avatar
         // videoElement.querySelector('.thumbnail').src = identity.thumbnail;
 
-        if (identity.thumbnail == "data:," || identity.thumbnail == null){
-            videoElement.style.backgroundImage = `linear-gradient(180deg,${identity.color},${getDarkerAndMoreSaturatedColor(identity.color)})`;
-        } else if (identity.thumbnail != null) {
-            videoElement.style.backgroundImage = `url(${identity.thumbnail})`;
-        } 
+        videoElement.style.backgroundImage = getThumbnail(identity)
 
         if (!isMe(socketid)) {
             videoElement.querySelector('.namePlaceholder').innerText = identity.username;
@@ -51,50 +49,66 @@ function initEvents() {
         videoElement.querySelector(".myavatar").src = identity.avatar + '?r=' + Math.floor(Math.random() * 999999999);
 
 
-        /*         userElement.querySelectorAll(".myavatar").forEach(element => {
-                    element.src = "/uploads/avatars/"+identitys[0].id+".png"
-                });        
-        
-                videoElement.querySelectorAll(".myavatar").forEach(element => {
-                    element.src = "/uploads/avatars/"+identitys[0].id+".png"
-                });
-         */
+        userElement.querySelectorAll(".myavatar").forEach(element => {
+            element.src = identity.avatar + '?r=' + Math.floor(Math.random() * 999999999);
+            element.style.border = `2px solid rgb(${identity.avatarRingColor.r},${identity.avatarRingColor.g},${identity.avatarRingColor.b})`
+        });
 
+        videoElement.querySelectorAll(".myavatar").forEach(element => {
+            element.src = identity.avatar + '?r=' + Math.floor(Math.random() * 999999999);
+            element.style.border = `2px solid rgb(${identity.avatarRingColor.r},${identity.avatarRingColor.g},${identity.avatarRingColor.b})`
 
-        //console.log(videoElement.querySelector('video'));
-
-        if (isMe(socketid)) {
-            if (identity.isStreaming) {
-                userElement.getElementsByClassName('button-watch')[0].style = "display:flex !important";
-                userElement.getElementsByClassName('button-watch')[0].innerHTML = "Live"
-            } else {
-                userElement.getElementsByClassName('button-watch')[0].style = "display:none !important";
-                videoElement.querySelector('video').srcObject = null
-            }
-        } else {
-            if (identity.isStreaming) {
-                userElement.getElementsByClassName('button-watch')[0].style = "display:flex !important";
-                userElement.getElementsByClassName('button-watch')[0].innerHTML = "Watch"
-            } else {
-                userElement.getElementsByClassName('button-watch')[0].style = "display:none !important";
-                videoElement.querySelector('video').srcObject = null
-            }
-        }
+        });
 
         var userMsgs = Array.from(document.getElementsByName('msg_' + identity.id));
-
         for (var i = 0; i < userMsgs.length; i++) {
             userMsgs[i].querySelector('.chat-message-username').innerText = identity.username;
-            userMsgs[i].querySelector('img').src = identity.avatar
+            userMsgs[i].querySelector('img').src = identity.avatar + '?r=' + Math.floor(Math.random() * 999999999);
+            userMsgs[i].querySelector('img').style.border = `2px solid rgb(${identity.avatarRingColor.r},${identity.avatarRingColor.g},${identity.avatarRingColor.b})`
         }
+
+        //console.log(videoElement.querySelector('video'));
+        //TODO Icons anstatt Wörter im BTN Anzeigen
+
+        if (identity.isStreaming) {
+            //userElement.getElementsByClassName('button-watch')[0].style.display = "flex";
+            userElement.querySelector('avatarstatusindicator').style.display = "flex";
+
+
+            if (!isMe(socketid)) {
+                videoElement.querySelector('.watchBtnOnVideoElement').style.display = "flex";
+                videoElement.querySelector('.watchBtnOnVideoElement').onclick = (event) => {
+                    console.log(event);
+                    getStream(socketid)
+                }
+            } else {
+                videoElement.querySelector('.watchBtnOnVideoElement').style.display = "none";
+            }
+
+            videoElement.querySelector('.watchBtnOnVideoElement').style.display = "flex";
+            //isMe(socketid) ? userElement.getElementsByClassName('button-watch')[0].innerHTML = "Stop" : userElement.getElementsByClassName('button-watch')[0].innerHTML = "Watch"
+        } else {
+            userElement.querySelector('avatarstatusindicator').style.display = "none";
+            userElement.getElementsByClassName('button-watch')[0].style.display = "none";
+            videoElement.querySelector('video').srcObject = null
+            videoElement.querySelector('.watchBtnOnVideoElement').style.display = "none";
+        }
+
+
+        // setCssVar('avatar-ring-color', `rgb(${identity.avatarRingColor.r},${identity.avatarRingColor.g},${identity.avatarRingColor.b})`)
+        /*   var r = document.querySelector(':root');
+          r.style.setProperty('--avatar-ring-color', `rgb(${identity.avatarRingColor.r},${identity.avatarRingColor.g},${identity.avatarRingColor.b})`); */
 
     });
 
+    document.getElementById('inputMsg').addEventListener('paste', async function (e) {
+        console.log(e);
+
+    });
 
     document.getElementById('inputMsg').addEventListener('keyup', async function (e) {
         //console.log("keydown", e);
-        console.log(e.srcElement.value.match(/\n\r?/g));
-
+        //console.log(e.srcElement.value.match(/\n\r?/g));
 
         if (e.srcElement.value.match(/\n\r?/g) != null) {
             rows = e.srcElement.value.match(/\n\r?/g).length + 1
@@ -107,34 +121,33 @@ function initEvents() {
         if (e.keyCode == 13 && !e.shiftKey) {
             //sendMessage();
             var res
-            var attachments = [];
-
-
+            var attachments = {};
+            var msgid = uuid()
 
             for (const key in fileHandle) {
                 if (Object.hasOwnProperty.call(fileHandle, key)) {
                     const element = fileHandle[key];
-                    console.log('fileHandle elemnt: ',element);
-                    res = await uploadFile(element)
-                    
-                    attachments.push({ url: res.url, fileExt: res.fileExt })
+                    //console.log('fileHandle elemnt: ', element);
+                    element.msgid = msgid
+                    element.roomid = room.id
+
+                    //res = await uploadFile(element)
+                    var fileid = FU.addFileToQueue(element)
+                    attachments[fileid] = { fileid: fileid }
+                    //attachments.push({ fileid: res.url, fileExt: res.fileExt })
                 }
             }
-     
-            var msg = e.srcElement.value
-           
 
-            if (msg.trim() != '' || res.code == 'SUCCESS') {
+            var msg = e.srcElement.value
+
+            if (msg.trim() != '' || Object.keys(fileHandle).length > 0) {
                 e.preventDefault();
                 msg = msg.trimStart().trim()
                 msg = msg.replace(/\n\r?/g, ' <br />')
 
-                console.log(res);
-                //{code: 'SUCCESS', url: 'uploads/files/d4b16f89-917d-f6c7-4a45-da1f82d6c0b3/bg4.png'}
-
-                //msg +=  uploads/files/d4b16f89-917d-f6c7-4a45-da1f82d6c0b3/bg4.png
-
-                room.sendMsg(msg, attachments);
+                room.sendMsg(msg, attachments, msgid);
+                chatAttachments.innerHTML = ''
+                fileHandle = {}
             }
             document.getElementById('chatInput').reset();
             e.srcElement.rows = 1
@@ -173,7 +186,7 @@ function initEvents() {
         //console.log('disty = ', disty);
         //console.log('isLeftOpen = ', isLeftOpen);
         //console.log('isRightOpen = ', isRightOpen);
-        console.log('touch move event = ', eve);
+        //console.log('touch move event = ', eve);
         if (!slideing && !isLeftOpen) {
             if (isRightOpen) {
                 if (distx > 200) {
@@ -215,7 +228,6 @@ function initEvents() {
 
         //   setCssVar('primary_bg', '#234421')
     }
-
 
 
     var width_size_before = 0;
@@ -314,4 +326,35 @@ function initEvents() {
     });
 
     //document.getElementById('startStreamBTN').addEventListener('click', function (e) { })
+
+
+    document.getElementById('startStreamBTN').onclick = (e) => {
+        toggleStartStreamModal()
+    }
+    //document.getElementById('startStreamBG').onclick = (e) => {
+    //    if (e.target === e.currentTarget) {
+    //        toggleStartStreamModal();
+    //    }
+    //}
+    document.getElementById('startScreenShare').onclick = startStream
+    document.getElementById('startCameraShare').onclick = startStream
+    document.getElementById('startStreamGoBack').onclick = goBack
+    document.getElementById('resolutionSelector').onclick = toggleResDropdown
+    document.getElementById('framerateDiv').childNodes.forEach(childNode => {
+        childNode.nodeName == "SPAN" ? childNode.onclick = framerateSliderSlide : null
+    })
+
+    document.onclick = hideMenu;
+    document.oncontextmenu = rightClick;
+
+    document.getElementById('joinRoomID').onkeyup = (e) => submitOnEnter(e)
+    document.getElementById('joinRoomPassword').onkeyup = (e) => submitOnEnter(e)
+    document.getElementById('createRoomPassword').onkeyup = (e) => submitOnEnter(e)
+    document.getElementById('createRoomID').onkeyup = (e) => submitOnEnter(e)
+    document.getElementById('username').onkeyup = (e) => submitOnEnter(e)
+
+
+
 }
+
+

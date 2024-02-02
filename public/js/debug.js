@@ -24,7 +24,7 @@ function initDebug() {
             y: 15,
             width: 300,
             height: 300,
-            visible: true,
+            visible: false,
             bg_color: '#000000',
         }
         setCookie('debugSettings', JSON.stringify(debugSettings), 365)
@@ -126,15 +126,12 @@ function initDebug() {
         for (const key in peers) {
             if (Object.hasOwnProperty.call(peers, key)) {
                 const peer = peers[key];
-
                 var peerElement = document.getElementById(peer.connectionID + '_debug_peer_connection')
                 var tempElement
-
                 if (peerElement == null) {
                     tempElement = cloneTemplate('streamInfo')
                     document.getElementById('peerConnections').appendChild(tempElement);
                 }
-
                 tempElement.querySelector('#connectionID').innerHTML = 'Peer Connection ID = ' + peer.connectionID
                 tempElement.querySelector('#initiator').innerHTML = 'Initiator = ' + peer.initiator
                 tempElement.querySelector('#remotesid').innerHTML = 'Remote Socket ID = ' + peer.remotesid
@@ -154,7 +151,9 @@ function initDebug() {
             // console.log('member username = ', member.identity.username, 'member isAdmin = ', member.identity.isAdmin);
         }
 
-        document.getElementById('thumbnail_prev').src = streamThumbnail
+        if(streamThumbnail) {
+            document.getElementById('thumbnail_prev').src = streamThumbnail
+        }
     }, 1000);
 
 
@@ -198,7 +197,6 @@ function initDebug() {
         }
     });
 }
-
 
 function saveDebugSettings() {
     var debugSettings = getCookieObject('debugSettings')
