@@ -3,9 +3,11 @@ function initEvents() {
 
     room.addEventListener("memberAdded", function (e) {
         videoElemente[e.detail.sid] = cloneVideoElement(e.detail.identity, e.detail.sid)
+        console.log(e.detail.identity);
         cloneUserElement(e.detail.identity, e.detail.sid)
-
-        soundsPlayer.play('newMember')
+        if (operatingMode == "video") {
+            soundsPlayer.play('newMember')
+        }
     });
 
     room.addEventListener("memberRemoved", function (e) {
@@ -23,7 +25,7 @@ function initEvents() {
         var socketid = e.detail.sid;
 
         //console.log(e.detail.identity, e.detail.sid);
-        //console.log("memberChanged ", identity, socketid);
+        console.log("memberChanged ", identity, socketid);
         //var videowrapper = document.getElementById('videowrapper');
 
         var userElement = document.getElementById('userElement_' + socketid);
@@ -47,32 +49,55 @@ function initEvents() {
         videoElement.querySelector(".myavatar").src = identity.avatar + '?r=' + Math.floor(Math.random() * 999999999);
 
 
-        /*         userElement.querySelectorAll(".myavatar").forEach(element => {
-                    element.src = "/uploads/avatars/"+identitys[0].id+".png"
-                });        
-        
-                videoElement.querySelectorAll(".myavatar").forEach(element => {
-                    element.src = "/uploads/avatars/"+identitys[0].id+".png"
-                });
-         */
+        userElement.querySelectorAll(".myavatar").forEach(element => {
+            element.src = identity.avatar + '?r=' + Math.floor(Math.random() * 999999999);
+            element.style.border = `2px solid rgb(${identity.avatarRingColor.r},${identity.avatarRingColor.g},${identity.avatarRingColor.b})`
+        });
 
+        videoElement.querySelectorAll(".myavatar").forEach(element => {
+            element.src = identity.avatar + '?r=' + Math.floor(Math.random() * 999999999);
+            element.style.border = `2px solid rgb(${identity.avatarRingColor.r},${identity.avatarRingColor.g},${identity.avatarRingColor.b})`
 
-        //console.log(videoElement.querySelector('video'));
-
-        if (identity.isStreaming) {
-            userElement.getElementsByClassName('button-watch')[0].style.display = "flex";
-            isMe(socketid) ? userElement.getElementsByClassName('button-watch')[0].innerHTML = "Live" : userElement.getElementsByClassName('button-watch')[0].innerHTML = "Watch"
-        } else {
-            userElement.getElementsByClassName('button-watch')[0].style.display = "none";
-            videoElement.querySelector('video').srcObject = null
-        }
+        });
 
         var userMsgs = Array.from(document.getElementsByName('msg_' + identity.id));
-
         for (var i = 0; i < userMsgs.length; i++) {
             userMsgs[i].querySelector('.chat-message-username').innerText = identity.username;
-            userMsgs[i].querySelector('img').src = identity.avatar
+            userMsgs[i].querySelector('img').src = identity.avatar + '?r=' + Math.floor(Math.random() * 999999999);
+            userMsgs[i].querySelector('img').style.border = `2px solid rgb(${identity.avatarRingColor.r},${identity.avatarRingColor.g},${identity.avatarRingColor.b})`
         }
+
+        //console.log(videoElement.querySelector('video'));
+        //TODO Icons anstatt Wörter im BTN Anzeigen
+
+        if (identity.isStreaming) {
+            //userElement.getElementsByClassName('button-watch')[0].style.display = "flex";
+            userElement.querySelector('avatarstatusindicator').style.display = "flex";
+
+
+            if (!isMe(socketid)) {
+                videoElement.querySelector('.watchBtnOnVideoElement').style.display = "flex";
+                videoElement.querySelector('.watchBtnOnVideoElement').onclick = (event) => {
+                    console.log(event);
+                    getStream(socketid)
+                }
+            } else {
+                videoElement.querySelector('.watchBtnOnVideoElement').style.display = "none";
+            }
+
+            videoElement.querySelector('.watchBtnOnVideoElement').style.display = "flex";
+            //isMe(socketid) ? userElement.getElementsByClassName('button-watch')[0].innerHTML = "Stop" : userElement.getElementsByClassName('button-watch')[0].innerHTML = "Watch"
+        } else {
+            userElement.querySelector('avatarstatusindicator').style.display = "none";
+            userElement.getElementsByClassName('button-watch')[0].style.display = "none";
+            videoElement.querySelector('video').srcObject = null
+            videoElement.querySelector('.watchBtnOnVideoElement').style.display = "none";
+        }
+
+
+        // setCssVar('avatar-ring-color', `rgb(${identity.avatarRingColor.r},${identity.avatarRingColor.g},${identity.avatarRingColor.b})`)
+        /*   var r = document.querySelector(':root');
+          r.style.setProperty('--avatar-ring-color', `rgb(${identity.avatarRingColor.r},${identity.avatarRingColor.g},${identity.avatarRingColor.b})`); */
 
     });
 
@@ -327,4 +352,9 @@ function initEvents() {
     document.getElementById('createRoomPassword').onkeyup = (e) => submitOnEnter(e)
     document.getElementById('createRoomID').onkeyup = (e) => submitOnEnter(e)
     document.getElementById('username').onkeyup = (e) => submitOnEnter(e)
+
+
+
 }
+
+
