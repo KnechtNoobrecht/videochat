@@ -32,11 +32,7 @@ window.onload = async function () {
             //initJoinRoom();
         })
     } else {
-<<<<<<< HEAD
-        initJoinRoom();
-=======
         joinRoom();
->>>>>>> parent of 7ff96f4... temporary commit, contains breaking changes.
         console.log("init Join Room");
     }
 
