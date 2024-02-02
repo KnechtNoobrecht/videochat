@@ -19,7 +19,6 @@
 
 
 ## UI:
-### ⚒️ ring in dominanter farbe aus profilbild um profilbild herum
 ### ⚒️ generelles UI-"re"work
 ### ⚒️ emojis picker für chat 
 ### ⚒️ Attachments Picker Style (Leiste über Text Input mit icons für file picker und emote picker über der liste oder woander die derzeit ausgewählten files anzeigen)
@@ -41,7 +40,6 @@
 ### ⚒️ Video beim Streamen deaktivieren oder thumbnail ausblenden (von einem selbst)
 ### ⚒️ STRG+V Bilder versenden - scheinbar nicht möglich im Browser
 ### ⚒️ Discord Status interaktion mit link zum raum in dem man ist (nur in eigener Electron App möglich)
-### ⚒️ [Bilder Anpassen](https://fengyuanchen.github.io/cropperjs/)
 
 
 ## Fertig

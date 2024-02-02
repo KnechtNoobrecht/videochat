@@ -160,11 +160,6 @@ class Toast extends EventTarget {
         this.id = uuid();
 
         switch (this.type) {
-            case "success":
-                this.element.querySelector('.toast-body').querySelector('.toast-content').classList = "toast-content-info"
-                this.element.querySelector('#toast-icon-info').style.display = "none"
-                break;
-
             case "info":
                 this.element.querySelector('.toast-body').querySelector('.toast-content').classList = "toast-content-info"
                 this.element.querySelector('.toast-icon').style.display = "none"
@@ -172,8 +167,6 @@ class Toast extends EventTarget {
 
             case "error":
                 this.element.querySelector('.toast-body').querySelector('.toast-content').classList = "toast-content-error"
-                this.element.querySelector('.toast-icon').style.display = "block"
-                this.element.querySelector('#toast-icon-check').style.display = "none"
                 break;
 
             //case "warn":
@@ -289,7 +282,6 @@ class Peer extends EventTarget {
         this.sended = new BitrateObject()
         this.received = new BitrateObject()
         this.negotiate = this.negotiate.bind(this)
-        this.dataChannel = null
 
         console.log('Peer Constructor = ', this);
     }
@@ -299,13 +291,12 @@ class Peer extends EventTarget {
             if (this.peer.signalingState === 'stable') {
                 const offer = await this.peer.createOffer();
                 console.log("Created local offer:", offer);
-
+                
                 await this.peer.setLocalDescription(offer);
                 console.log("Local description set:", this.peer.localDescription);
-
+    
                 // Send the offer to the remote peer using your signaling mechanism
                 socket.emit('peerOffer', {
-                    type: this.type,
                     fromSocket: this.localsid,
                     toSocket: this.remotesid,
                     connectionID: this.connectionID,
@@ -318,7 +309,7 @@ class Peer extends EventTarget {
             console.error('Error handling negotiationneeded event:', err);
         }
     }
-
+    
 
     /**
      * @method init
@@ -337,66 +328,65 @@ class Peer extends EventTarget {
             var infoDataOut = document.getElementById('videoElement_' + this.localsid).querySelector('#infoData_Out')
             var infoElement = renderDataInfo(this.connectionID)
             infoElement.querySelector('.infoDataHeader').innerHTML = this.connectionID
-            //if (this.type == "video") {
-                this.timer = setInterval(function () {
-
-                    if (!that.peer) {
-                        prevReport = null;
-                        return;
-                    }
-                    console.log("peer type: " + this.type);
-                    that.peer.getStats(null).then(reporter => {
-                        reporter.forEach(report => {
-                            if (report.type === 'inbound-rtp' && report.mediaType === 'video') {
-                                if (report.framesPerSecond == undefined) {
-                                    return;
-                                }
-
-                                if (!prevReport) {
-                                    prevReport = report;
-                                } else {
-                                    //console.log(report);
-                                    //console.log('infoData', infoData);
-                                    var bitrateReceived = Math.round((report.bytesReceived * 8 - prevReport.bytesReceived * 8) / (report.timestamp - prevReport.timestamp));
-
-                                    that.received.bitrate = bitrateReceived;
-                                    that.received.totalBytes = report.bytesReceived
-
-                                    //infoData.innerHTML = '<p>' + (report.bytesReceived * 8 - prevReport.bytesReceived * 8) / (report.timestamp - prevReport.timestamp) + 'Bit</p>'
 
 
-                                    infoElement.querySelector('.infoDataBody').innerHTML = `<p>Received <br>
-                                    Bitrate = ${bitrateReceived} kBit <br> 
-                                    Frames Dropped = ${report.framesDropped} <br>
-                                    FPS = ${report.framesPerSecond} <br>
-                                    packets Lost = ${report.packetsLost} <br>
-                                    Res = ${report.frameHeight} x ${report.frameWidth} <br>
-                                    </p>`
-                                    //console.log((report.bytesReceived * 8 - prevReport.bytesReceived * 8) / (report.timestamp - prevReport.timestamp));
+            this.timer = setInterval(function () {
 
-                                }
-                            } else if (report.type === 'outbound-rtp' && report.mediaType === 'video') {
-                                if (!prevReport) {
-                                    prevReport = report;
-                                } else {
-                                    //console.log('report outbound-rtp = ', report);
-                                    var bitrateSent = Math.round((report.bytesSent * 8 - prevReport.bytesSent * 8) / (report.timestamp - prevReport.timestamp));
-
-
-                                    that.sended.bitrate = bitrateSent;
-                                    that.sended.totalBytes = report.bytesSent
-
-                                    infoElement.querySelector('.infoDataBody').innerHTML = `<p>Sent <br> 
-                                    Bitrate = ${bitrateSent} kBit <br> 
-                                    FPS = ${report.framesPerSecond} <br>
-                                    Res = ${report.frameHeight} x ${report.frameWidth} <br>
-                                    </p>`
-                                }
+                if (!that.peer) {
+                    prevReport = null;
+                    return;
+                }
+                that.peer.getStats(null).then(reporter => {
+                    reporter.forEach(report => {
+                        if (report.type === 'inbound-rtp' && report.mediaType === 'video') {
+                            if (report.framesPerSecond == undefined) {
+                                return;
                             }
-                        });
+
+                            if (!prevReport) {
+                                prevReport = report;
+                            } else {
+                                //console.log(report);
+                                //console.log('infoData', infoData);
+                                var bitrateReceived = Math.round((report.bytesReceived * 8 - prevReport.bytesReceived * 8) / (report.timestamp - prevReport.timestamp));
+
+                                that.received.bitrate = bitrateReceived;
+                                that.received.totalBytes = report.bytesReceived
+
+                                //infoData.innerHTML = '<p>' + (report.bytesReceived * 8 - prevReport.bytesReceived * 8) / (report.timestamp - prevReport.timestamp) + 'Bit</p>'
+
+
+                                infoElement.querySelector('.infoDataBody').innerHTML = `<p>Received <br>
+                                Bitrate = ${bitrateReceived} kBit <br> 
+                                Frames Dropped = ${report.framesDropped} <br>
+                                FPS = ${report.framesPerSecond} <br>
+                                packets Lost = ${report.packetsLost} <br>
+                                Res = ${report.frameHeight} x ${report.frameWidth} <br>
+                                </p>`
+                                //console.log((report.bytesReceived * 8 - prevReport.bytesReceived * 8) / (report.timestamp - prevReport.timestamp));
+
+                            }
+                        } else if (report.type === 'outbound-rtp' && report.mediaType === 'video') {
+                            if (!prevReport) {
+                                prevReport = report;
+                            } else {
+                                //console.log('report outbound-rtp = ', report);
+                                var bitrateSent = Math.round((report.bytesSent * 8 - prevReport.bytesSent * 8) / (report.timestamp - prevReport.timestamp));
+
+
+                                that.sended.bitrate = bitrateSent;
+                                that.sended.totalBytes = report.bytesSent
+
+                                infoElement.querySelector('.infoDataBody').innerHTML = `<p>Sent <br> 
+                                Bitrate = ${bitrateSent} kBit <br> 
+                                FPS = ${report.framesPerSecond} <br>
+                                Res = ${report.frameHeight} x ${report.frameWidth} <br>
+                                </p>`
+                            }
+                        }
                     });
-                }, 500);
-            //}
+                });
+            }, 500);
 
             this.peer.addEventListener('connectionstatechange', (event) => { // console.log(event);
                 //console.log('--- connectionstatechange = ', this.peer.connectionState);
@@ -427,11 +417,11 @@ class Peer extends EventTarget {
                 // console.log(event)
             });
 
-
+            
             this.peer.addEventListener('negotiationneeded', this.negotiate);
 
             this.peer.addEventListener('icecandidate', (event) => {
-                console.log('new icecandidate: ',event.candidate)
+                //console.log('icecandidate')
                 if (event.candidate) {
                     socket.emit('newIceCandidate', {
                         fromSocket: this.localsid,
@@ -460,7 +450,7 @@ class Peer extends EventTarget {
                     });
                 }
                 transceiver.sender.replaceTrack(event.track);
-
+                
                 this.negotiate();
                 ///
 
@@ -486,53 +476,8 @@ class Peer extends EventTarget {
             });
 
             this.peer.addEventListener('datachannel', (event) => {
-                //var ProgressDInterval = setInterval(() => {
-                //    var loadSpeed = (receivedSize - lastProgressVal) / (Date.now() - lastTimestamp)
-                //    lastProgressVal = receivedSize
-                //    lastTimestamp = Date.now()
-                //    var percentage = (receivedSize / shareFileSize) * 100
-                //    percentage = Math.round(percentage)
-                //    //console.log(percentage)
-                //    ProgressBar.value = percentage / 100
-                //    var timeRemaining = Math.round((shareFileSize - receivedSize) / loadSpeed / 1000)
-                //    //console.log(loadSpeed)
-                //    if (loadSpeed > 0.1) {
-                //        ProgressD.style.visibility = "visible"
-                //        if (timeRemaining > 3600) {
-                //            Math.round(timeRemaining / 3600) != 1 ? ProgressDValue = `${processLoadingSpeed(loadSpeed)} - ${Math.round(timeRemaining / 3600)} Stunden verbleibend` : ProgressDValue = `${processLoadingSpeed(loadSpeed)} - ${Math.round(timeRemaining / 3600)} Stunde verbleibend`
-                //        } else if (timeRemaining > 60) {
-                //            Math.round(timeRemaining / 60) != 1 ? ProgressDValue = `${processLoadingSpeed(loadSpeed)} - ${Math.round(timeRemaining / 60)} Minuten verbleibend` : ProgressDValue = `${processLoadingSpeed(loadSpeed)} - ${Math.round(timeRemaining / 60)} Minute verbleibend`
-                //        } else {
-                //            timeRemaining != 1 ? ProgressDValue = `${processLoadingSpeed(loadSpeed)} - ${timeRemaining} Sekunden verbleibend` : ProgressDValue = `${processLoadingSpeed(loadSpeed)} - ${timeRemaining} Sekunde verbleibend`
-                //        }
-                //    }
-                //
-                //    ProgressD.innerHTML = ProgressDValue
-                //}, 1000)
-                //
-                //console.log('Receive Channel Callback');
-                //this.dataChannel = event.channel;
-                //this.dataChannel.binaryType = 'arraybuffer';
-                //this.dataChannel.onclose = console.log("data channel closed");
-                //this.dataChannel.onopen = console.log("data channel ready");
-                //this.dataChannel.onmessage = (e) => {
-                //    ProgressWrapper.style.opacity = 1
-                //    console.log(this.dataChannel.bufferedAmount);
-                //    receiveBuffer.push(e.data)
-                //    receivedSize += e.data.byteLength
-                //    console.log((receivedSize / shareFileSize) * 100 + "%");
-                //
-                //
-                //    if (receivedSize == shareFileSize) {
-                //        console.log("transfer done.");
-                //        const receivedFile = new Blob(receiveBuffer);
-                //        receiveBuffer = []
-                //        receivedSize = 0
-                //        document.getElementById("shareFileDownloadAnchor").href = URL.createObjectURL(receivedFile);
-                //        document.getElementById("shareFileDownloadAnchor").download = shareFileName
-                //        document.getElementById("shareFileDownloadAnchor").click()
-                //    }
-                //};
+                //this.dataChannel = event.channel
+                //console.log('datachannel', event.channel);
                 event.channel.addEventListener('message', (event) => {
                     console.log('event.channel DATA CHANNEL MESSAGE:', event.data);
                 });
@@ -555,22 +500,6 @@ class Peer extends EventTarget {
                 }
             });
 
-            this.peer.addEventListener("icegatheringstatechange", (event) => {
-                this.codecList = null;
-                if (this.peer.iceGatheringState === "complete") {
-                    const senders = this.peer.getSenders();
-
-                    senders.forEach((sender) => {
-                        if (sender.track.kind === "video") {
-                            this.codecList = sender.getParameters().codecs;
-                            return;
-                        }
-                    });
-                }
-                console.log('codecList: ', this.codecList);
-
-            });
-
             if (stream) {
                 //console.log(stream)
                 for (const track of stream.getTracks()) {
@@ -581,7 +510,7 @@ class Peer extends EventTarget {
                 }
             }
 
-            this.dataChannel = this.peer.createDataChannel('data') //dummy channel to trigger ICE
+            this.dataChannel = this.peer.createDataChannel('data'); // dummy channel to trigger ICE
 
             if (this.initiator) {
                 this.peer.createOffer().then(sdp => {
@@ -612,7 +541,6 @@ class Peer extends EventTarget {
                     this.peer.setLocalDescription(sdp);
                     //console.log('setLocalDescription remotesid = ', this.remotesid);
                     socket.emit('peerOffer', {
-                        type: this.type,
                         fromSocket: this.localsid,
                         toSocket: this.remotesid,
                         connectionID: this.connectionID,
@@ -625,6 +553,18 @@ class Peer extends EventTarget {
 
 
                 return
+                const offer = await this.peer.createOffer()
+                await this.peer.setLocalDescription(offer)
+
+                socket.emit('peerOffer', {
+                    fromSocket: this.localsid,
+                    toSocket: this.remotesid,
+                    connectionID: this.connectionID,
+                    data: {
+                        offer: offer
+                    }
+                })
+                resolve(this.id)
 
             } else {
 
@@ -632,7 +572,7 @@ class Peer extends EventTarget {
                 console.log("Remote description set:", this.peer.remoteDescription);
                 this.peer.createAnswer().then(sdp => {
 
-                    if (!(getBrowser() == 'Safari' || this.targetBrowser == 'Safari') || this.type == "share") {
+                    if (!(getBrowser() == 'Safari' || this.targetBrowser == 'Safari')) {
                         var arr = sdp.sdp.split('\r\n');
                         arr.forEach((str, i) => {
                             if (/^a=fmtp:\d*/.test(str)) {
@@ -647,16 +587,15 @@ class Peer extends EventTarget {
                         })
                         sdp.sdp = sdp.sdp.replace('useinbandfec=1', 'useinbandfec=1; stereo=1; maxaveragebitrate=510000')
                     } else {
-                        console.log("Sharing file or target browser or current browser is Safari, not modifying SDP")
+                        console.log("Target browser or current browser is Safari, not modifying SDP")
                     }
-
+                    
                     //console.log('setRemoteDescription', offer);
                     //console.log('setLocalDescription', sdp);
-                    this.peer.setLocalDescription(sdp).then(() => {
-                        console.log("Created local answer:", sdp);
-                        console.log("Local description set:", this.peer.localDescription);
-                        resolve(sdp)
-                    })
+                    this.peer.setLocalDescription(sdp);
+                    console.log("Created local answer:", sdp);
+                    console.log("Local description set:", this.peer.localDescription);
+                    resolve(sdp)
                 });
 
 
@@ -667,14 +606,6 @@ class Peer extends EventTarget {
             }
             console.log('init peer finished');
         })
-    }
-
-    createDataChannel(name) {
-        return this.peer.createDataChannel(name);
-    }
-
-    shareSend(data) {
-        this.dataChannel.send(data)
     }
 
     send(data) {
@@ -840,15 +771,13 @@ class Identity {
         id: id,
         username: username,
         avatar: avatar,
-        color: color,
-        avatarRingColor: avatarRingColor
+        color: color
     }) {
         //console.log('Identity Created', id, username, avatar);
         this.id = id || uuid()
         this.username = username || 'Anonymous'
         this.avatar = avatar || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
         this.color = this.generateUserColor()
-        this.avatarRingColor = avatarRingColor || { r: 250, g: 250, b: 250 }
         addIdentityToObjects(this)
     }
 
@@ -864,22 +793,18 @@ class Identity {
         this.username = data.username || this.username
         this.avatar = data.avatar || this.avatar
         this.color = data.color || this.color
-        this.avatarRingColor = data.avatarRingColor || this.avatarRingColor
-        console.log('Set Identity: ', this);
         addCookieObjectElement({
             id: this.id,
             username: this.username,
             avatar: this.avatar,
-            color: this.color,
-            avatarRingColor: this.avatarRingColor
+            color: this.color
         })
 
         return {
             id: this.id,
             username: this.username,
             avatar: this.avatar,
-            color: this.color,
-            avatarRingColor: this.avatarRingColor
+            color: this.color
         }
     }
 
@@ -1001,7 +926,7 @@ class Room extends EventTarget {
             attachments: attachments
         }
         socket.emit('chatMSG', data);
-    }
+    }   
     updateMsg(msg) {
         console.log('update msg: ', msg);
         socket.emit('updateMsg', msg);
@@ -1063,7 +988,7 @@ class SoundsPlayer {
         audio.volume = this.sounds[key].volume;
         try {
             audio.play();
-        } catch (error) { }
+        } catch (error) {}
     }
 }
 

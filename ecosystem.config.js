@@ -1,7 +1,7 @@
 module.exports = {
   apps: [{
     name: "Video-Stream-Server-DEV",
-    script: "./server.js --inspect",
+    script: "./server.js",
     watch: ["server.js"],
     // Delay between restart
     watch_delay: 5000,
@@ -16,8 +16,8 @@ module.exports = {
     script: "./server.js",
     watch: false,
     env: {
-      "NODE_ENV": "development",
-      "PORT": 6001
+      "NODE_ENV": "production",
+      "PORT": 6000
     }
   }]
 }

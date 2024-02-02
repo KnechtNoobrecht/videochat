@@ -74,7 +74,7 @@
                                 <p>Kamera teilen</p>
                             </div>
                         </div>
-
+                
                         <div class="startStreamStepTwo" id="startStreamStepTwo">
                             <div class="button-back" onclick="goBack()">
                                 <img src="/svg/arrow-left.svg" alt="Back" id="startStreamGoBack">
@@ -112,10 +112,10 @@
 
 
                 <div class="bottom-buttons-bottom">
-                    <div id="startStreamBTN" class="bot_bar_item">
-                        <img src="/svg/desktop.svg" />
-                        <span>Start Stream</span>
-                    </div>
+                 <div id="startStreamBTN" class="bot_bar_item">
+                     <img src="/svg/desktop.svg" />
+                     <span>Start Stream</span>
+                 </div>
                 </div>
             </div>
             <!-- <span onclick="pm.changeStream()" class="startStream">Start Stream</span> -->
@@ -146,7 +146,7 @@
                         <!-- <input type="file" id="filePicker" name="filename"> -->
                         <!-- <button onclick="uploadFile()">Upload</button> -->
                     </div>
-
+                
 
 
 
@@ -200,11 +200,9 @@
         <div class="modal-content-custom">
             <div class="modal-header-custom">
                 <h2>Profil bearbeiten</h2>
-
                 <div class="button-wrapper">
                     <button class="btn-close" onclick="modals.setIdent.close()"><img src="/svg/x-dismiss.svg" alt="close"></button>
                 </div>
-
             </div>
 
             <div class="modal-body-custom">
@@ -266,7 +264,7 @@
 
             <div class="modal-body-custom">
                 <span name="joinRoomDescription">Gib den Raumnamen ein, um ihm beizutreten</span>
-                <input type="text" name="joinRoomID" id="joinRoomID" placeholder="ID" autocomplete="off">
+                <input type="text" name="joinRoomID" id="joinRoomID" placeholder="ID">
                 <input class="fadeInTop" type="password" name="joinRoomPassword" id="joinRoomPassword" placeholder="Passwort" style="display:none;">
             </div>
             <div class="modal-footer-custom">
@@ -276,109 +274,7 @@
                 </div>
             </div>
         </div>
-    </modal>
 
-    <modal id="shareFile" class="hide">
-        <div class="modal-content-custom">
-            <div class="modal-header-custom">
-                <h2>Datei teilen</h2>
-            </div>
-
-            <div class="modal-body-custom">
-                <input multiple="false" type="file" name="shareFileInput" id="shareFileInput" style="display:none" onchange="InitShare()">
-                <label for="shareFileInput" class="btn-shareFile"><img class="shareFileBlank" src="/svg/folder-plus.svg" alt="Add File"></label>
-            </div>
-            <div class="modal-footer-custom">
-                <div class="continue-alternative">
-                    <span>Wähle eine Datei, die Du teilen möchtest</span><span></span>
-                </div>
-            </div>
-        </div>
-    </modal>
-
-    <modal id="shareFileDownload" class="hide">
-        <div class="modal-content-custom">
-            <div class="modal-header-custom">
-                <h2>Datei bereit</h2>
-            </div>
-
-            <div class="modal-body-custom">
-                <div class="fileDescriptionWrapper">
-                    <img class="shareFileBlank" id="shareIconFileBlank" src="/svg/file-blank.svg" alt="File Icon">
-                    <div class="continue-alternative">
-                        <span id="sharedFileDescription"></span><span></span>
-                    </div>
-                </div>
-                <div class="progresswrapper" id="progresswrapper">
-                    <!-- loading bar -->
-                    <label>
-                        <progress determinate id="progressbar" role="progressbar" aria-describedby="loading-zone" tabindex="-1" value="0.01" aria-valuenow="1%">1%</progress>
-                    </label>
-
-                    <!-- remaining time info -->
-                    <div class="progressdwrapper">
-                        <span id="progressdialogue">sehr viele Minuten verbleibend</span>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer-custom">
-                <div class="continue-alternative">
-                    <button class="btn-continue" onclick="downloadSharedFile()"><span>Datei herunterladen</span></button>
-                    <a style="display: none" id="shareFileDownloadAnchor"></a>
-                </div>
-            </div>
-        </div>
-    </modal>
-
-    <modal id="shareFileUpload" class="hide">
-        <div class="modal-content-custom">
-            <div class="modal-header-custom">
-                <h2>Datei bereit</h2>
-            </div>
-
-            <div class="modal-body-custom">
-                <div class="fileDescriptionWrapper">
-                    <img class="shareFileBlank" id="shareIconFileBlank" src="/svg/file-blank.svg" alt="File Icon">
-                    <div class="continue-alternative">
-                        <span id="shareFileDescription"></span><span></span>
-                    </div>
-                </div>
-                <div class=" progresswrapper" id="progresswrapperhost">
-                    <!-- loading bar -->
-                    <label>
-                        <progress determinate id="progressbarhost" role="progressbar" aria-describedby="loading-zone" tabindex="-1" value="0.01" aria-valuenow="1%">1%</progress>
-                    </label>
-
-                    <!-- remaining time info -->
-                    <div class="progressdwrapper">
-                        <span id="progressdialoguehost">sehr viele Minuten verbleibend</span>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer-custom">
-                <div class="continue-alternative">
-                    <button class="btn-tertiary" onclick="copyToClipboard(window.location.href)"><span>Link kopieren</span><img class="shareFileBlank" src="/svg/copy.svg" alt=""></button>
-                </div>
-            </div>
-        </div>
-    </modal>
-
-    <modal id="shareFileRepick" class="hide">
-        <div class="modal-content-custom">
-            <div class="modal-header-custom">
-                <h2>Datei erneut auswählen</h2>
-            </div>
-
-            <div class="modal-body-custom">
-                <input multiple="false" type="file" name="shareFileInput" id="shareFileInput" style="display:none" onchange="InitShare()">
-                <label for="shareFileInput" class="btn-shareFile"><img class="shareFileBlank" src="/svg/folder-plus.svg" alt="Add File"></label>
-            </div>
-            <div class="modal-footer-custom">
-                <div class="continue-alternative">
-                    <span>Wähle eine Datei, die Du teilen möchtest</span><span></span>
-                </div>
-            </div>
-        </div>
     </modal>
 
 
@@ -390,9 +286,9 @@
 
             <div class="modal-body-custom">
                 <span name="joinRoomDescription">Gib deinen gewünschten Raumnamen ein</span>
-                <input type="text" name="roomid" id="createRoomID" placeholder="ID" autocomplete="off">
+                <input type="text" name="roomid" id="createRoomID" placeholder="ID">
                 <span class="subtitle">Passwort vergeben</span>
-                <input class="fadeInTop" type="password" name="createRoomPassword" id="createRoomPassword" placeholder="Passwort" style="display:none;" autocomplete="off">
+                <input class="fadeInTop" type="password" name="createRoomPassword" id="createRoomPassword" placeholder="Passwort" style="display:none;">
             </div>
             <div class="modal-footer-custom">
                 <button class="btn-continue" onclick="createRoom()"><span>Weiter</span></button>
@@ -401,8 +297,8 @@
                 </div>
             </div>
         </div>
-    </modal>
 
+    </modal>
     <modal id="chooseStream" class="hide">
         <div class="modal-content">
             <div class="modal-header col-11">
@@ -458,8 +354,7 @@
     <template id="toastTemplate">
         <div class="toast fadeInScale">
             <div class="toast-icon">
-                <img id="toast-icon-info" src="/svg/info-circle.svg" alt="Info">
-                <img id="toast-icon-check" src="/svg/check-circle.svg" alt="Check">
+                <img src="/svg/info-circle.svg" alt="Info">
             </div>
             <div class="toast-body">
                 <span class="toast-content"></span>
@@ -472,15 +367,12 @@
 
             <div class="sliderWrapper" style="width: 100%;">
                 <div class="nameSlider" style="display: none;">
-
+                    <button class="fullscreenBTN">
+                        <img src="/svg/fullscreen.svg" alt="">
+                    </button>
+                    <input class="streamVolumeSlider" type="range" min="0" max="100" value="30" oninput="this.value=value">
                 </div>
                 <div class="namePlaceholder">name</div>
-            </div>
-            <div class="controlsWrapper">
-                <button class="fullscreenBTN">
-                    <img src="/svg/fullscreen.svg" alt="">
-                </button>
-                <input class="streamVolumeSlider" type="range" min="0" max="100" value="30" oninput="this.value=value">
             </div>
             <div class="infoData">
                 <div id="infoData_In" class="infoData"></div>
@@ -489,7 +381,6 @@
 
             <img src="" class="avatar myavatar">
             <video></video>
-            <div class="watchBtnOnVideoElement">Watch</div>
             <!-- <img id="" class="thumbnail"> -->
         </div>
     </template>
@@ -498,7 +389,6 @@
         <div class="connected-user-wrapper" id="">
             <div class="connected-user">
                 <img src="" class="myavatar">
-                <avatarstatusindicator>LIVE</avatarstatusindicator>
                 <span>placeholder</span>
             </div>
             <div class="button-watch" style="display: none">
@@ -519,7 +409,7 @@
                 </div>
                 <div class="chat-message-content">
                     <span></span>
-                </div>
+                </div>                
                 <div class="chat-message-attachments">
                     <span></span>
                 </div>
@@ -595,6 +485,6 @@
 <script src="/js/socket.js"></script>
 <script src="/js/debug.js"></script>
 <script src="/js/init.js"></script>
-<script src="/js/share.js"></script>
+
 
 </html>
