@@ -264,7 +264,7 @@ class Peer extends EventTarget {
         bitrate: bitrate,
         targetBrowser: targetBrowser
     }) {
-        super();
+        super()
         if (initiator) {
             this.connectionID = connectionID || uuid()
             //this.connectionID = uuid()
@@ -272,7 +272,7 @@ class Peer extends EventTarget {
             //this.connectionID = uuid()
             this.connectionID = connectionID
         }
-        console.log('peerServerOptions ', peerServerOptions);
+        console.log('peerServerOptions ', peerServerOptions)
         this.peer = new RTCPeerConnection(peerServerOptions)
 
         this.stream
@@ -290,18 +290,20 @@ class Peer extends EventTarget {
         this.received = new BitrateObject()
         this.negotiate = this.negotiate.bind(this)
         this.dataChannel = null
+        this.currentSDP = null
 
-        console.log('Peer Constructor = ', this);
+        console.log('Peer Constructor = ', this)
     }
 
     async negotiate() {
         try {
             if (this.peer.signalingState === 'stable') {
-                const offer = await this.peer.createOffer();
-                console.log("Created local offer:", offer);
+                console.log(this.currentSDP);
+                const offer = await this.peer.createOffer(this.currentSDP)
+                console.log("Created local offer:", offer)
 
-                await this.peer.setLocalDescription(offer);
-                console.log("Local description set:", this.peer.localDescription);
+                await this.peer.setLocalDescription(offer)
+                console.log("Local description set:", this.peer.localDescription)
 
                 // Send the offer to the remote peer using your signaling mechanism
                 socket.emit('peerOffer', {
@@ -312,10 +314,10 @@ class Peer extends EventTarget {
                     data: {
                         offer: offer
                     }
-                });
+                })
             }
         } catch (err) {
-            console.error('Error handling negotiationneeded event:', err);
+            console.error('Error handling negotiationneeded event:', err)
         }
     }
 
@@ -340,7 +342,7 @@ class Peer extends EventTarget {
             //if (this.type == "video") {
                 this.timer = setInterval(function () {
 
-                    if (!that.peer) {
+                if (!that.peer ) {
                         prevReport = null;
                         return;
                     }
@@ -486,7 +488,7 @@ class Peer extends EventTarget {
             });
 
             this.peer.addEventListener('datachannel', (event) => {
-                //var ProgressDInterval = setInterval(() => {
+                //    var ProgressDInterval = setInterval(() => {
                 //    var loadSpeed = (receivedSize - lastProgressVal) / (Date.now() - lastTimestamp)
                 //    lastProgressVal = receivedSize
                 //    lastTimestamp = Date.now()
@@ -584,6 +586,7 @@ class Peer extends EventTarget {
             this.dataChannel = this.peer.createDataChannel('data') //dummy channel to trigger ICE
 
             if (this.initiator) {
+                console.log("hello, i am the initiator")
                 this.peer.createOffer().then(sdp => {
 
                     if (!(getBrowser() == 'Safari' || this.targetBrowser == 'Safari')) {
@@ -603,11 +606,10 @@ class Peer extends EventTarget {
                         })
 
                         sdp.sdp = sdp.sdp.replace('useinbandfec=1', 'useinbandfec=1; stereo=1; maxaveragebitrate=510000')
+                        this.currentSDP = sdp
                     } else {
                         console.log("Target browser or current browser is Safari, not modifying SDP")
                     }
-
-                    //console.log('setLocalDescription', sdp);
 
                     this.peer.setLocalDescription(sdp);
                     //console.log('setLocalDescription remotesid = ', this.remotesid);
@@ -627,9 +629,10 @@ class Peer extends EventTarget {
                 return
 
             } else {
+                console.log("hello, i am not the initiator")
 
                 await this.peer.setRemoteDescription(new RTCSessionDescription(offer))
-                console.log("Remote description set:", this.peer.remoteDescription);
+                console.log("Remote description set:", this.peer.remoteDescription)
                 this.peer.createAnswer().then(sdp => {
 
                     if (!(getBrowser() == 'Safari' || this.targetBrowser == 'Safari') || this.type == "share") {
@@ -657,13 +660,7 @@ class Peer extends EventTarget {
                         console.log("Local description set:", this.peer.localDescription);
                         resolve(sdp)
                     })
-                });
-
-
-                console.log('after resolve', this.peer)
-                //const answer = await this.peer.createAnswer()
-                //await this.peer.setLocalDescription(answer)
-                //resolve(answer)
+                })
             }
             console.log('init peer finished');
         })
