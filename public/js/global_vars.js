@@ -103,12 +103,6 @@ var localStreamOptions = {
         frameRate: 30,
         hint: 'detail'
     },
-    mediaRecorderOptions: {
-        mimeType: 'video/webm;codecs="vp9,opus"', //av01.0.12M.08
-        videoMaximizeFrameRate: true,
-        videoBitsPerSecond: 5000000,
-        audioBitsPerSecond: 128000
-    }
 }
 
 var remoteStreamOptions = {

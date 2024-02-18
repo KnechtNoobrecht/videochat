@@ -6,7 +6,6 @@ const io = require("socket.io")(server);
 const {
 	v4: uuidv4
 } = require("uuid");
-var sass = require('node-sass');
 fs = require('fs');
 const multer = require('multer')
 //const upload = multer({ dest: 'multerTemp/' })
@@ -1046,84 +1045,3 @@ function isIdentityInRoom(sid, roomid) {
 	}
 	return true
 }
-
-// SCSS Compiler and Reloader 
-var mainCSS = ""
-var sassFiles = ['main'];
-async function renderSCSS(reloadClients) {
-	return new Promise(async function (resolve, reject) {
-		for (const key in sassFiles) {
-			const element = path.join(__dirname, 'public', 'css', sassFiles[key] + '.scss');
-			try {
-				sass.render({
-					file: element,
-					outFile: path.join(__dirname, 'public', 'css', 'dist', sassFiles[key] + '.css'),
-					sourceMap: true
-				}, function (err, result) {
-					if (err) {
-						console.log("err", err.formatted);
-						//reject(err);
-					} else {
-
-						//console.log('SCSS compiled!', result);
-						fs.writeFile(path.join(__dirname, 'public', 'css', 'dist', sassFiles[key] + '.css'), result.css, function (err) {
-							//
-
-							if (err) {
-								console.log('SCSS File write to Disk Error = ', err);
-							} else {
-								if (reloadClients) {
-
-									io.emit('reloadCSS');
-									duration = Date.now() - renderBegin;
-									console.log('CSS Reload - Compiled in ', duration, 'ms');
-								}
-								resolve(result);
-							}
-						});
-
-
-						fs.writeFile(path.join(__dirname, 'public', 'css', 'dist', sassFiles[key] + '.css.map'), result.map, function (err) {
-							//
-
-							if (err) {
-								console.log('SCSS File write to Disk Error = ', err);
-							} else {
-								if (reloadClients) {
-
-									io.emit('reloadCSS');
-									duration = Date.now() - renderBegin;
-									console.log('CSS Reload - Compiled in ', duration, 'ms');
-								}
-								resolve(result);
-							}
-						});
-
-					}
-				});
-			} catch (error) {
-				console.log("error", error);
-			}
-		}
-	})
-}
-
-renderSCSS(true)
-
-var sassWatcherFiles = ['vars', 'main', 'mediaqueries', 'chat'];
-
-function watchSCSS() {
-	for (const key in sassWatcherFiles) {
-		const element = path.join(__dirname, 'public', 'css', sassWatcherFiles[key] + '.scss');
-		console.log("watchSCSS", element);
-
-		fs.watchFile(element, function (curr, prev) {
-			renderBegin = new Date();
-			renderSCSS(true);
-		});
-	}
-}
-
-
-var renderBegin = new Date();
-watchSCSS()
